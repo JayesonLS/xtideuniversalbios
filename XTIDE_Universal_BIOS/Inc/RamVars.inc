@@ -131,6 +131,8 @@ struc IDEPACK	; PIOVARS and MEMPIOVARS overwrite the first 7 bytes
 	.bLbaHighExt			resb	1	; LBA48 47...40
 %endif
 
+							alignb	2	; Keep the INTPACK structure and stack pointer WORD aligned
+
 	.intpack				resb	INTPACK_size
 endstruc
 

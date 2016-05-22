@@ -85,12 +85,12 @@ ALIGN JUMP_ALIGN
 	call	Drive_GetDefaultToAL
 	xchg	dx, ax			; Default drive to DL
 	call	Drive_SetDefaultFromDL
-	eMOVZX	cx, al			; Number of potentially valid drive letters available
-	cmp		cl, 32
-	jb		SHORT .Return
-	mov		cl, 32
-ALIGN JUMP_ALIGN, ret
-.Return:
+	cmp		al, 32			; Number of potentially valid drive letters available
+	jb		SHORT .Below32
+	mov		al, 32
+.Below32:
+	cbw
+	xchg	cx, ax
 	ret
 
 ;--------------------------------------------------------------------
@@ -132,8 +132,20 @@ ALIGN JUMP_ALIGN
 	push	ax
 
 	inc		dx			; Default drive is 00h and first drive is 01h
+	mov		ax, CHECK_IF_BLOCK_DEVICE_REMOTE	; Needs DOS 3.1+
+	mov		bx, dx
+	push	dx
+	int		DOS_INTERRUPT_21h
+	pop		dx
+	jnc		SHORT .DriveIsValid
+	cmp		ax, ERR_DOS_INVALID_DRIVE
+	je		SHORT .DriveIsNotValid
+	; Fall back to old method if ERR_DOS_FUNCTION_NUMBER_INVALID
+
 	mov		ah, GET_DOS_DRIVE_PARAMETER_BLOCK_FOR_SPECIFIC_DRIVE
 	int		DOS_INTERRUPT_21h
+.DriveIsValid:
+.DriveIsNotValid:
 	dec		dx
 	test	al, al
 

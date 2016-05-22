@@ -155,6 +155,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ; MenuitemPrint_WriteLookupValueStringToBufferInESDIfromUnshiftedItemInDSSI
 ; MenuitemPrint_WriteLookupValueStringToBufferInESDIfromShiftedItemInDSSI
+; MenuitemPrint_WriteLookupValueStringToBufferInESDIfromRawItemInDSSI
 ;	Parameters:
 ;		DS:SI:	Ptr to MENUITEM
 ;		ES:DI:	Ptr to destination buffer
@@ -176,7 +177,7 @@ MenuitemPrint_WriteLookupValueStringToBufferInESDIfromRawItemInDSSI:
 	; Fall to PrintLookupValueFromAXtoBufferInESDI
 
 ;--------------------------------------------------------------------
-; MenuitemPrint_WriteLookupValueStringToBufferInESDIfromItemInDSSI
+; PrintLookupValueFromAXtoBufferInESDI
 ;	Parameters:
 ;		AX:		Value to print
 ;		DS:SI:	Ptr to MENUITEM
@@ -189,14 +190,14 @@ MenuitemPrint_WriteLookupValueStringToBufferInESDIfromRawItemInDSSI:
 ALIGN JUMP_ALIGN
 PrintLookupValueFromAXtoBufferInESDI:
 	push	si
-	test	byte [si+MENUITEM.bFlags], FLG_MENUITEM_CHOICESTRINGS
-	jnz		.lookupChoice
+	test	BYTE [si+MENUITEM.bFlags], FLG_MENUITEM_CHOICESTRINGS
+	jnz		SHORT .LookupChoice
 
 	add		ax, [si+MENUITEM.itemValue+ITEM_VALUE.rgszValueToStringLookup]
 	xchg	bx, ax
-.found:
+.Found:
 	mov		si, [bx]
-.errorReturn:
+.ErrorReturn:
 	call	String_CopyDSSItoESDIandGetLengthToCX
 	pop		si
 	ret
@@ -211,22 +212,22 @@ PrintLookupValueFromAXtoBufferInESDI:
 ; Note that the pointer array at .rgszChoiceToStringLookup must be NULL terminated.  Since the
 ; value could be zero, we don't use the .rgwChoiceToValueLookup array to find the end.
 ;
-.lookupChoice:
-	mov		bx,[si+MENUITEM.itemValue+ITEM_VALUE.rgszChoiceToStringLookup]
-	mov		si,[si+MENUITEM.itemValue+ITEM_VALUE.rgwChoiceToValueLookup]
+.LookupChoice:
+	mov		bx, [si+MENUITEM.itemValue+ITEM_VALUE.rgszChoiceToStringLookup]
+	mov		si, [si+MENUITEM.itemValue+ITEM_VALUE.rgwChoiceToValueLookup]
 
-.wordLoop:
-	cmp		ax,[si]
-	jz		.found
+.WordLoop:
+	cmp		ax, [si]
+	je		SHORT .Found
 	inc		bx
 	inc		bx
 	inc		si
 	inc		si
-	cmp		word [bx],0
-	jnz		.wordLoop
+	cmp		WORD [bx], 0
+	jne		SHORT .WordLoop
 
-	mov		si,g_szValueUnknownError
-	jmp		.errorReturn
+	mov		si, g_szValueUnknownError
+	jmp		SHORT .ErrorReturn
 
 ;--------------------------------------------------------------------
 ; MenuitemPrint_WriteUnsignedValueStringToBufferInESDIfromItemInDSSI

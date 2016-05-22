@@ -2,7 +2,7 @@
 //
 // Project:     XTIDE Universal BIOS, Serial Port Server
 //
-// File:        process.cpp - Processes commands received over the serial port
+// File:        Process.cpp - Processes commands received over the serial port
 //
 
 //
@@ -21,7 +21,7 @@
 // Visit http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 //
 
-#include "library.h"
+#include "Library.h"
 #include <memory.h>
 #include <string.h>
 #include <stdio.h>

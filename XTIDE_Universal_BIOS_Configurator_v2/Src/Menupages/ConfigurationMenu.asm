@@ -176,7 +176,8 @@ g_rgszChoiceToStringLookupForIdleTimeout:
 		dw	g_szIdleTimeoutChoice%[i]
 		%assign i i+1
 	%endrep
-	;	dw	NULL	; Is this needed? *FIXME*
+		dw	NULL
+
 
 ; Section containing code
 SECTION .text
@@ -284,7 +285,7 @@ ALIGN JUMP_ALIGN
 .EnableOrDisableIdleTimeout:
 	call	Buffers_GetRomvarsFlagsToAX
 	mov		bx, g_MenuitemConfigurationIdleTimeout
-	test	ax, FLG_ROMVARS_MODULE_POWER_MANAGEMENT
+	test	al, FLG_ROMVARS_MODULE_POWER_MANAGEMENT
 	jz		SHORT .DisableMenuitemFromCSBX
 	; Fall to .EnableMenuitemFromCSBX
 
@@ -392,9 +393,7 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	call	Buffers_GetIdeControllerCountToCX	; will also set ES:DI to point to file buffer
 	push	es
 	pop		ds
-	xor		ch, ch						; clearing high order of CX and notification flag
-	mov		dx, cx						; (probably unnecessary, CX should be less than 127, but just to be sure)
-	jcxz	.done						; probably unnecessary, but make sure there is at least one controller
+	mov		dx, cx						; Controller count to DL (will always be at least 1) while also clearing notification flag in DH
 
 	lea		bx, [di+ROMVARS.ideVars0]	; add in offset of first idevars
 
@@ -403,14 +402,13 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	xor		si, si						; first serial found
 	xor		ax, ax						; first non-serial found
 	mov		cl, dl						; idevars count
-	xor		ch, ch
 
 .loop:
-	cmp		byte [di+IDEVARS.bDevice], DEVICE_SERIAL_PORT
-	jnz		.notSerial
+	cmp		BYTE [di+IDEVARS.bDevice], DEVICE_SERIAL_PORT
+	jne		SHORT .notSerial
 
 	test	si, si						; record the first serial controller that we find
-	jnz		.next
+	jnz		SHORT .next
 	mov		si, di
 	SKIP2B	f
 
@@ -422,9 +420,9 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	loop	.loop
 
 	test	si, si						; no serial drives, nothing to do
-	jz		.done
+	jz		SHORT .done
 	cmp		si, ax						; serial port is already later on the list than any other controllers
-	ja		.done						; (also takes care of the case where there are no other controllers)
+	ja		SHORT .done					; (also takes care of the case where there are no other controllers)
 
 ;
 ; move serial to end of list, others up
@@ -437,11 +435,16 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 
 	mov		di, sp
 
-	mov		cx, IDEVARS_size
 	push	ss
 	pop		es
 
+%if IDEVARS_size & 1
+	mov		cl, IDEVARS_size
 	rep	movsb
+%else
+	mov		cl, IDEVARS_size / 2
+	rep movsw
+%endif
 
 	lea		di, [si-IDEVARS_size]		; move up all the idevars below the serial, by one slot
 
@@ -456,10 +459,15 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	mov		si, sp						; place serial (currently on the stack) at bottom of list
 	push	ss
 	pop		ds
-	mov		cx, IDEVARS_size
 	; di is already at last IDEVARS position
 
+%if IDEVARS_size & 1
+	mov		cl, IDEVARS_size
 	rep	movsb
+%else
+	mov		cl, IDEVARS_size / 2
+	rep movsw
+%endif
 
 	add		sp, IDEVARS_size
 
@@ -468,7 +476,7 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 
 	mov		dh, 1						; set flag that we have done a relocation
 
-	jmp		.outerLoop
+	jmp		SHORT .outerLoop
 
 .done:
 	pop		si
@@ -477,7 +485,7 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	pop		es
 
 	test	dh, dh
-	jz		.noWorkDone
+	jz		SHORT .noWorkDone
 
 	mov		dx, g_szSerialMoved
 	call	Dialogs_DisplayNotificationFromCSDX

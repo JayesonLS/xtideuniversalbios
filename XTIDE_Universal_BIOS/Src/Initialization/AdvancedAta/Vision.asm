@@ -28,7 +28,7 @@ SECTION .text
 ;	Returns:
 ;		AX:		ID WORD specific for QDI Vision Controllers
 ;				(AL = QD65xx Config Register contents)
-;				(AH = QDI Vision Controller ID (bits 4...7))
+;				(AH = QDI Vision Controller ID)
 ;		DX:		Controller port (not IDE port)
 ;		ZF:		Set if controller found
 ;				Cleared if supported controller not found (AX,DX = undefined)
@@ -45,10 +45,10 @@ Vision_DetectAndReturnIDinAXandPortInDXifControllerPresent:
 	; since Intel PIIX4 south bridge mirrors Interrupt Controller registers
 	; from Axh to Bxh.
 	call	IsConfigRegisterWithIDinAL
-	je		SHORT VisionControllerDetected
+	je		SHORT VisionControllerDetected.Return
 
 	; Check QD65xx alternative base port
-	or		dl, QD65XX_ALTERNATIVE_BASE_PORT
+	mov		dl, QD65XX_ALTERNATIVE_BASE_PORT
 	in		al, QD65XX_ALTERNATIVE_BASE_PORT + QD65XX_CONFIG_REGISTER_in
 %endif ; DANGEROUS_DETECTION
 	; Fall to IsConfigRegisterWithIDinAL
@@ -67,13 +67,14 @@ Vision_DetectAndReturnIDinAXandPortInDXifControllerPresent:
 IsConfigRegisterWithIDinAL:
 	mov		ah, al
 	and		al, MASK_QDCONFIG_CONTROLLER_ID
-	cmp		al, ID_QD6500 << 4
+	cmp		al, ID_QD6500
 	je		SHORT VisionControllerDetected
-	cmp		al, ID_QD6580 << 4
+	cmp		al, ID_QD6580
 	je		SHORT VisionControllerDetected
-	cmp		al, ID_QD6580_ALTERNATE << 4
+	cmp		al, ID_QD6580_ALTERNATE
 VisionControllerDetected:
 	xchg	ah, al
+.Return:
 	ret
 
 
@@ -81,7 +82,7 @@ VisionControllerDetected:
 ; Vision_DoesIdePortInBXbelongToControllerWithIDinAX
 ;	Parameters:
 ;		AL:		QD65xx Config Register contents
-;		AH:		QDI Vision Controller ID (bits 4...7)
+;		AH:		QDI Vision Controller ID
 ;		BX:		IDE Base port to check
 ;		DX:		Vision Controller port
 ;	Returns:
@@ -91,7 +92,7 @@ VisionControllerDetected:
 ;		Nothing
 ;--------------------------------------------------------------------
 Vision_DoesIdePortInBXbelongToControllerWithIDinAX:
-	cmp		ah, ID_QD6500 << 4
+	cmp		ah, ID_QD6500
 	je		SHORT .DoesIdePortInDXbelongToQD6500
 
 	; QD6580 always have Primary IDE at 1F0h
@@ -127,7 +128,7 @@ Vision_DoesIdePortInBXbelongToControllerWithIDinAX:
 ; Vision_GetMaxPioModeToALandMinCycleTimeToBX
 ;	Parameters:
 ;		AL:		QD65xx Config Register contents
-;		AH:		QDI Vision Controller ID (bits 4...7)
+;		AH:		QDI Vision Controller ID
 ;	Returns:
 ;		AL:		Max supported PIO mode
 ;		AH:		FLGH_DPT_IORDY if IORDY supported, zero otherwise
@@ -138,7 +139,7 @@ Vision_DoesIdePortInBXbelongToControllerWithIDinAX:
 ;		Nothing
 ;--------------------------------------------------------------------
 Vision_GetMaxPioModeToALandMinCycleTimeToBX:
-	cmp		ah, ID_QD6500 << 4
+	cmp		ah, ID_QD6500
 	jne		SHORT .NoNeedToLimitForQD6580
 
 	mov		ax, 2	; Limit to PIO 2 because QD6500 does not support IORDY
@@ -148,10 +149,9 @@ Vision_GetMaxPioModeToALandMinCycleTimeToBX:
 
 
 ;--------------------------------------------------------------------
-; Vision_InitializeWithIDinAHandConfigInAL
+; Vision_InitializeWithIDinAH
 ;	Parameters:
-;		AL:		QD65xx Config Register contents
-;		AH:		QDI Vision Controller ID (bits 4...7)
+;		AH:		QDI Vision Controller ID
 ;		DS:DI:	Ptr to DPT for Single or Slave Drive
 ;		SI:		Offset to Master DPT if Slave Drive present
 ;				Zero if Slave Drive not present
@@ -161,9 +161,9 @@ Vision_GetMaxPioModeToALandMinCycleTimeToBX:
 ;	Corrupts registers:
 ;		AX, BX, CX, DX, BP
 ;--------------------------------------------------------------------
-Vision_InitializeWithIDinAHandConfigInAL:
+Vision_InitializeWithIDinAH:
 	; QD6580 has a Control Register that needs to be programmed
-	cmp		ah, ID_QD6500 << 4
+	cmp		ah, ID_QD6500
 	mov		dx, [di+DPT_ADVANCED_ATA.wControllerBasePort]
 	mov		bp, QD6500_MAX_ACTIVE_TIME_CLOCKS | (QD6500_MIN_ACTIVE_TIME_CLOCKS << 8)	; Assume QD6500
 	je		SHORT .CalculateTimingsForQD65xx

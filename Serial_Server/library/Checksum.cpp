@@ -2,7 +2,7 @@
 //
 // Project:     XTIDE Universal BIOS, Serial Port Server
 //
-// File:        checksum.cpp - Checksum function and test routines
+// File:        Checksum.cpp - Checksum function and test routines
 
 //
 // XTIDE Universal BIOS and Associated Tools
@@ -38,7 +38,7 @@
 // levels of errors introduced.
 //
 
-#include "library.h"
+#include "Library.h"
 
 unsigned short checksum( unsigned short *wbuff, int wlen )
 {

@@ -70,7 +70,8 @@ FLG_ROMVARS_SERIAL_SCANDETECT 		EQU	(1<<3)	; Scan COM ports at the end of drive 
 												; by holding down the ALT key at the end of drive detection.
 												; (Conveniently, this is 8, a fact we exploit when testing the bit)
 
-; Here in case the configuration needs to know functionality is present
+; Here in case the configuration needs to know functionality is present. Note! Changing the order/location of these flags
+; also requires changes elsewhere as they are usually tested using byte-accesses for efficiency.
 FLG_ROMVARS_MODULE_POWER_MANAGEMENT		EQU	(1<<5)
 FLG_ROMVARS_MODULE_8BIT_IDE				EQU	(1<<6)
 FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED	EQU (1<<7)
@@ -145,7 +146,6 @@ DEVICE_ATA_QUATERNARY_PORTCTRL			EQU		(DEVICE_ATA_QUATERNARY_PORT + STANDARD_CON
 
 ; Device types for IDEVARS.bDevice
 ; IDE Devices are grouped so device numbers cannot be changed without modifying code elsewhere!
-; (IdeTransfer.asm)
 COUNT_OF_STANDARD_IDE_DEVICES			EQU	2	; 16- and 32-bit controllers
 COUNT_OF_8BIT_IDE_DEVICES				EQU	9
 COUNT_OF_ALL_IDE_DEVICES				EQU	(COUNT_OF_8BIT_IDE_DEVICES + COUNT_OF_STANDARD_IDE_DEVICES)

@@ -32,16 +32,24 @@ SECTION .text
 ;--------------------------------------------------------------------
 IdeCommand_ResetMasterAndSlaveController:
 	; HSR0: Set_SRST
-	call	AccessDPT_GetDeviceControlByteToAL
-	or		al, FLG_DEVCONTROL_SRST | FLG_DEVCONTROL_nIEN	; Set Reset bit
+; Used to be:
+;	call	AccessDPT_GetDeviceControlByteToAL
+;	or		al, FLG_DEVCONTROL_SRST | FLG_DEVCONTROL_nIEN	; Set Reset bit
+; Is now:
+	mov		al, FLG_DEVCONTROL_SRST | FLG_DEVCONTROL_nIEN
+; ---
 	OUTPUT_AL_TO_IDE_CONTROL_BLOCK_REGISTER		DEVICE_CONTROL_REGISTER_out
 	mov		ax, HSR0_RESET_WAIT_US
 	call	Timer_DelayMicrosecondsFromAX
 
 	; HSR1: Clear_wait
-	call	AccessDPT_GetDeviceControlByteToAL
-	or		al, FLG_DEVCONTROL_nIEN
-	and		al, ~FLG_DEVCONTROL_SRST						; Clear reset bit
+; Used to be:
+;	call	AccessDPT_GetDeviceControlByteToAL
+;	or		al, FLG_DEVCONTROL_nIEN
+;	and		al, ~FLG_DEVCONTROL_SRST						; Clear reset bit
+; Is now:
+	mov		al, FLG_DEVCONTROL_nIEN
+; ---
 	OUTPUT_AL_TO_IDE_CONTROL_BLOCK_REGISTER		DEVICE_CONTROL_REGISTER_out
 	mov		ax, HSR1_RESET_WAIT_US
 	call	Timer_DelayMicrosecondsFromAX
@@ -50,6 +58,13 @@ IdeCommand_ResetMasterAndSlaveController:
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_MAXIMUM, FLG_STATUS_BSY)
 	jmp		IdeWait_PollStatusFlagInBLwithTimeoutInBH
 
+; *FIXME* AccessDPT_GetDeviceControlByteToAL currently always returns with
+; AL cleared (0) or with only bit 1 set (FLG_DEVCONTROL_nIEN = 2).
+; The commented away instructions above sets FLG_DEVCONTROL_nIEN anyway
+; making the call to AccessDPT_GetDeviceControlByteToAL redundant.
+; I have left this code as is since I don't know if it's a mistake
+; (from all the way back to r150) or if it's coded this way in anticipation
+; of some future changes to AccessDPT_GetDeviceControlByteToAL.
 
 ;--------------------------------------------------------------------
 ; IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH

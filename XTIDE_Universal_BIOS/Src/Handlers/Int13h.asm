@@ -97,7 +97,15 @@ Int13h_DiskFunctionsHandler:
 	sti									; Enable interrupts
 %endif
 	cld									; String instructions to increment pointers
-	CREATE_FRAME_INTPACK_TO_SSBP	SIZE_OF_IDEPACK_WITHOUT_INTPACK
+	ePUSHA
+	push	ds
+	push	es
+%ifdef USE_386
+;	push	fs
+;	push	gs
+%endif
+	sub		sp, BYTE SIZE_OF_IDEPACK_WITHOUT_INTPACK
+	mov		bp, sp
 	call	RamVars_GetSegmentToDS
 
 %ifdef MODULE_DRIVEXLATE
@@ -296,8 +304,16 @@ Int13h_ReturnFromHandlerWithoutStoringErrorCode:
 	; Always return with interrupts enabled since there are programs that rely
 	; on INT 13h to enable interrupts.
 	or		BYTE [bp+IDEPACK.intpack+INTPACK.flags+1], (FLG_FLAGS_IF>>8)
-	mov		sp, bp	; This makes possible to exit anytime, no matter what is on stack
-	RESTORE_FRAME_INTPACK_FROM_SSBP		SIZE_OF_IDEPACK_WITHOUT_INTPACK
+
+	lea		sp, [bp+SIZE_OF_IDEPACK_WITHOUT_INTPACK]
+%ifdef USE_386
+;	pop		gs
+;	pop		fs
+%endif
+	pop		es
+	pop		ds
+	ePOPA
+	iret
 
 
 ;--------------------------------------------------------------------

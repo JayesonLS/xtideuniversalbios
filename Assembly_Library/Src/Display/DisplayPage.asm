@@ -42,10 +42,7 @@ DisplayPage_SetFromAL:
 
 %ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
 	%define EXCLUDE
-	%ifdef MODULE_HOTKEYS
-		%undef EXCLUDE
-	%endif
-	%ifdef MODULE_BOOT_MENU
+	%ifdef MODULE_HOTKEYS OR MODULE_BOOT_MENU
 		%undef EXCLUDE
 	%endif
 %endif

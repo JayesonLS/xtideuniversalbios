@@ -31,9 +31,9 @@ ID_PDC20630					EQU		2
 
 ; Vision
 ; QDI Vision Controller Identification nibbles used by hardware so do not modify these
-ID_QD6580_ALTERNATE			EQU		5
-ID_QD6580					EQU		10
-ID_QD6500					EQU		12
+ID_QD6580_ALTERNATE			EQU		80
+ID_QD6580					EQU		160
+ID_QD6500					EQU		192
 
 
 %endif ; ADVANCEDID_INC

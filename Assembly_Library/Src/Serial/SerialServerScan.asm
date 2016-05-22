@@ -45,36 +45,35 @@ SerialServerScan_ScanForServer:
 		mov		cx, 1			; one sector, not scanning (default)
 
 		test	dx, dx
-		jnz		short SerialServerScan_CheckForServer_PortAndBaudInDX
+		jnz		SHORT SerialServerScan_CheckForServer_PortAndBaudInDX
 
-		mov		di,.scanPortAddresses-1
-		mov		ch,1			;  tell server that we are scanning
+		mov		di, .scanPortAddresses-1
+		mov		ch, 1			;  tell server that we are scanning
 
 .nextPort:
 		inc		di				; load next port address
-		xor		dh, dh
-		mov		dl,[cs:di]
+		mov		dh, 40h			; Clear DH and make sure CF is set if error
+		mov		dl, [cs:di]
 		eSHL_IM	dx, 2			; shift from one byte to two
-		stc						; setup error code for exit
-		jz		.error
+		jz		SHORT .error
 
 ;
 ; Test for COM port presence, write to and read from registers
 ;
 		push	dx
-		add		dl,Serial_UART_lineControl
-		mov		al, 09ah
+		add		dl, Serial_UART_lineControl
+		mov		al, 9Ah
 		out		dx, al
 		in		al, dx
 		pop		dx
-		cmp		al, 09ah
-		jnz		.nextPort
+		cmp		al, 9Ah
+		jne		SHORT .nextPort
 
-		mov		al, 0ch
+		mov		al, 0Ch
 		out		dx, al
 		in		al, dx
-		cmp		al, 0ch
-		jnz		.nextPort
+		cmp		al, 0Ch
+		jne		SHORT .nextPort
 
 ;
 ; Begin baud rate scan on this port...
@@ -83,24 +82,24 @@ SerialServerScan_ScanForServer:
 ; small jump between 9600 and 38800.  These 6 were selected since we wanted to support 9600 baud and 115200,
 ; *on the server side* if the client side had a 4x clock multiplier, a 2x clock multiplier, or no clock multiplier.
 ;
-; Starting with 30h, that means 30h (2400 baud), 18h (4800 baud), 0ch (9600 baud), and
+; Starting with 30h, that means 30h (2400 baud), 18h (4800 baud), 0Ch (9600 baud), and
 ;					            04h (28800 baud), 02h (57600 baud), 01h (115200 baud)
 ;
-; Note: hardware baud multipliers (2x, 4x) will impact the final baud rate and are not known at this level
+; Note: hardware baud multipliers (2x, 4x, 8x) will impact the final baud rate and are not known at this level
 ;
-		mov		dh,030h * 2		; multiply by 2 since we are about to divide by 2
-		mov		dl,[cs:di]		; restore single byte port address for scan
+		mov		dh, 30h * 2		; multiply by 2 since we are about to divide by 2
+		mov		dl, [cs:di]		; restore single byte port address for scan
 
 .nextBaud:
-		shr		dh,1
-		jz		.nextPort
-		cmp		dh,6			; skip from 6 to 4, to move from the top of the 9600 baud range
-		jnz		.testBaud		; to the bottom of the 115200 baud range
-		mov		dh,4
+		shr		dh, 1
+		jz		SHORT .nextPort
+		cmp		dh, 6			; skip from 6 to 4, to move from the top of the 9600 baud range
+		jne		SHORT .testBaud	; to the bottom of the 115200 baud range
+		mov		dh, 4
 
 .testBaud:
 		call	SerialServerScan_CheckForServer_PortAndBaudInDX
-		jc		.nextBaud
+		jc		SHORT .nextBaud
 
 .error:
 		ret
@@ -134,17 +133,13 @@ SerialServerScan_ScanForServer:
 ;--------------------------------------------------------------------
 SerialServerScan_CheckForServer_PortAndBaudInDX:
 		push	bp				; setup fake SerialServer_Command
-
 		push	dx				; send port baud and rate, returned in inquire packet
 								; (and possibly returned in the drive identification string)
-
 		push	cx				; send number of sectors, and if it is on a scan or not
-
-		mov		bl,SerialServer_Command_Inquire			; protocol command onto stack with bh
+		mov		bl, SerialServer_Command_Inquire		; protocol command onto stack with bh
 		push	bx
 
-		mov		bp,sp
-
+		mov		bp, sp
 		call	SerialServer_SendReceive
 
 		pop		bx

@@ -213,15 +213,30 @@ Buffers_GenerateChecksum:
 
 	call	Buffers_GetFileBufferToESDI
 	call	EEPROM_GetXtideUniversalBiosSizeFromESDItoDXCX
-	dec		cx				; Leave space for checksum byte
-	xor		ax, ax
+
+; Compatibility fix for 3Com 3C503 cards where the ASIC returns 8080h as the last two bytes of the ROM.
+
+	; Assume the BIOS size is not 8K, ie generate a normal checksum.
+	dec		cx
+	mov		ax, 100h
+	cmp		cx, 8192 - 1
+	jne		SHORT .BiosSizeIsNot8K
+	; The BIOS size is 8K and therefore a potential candidate for a 3Com 3C503 card.
+	dec		cx
+	dec		cx
+	mov		ah, 3
 ALIGN JUMP_ALIGN
+.BiosSizeIsNot8K:
 .SumNextByte:
 	add		al, [es:di]
+.NextChecksumByte:
 	inc		di
 	loop	.SumNextByte
 	neg		al
 	mov		[es:di], al
+	inc		cx
+	dec		ah
+	jnz		SHORT .NextChecksumByte
 
 	pop		dx
 	pop		es
@@ -270,21 +285,22 @@ Buffers_GetRomvarsValueToAXfromOffsetInBX:
 ;		CX:		Number of IDE controllers to configure
 ;		ES:DI:	Ptr to file buffer
 ;	Corrupts registers:
-;		AX
+;		Nothing
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_GetIdeControllerCountToCX:
+	xor		cx, cx
 	call	Buffers_GetFileBufferToESDI
-	mov		al, [es:di+ROMVARS.bIdeCnt]
+	or		cl, [es:di+ROMVARS.bIdeCnt]
+	jnz		SHORT .LimitControllerCountForLiteMode
+	inc		cx				; Make sure there is at least one controller
 
-	; Limit controller count for lite mode
+.LimitControllerCountForLiteMode:
 	test	BYTE [es:di+ROMVARS.wFlags], FLG_ROMVARS_FULLMODE
 	jnz		SHORT .ReturnControllerCountInCX
-	MIN_U	al, MAX_LITE_MODE_CONTROLLERS
+	MIN_U	cl, MAX_LITE_MODE_CONTROLLERS
 
 .ReturnControllerCountInCX:
-	cbw		; A maximum of 127 controllers should be sufficient
-	xchg	cx, ax
 	ret
 
 

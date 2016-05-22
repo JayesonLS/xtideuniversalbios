@@ -29,10 +29,10 @@
 #include <fcntl.h>
 #include <stdarg.h>
 
-#include "../library/library.h"
-#include "../library/flatimage.h"
+#include "../library/Library.h"
+#include "../library/FlatImage.h"
 
-#include "../../XTIDE_Universal_BIOS/inc/version.inc"
+#include "../../XTIDE_Universal_BIOS/Inc/Version.inc"
 
 char *bannerStrings[] = {
 	"SerDrive - XTIDE Universal BIOS Serial Drive Server",

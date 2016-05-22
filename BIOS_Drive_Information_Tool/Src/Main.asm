@@ -59,12 +59,7 @@ StartBiosDriveInformationTool:
 	; Display program name and version
 	mov		si, g_szProgramName
 	call	Print_NullTerminatedStringFromSI
-
-	call	ReadAndDisplayAllHardDrives
-
-	; Exit to DOS
-	mov 	ax, 4C00h			; Exit to DOS
-	int 	21h
+	; Fall to ReadAndDisplayAllHardDrives
 
 
 ;--------------------------------------------------------------------
@@ -111,7 +106,7 @@ ReadAndDisplayAllHardDrives:
 	inc		dx
 	loop	.DisplayNextDriveFromDL
 .NoDrivesAvailable:
-	ret
+	ret		; Exit to DOS
 
 
 ;--------------------------------------------------------------------

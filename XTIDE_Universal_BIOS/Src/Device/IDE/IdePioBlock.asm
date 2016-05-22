@@ -28,9 +28,7 @@ SECTION .text
 ;
 ; --------------------------------------------------------------------------------------------------
 
-
 %ifdef MODULE_8BIT_IDE
-
 ;--------------------------------------------------------------------
 ; IdePioBlock_ReadFromXtideRev1
 ;	Parameters:
@@ -56,10 +54,9 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
-; IdePioBlock_ReadFrom8bitDataPort
-;
 ; 8-bit PIO from a single data port.
 ;
+; IdePioBlock_ReadFrom8bitDataPort
 ;	Parameters:
 ;		CX:		Block size in 512 byte sectors
 ;		DX:		IDE Data port address
@@ -67,7 +64,7 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_ReadFrom8bitDataPort:
@@ -86,15 +83,14 @@ ALIGN JUMP_ALIGN
 	loop	.ReadNextOword
 	ret
 %endif
-
-%endif	; MODULE_8BIT_IDE
+%endif ; MODULE_8BIT_IDE
 
 
 ;--------------------------------------------------------------------
+; 16-bit and 32-bit PIO from a single data port.
+;
 ; IdePioBlock_ReadFrom16bitDataPort
-;
-; 16-bit PIO from a single data port.
-;
+; IdePioBlock_ReadFrom32bitDataPort
 ;	Parameters:
 ;		CX:		Block size in 512 byte sectors
 ;		DX:		IDE Data port address
@@ -102,12 +98,12 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_ReadFrom16bitDataPort:
 %ifdef USE_186
-	xchg	cl, ch	; Sectors to WORDs
+	xchg	cl, ch		; Sectors to WORDs
 	rep insw
 	ret
 
@@ -125,16 +121,13 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
+%ifdef MODULE_ADVANCED_ATA
 ALIGN JUMP_ALIGN
 IdePioBlock_ReadFrom32bitDataPort:
-	db		0C1h		; SHL
-	db		0E1h		; CX
-	db		7			; 7 (Sectors to DWORDs)
-	rep
-	db		66h			; Override operand size to 32-bit
-	db		6Dh			; INSW/INSD
+	shl		cx, 7		; Sectors to DWORDs
+	rep insd
 	ret
-
+%endif ; MODULE_ADVANCED_ATA
 
 
 ; --------------------------------------------------------------------------------------------------
@@ -144,13 +137,12 @@ IdePioBlock_ReadFrom32bitDataPort:
 ; --------------------------------------------------------------------------------------------------
 
 %ifdef MODULE_8BIT_IDE
-
 ;--------------------------------------------------------------------
 ; IdePioBlock_WriteToXtideRev1
 ;	Parameters:
 ;		CX:		Block size in 512-byte sectors
 ;		DX:		IDE Data port address
-;		ES:SI:	Normalized ptr to buffer containing data
+;		DS:SI:	Normalized ptr to buffer containing data
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -158,18 +150,14 @@ IdePioBlock_ReadFrom32bitDataPort:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_WriteToXtideRev1:
-	push	ds
 	UNROLL_SECTORS_IN_CX_TO_QWORDS
 	mov		bl, 8		; Bit mask for toggling data low/high reg
-	push	es
-	pop		ds
 ALIGN JUMP_ALIGN
 .OutswLoop:
 	%rep 4	; WORDs
 		XTIDE_OUTSW
 	%endrep
 	loop	.OutswLoop
-	pop		ds
 	ret
 
 
@@ -178,25 +166,21 @@ ALIGN JUMP_ALIGN
 ;	Parameters:
 ;		CX:		Block size in 512-byte sectors
 ;		DX:		IDE Data port address
-;		ES:SI:	Normalized ptr to buffer containing data
+;		DS:SI:	Normalized ptr to buffer containing data
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_WriteToXtideRev2:
 	UNROLL_SECTORS_IN_CX_TO_QWORDS
-	push	ds
-	push	es
-	pop		ds
 ALIGN JUMP_ALIGN
 .WriteNextQword:
 	%rep 4	; WORDs
 		XTIDE_MOD_OUTSW
 	%endrep
 	loop	.WriteNextQword
-	pop		ds
 	ret
 
 
@@ -205,25 +189,21 @@ ALIGN JUMP_ALIGN
 ;	Parameters:
 ;		CX:		Block size in 512-byte sectors
 ;		DX:		IDE Data port address
-;		ES:SI:	Normalized ptr to buffer containing data
+;		DS:SI:	Normalized ptr to buffer containing data
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_WriteTo8bitDataPort:
 %ifdef USE_186
 	shl		cx, 9		; Sectors to BYTEs
-	es					; Source is ES segment
 	rep outsb
 	ret
 
 %else ; 808x
 	UNROLL_SECTORS_IN_CX_TO_QWORDS
-	push	ds
-	push	es
-	pop		ds
 ALIGN JUMP_ALIGN
 .WriteNextQword:
 	%rep 8	; BYTEs
@@ -231,10 +211,8 @@ ALIGN JUMP_ALIGN
 		out		dx, al	; Write BYTE
 	%endrep
 	loop	.WriteNextQword
-	pop		ds
 	ret
 %endif
-
 %endif ; MODULE_8BIT_IDE
 
 
@@ -244,25 +222,21 @@ ALIGN JUMP_ALIGN
 ;	Parameters:
 ;		CX:		Block size in 512-byte sectors
 ;		DX:		IDE Data port address
-;		ES:SI:	Normalized ptr to buffer containing data
+;		DS:SI:	Normalized ptr to buffer containing data
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 IdePioBlock_WriteTo16bitDataPort:
 %ifdef USE_186
 	xchg	cl, ch		; Sectors to WORDs
-	es					; Source is ES segment
 	rep outsw
 	ret
 
 %else ; 808x
 	UNROLL_SECTORS_IN_CX_TO_QWORDS
-	push	ds
-	push	es
-	pop		ds
 ALIGN JUMP_ALIGN
 .WriteNextQword:
 	%rep 4	; WORDs
@@ -270,18 +244,14 @@ ALIGN JUMP_ALIGN
 		out		dx, ax	; Write WORD
 	%endrep
 	loop	.WriteNextQword
-	pop		ds
 	ret
 %endif
 
 ;--------------------------------------------------------------------
+%ifdef MODULE_ADVANCED_ATA
 ALIGN JUMP_ALIGN
 IdePioBlock_WriteTo32bitDataPort:
-	db		0C1h		; SHL
-	db		0E1h		; CX
-	db		7			; 7 (Sectors to DWORDs)
-	es					; Source is ES segment
-	rep
-	db		66h			; Override operand size to 32-bit
-	db		6Fh			; OUTSW/OUTSD
+	shl		cx, 7		; Sectors to DWORDs
+	rep outsd
 	ret
+%endif ; MODULE_ADVANCED_ATA

@@ -570,33 +570,85 @@ ReaderForXTCFwindow:
 	ret
 
 
-;
-; No change to Device byte, but use this opportunity to change defaults stored in wPort and wPortCtrl if we are
-; changing in/out of a Serial device (since we use these bytes in radically different ways).
-;
 ALIGN JUMP_ALIGN
 IdeControllerMenu_WriteDevice:
 	push	bx
 	push	di
 	push	ax
 
-	; Note! AL is the choice index, not device code
-	shl		ax, 1								; Selection to device code
-	mov		bl, [es:di]							; what is the current Device we are changing from?
+	mov		bl, [es:di]							; What is the current Device we are changing from?
 	sub		di, BYTE IDEVARS.bDevice - IDEVARS.wBasePort	; Get ready to set the Port addresses
+
+	; Note! AL is the choice index, not device code
+	shl		al, 1								; Selection to device code
+
+	; Restore ports and other stuff to default values
+	jz		SHORT .StandardIdeDevice			; DEVICE_16BIT_ATA
+
+	cmp		al, DEVICE_8BIT_ATA
+	ja		SHORT .NotStandardIdeDevice
+	jb		SHORT .AdvancedAtaDevice			; DEVICE_32BIT_ATA
+	test	BYTE [es:ROMVARS.wFlags], FLG_ROMVARS_MODULE_8BIT_IDE
+	jmp		SHORT .CheckZF
+
+.AdvancedAtaDevice:
+	test	BYTE [es:ROMVARS.wFlags+1], FLG_ROMVARS_MODULE_ADVANCED_ATA >> 8
+.CheckZF:
+	jz		SHORT .SupportForDeviceNotAvailable
+
+	; Standard ATA controllers, including 8-bit mode
+.StandardIdeDevice:
+	lea		ax, [di-ROMVARS.ideVars0+IDEVARS.wBasePort]
+	mov		bl, IDEVARS_size
+	div		bl
+	mov		bx, .rgbLowByteOfStdIdeInterfacePorts
+	xlat
+	mov		ah, 1								; DEVICE_ATA_*_PORT >> 8
+	mov		bh, 3								; DEVICE_ATA_*_PORTCTRL >> 8
+	mov		bl, al
+	jmp		SHORT .WriteNonSerial
+
+.rgbLowByteOfStdIdeInterfacePorts:				; Defaults for 16-bit and better ATA devices
+	db		DEVICE_ATA_PRIMARY_PORT		& 0FFh
+	db		DEVICE_ATA_SECONDARY_PORT	& 0FFh
+	db		DEVICE_ATA_TERTIARY_PORT	& 0FFh
+	db		DEVICE_ATA_QUATERNARY_PORT	& 0FFh
+
+.NotStandardIdeDevice:
 	cmp		al, DEVICE_SERIAL_PORT
-	je		SHORT .ChangingToSerial
+	jb		SHORT .NotSerialDevice
+	test	BYTE [es:ROMVARS.wFlags+1], FLG_ROMVARS_MODULE_SERIAL >> 8
+	jnz		SHORT .ChangingToSerial
+
+.SupportForDeviceNotAvailable:
+	push	dx
+	mov		dx, g_szUnsupportedDevice
+	call	Dialogs_DisplayErrorFromCSDX
+	pop		dx
+
+	; Restore device type to the previous value
+	pop		ax									; Get choice index from stack
+	mov		al, bl								; Previous device type to AL
+	shr		al, 1								; Device code to choice index
+	jmp		SHORT .DoneWithNoChangeOfDevice
+
+.NotSerialDevice:
+	; Remaining device types all require MODULE_8BIT_IDE or MODULE_8BIT_IDE_ADVANCED
+	test	BYTE [es:ROMVARS.wFlags], FLG_ROMVARS_MODULE_8BIT_IDE | FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED
+	jz		SHORT .SupportForDeviceNotAvailable
+
+	; We know MODULE_8BIT_IDE is included
+	lahf	; Save the PF
+	cmp		al, DEVICE_8BIT_XTIDE_REV2
+	jbe		SHORT .ChangingToXTIDEorXTCF
+	sahf	; Restore the PF
+	jpo		SHORT .SupportForDeviceNotAvailable	; Jump if no MODULE_8BIT_IDE_ADVANCED
 	cmp		al, DEVICE_8BIT_JRIDE_ISA
 	je		SHORT .ChangingToJrIdeIsa
 	cmp		al, DEVICE_8BIT_ADP50L
 	je		SHORT .ChangingToADP50L
 
-	; Restore ports to default values
-	cmp		al, DEVICE_8BIT_ATA					; Standard ATA controllers, including 8-bit mode
-	mov		ax, DEVICE_ATA_PRIMARY_PORT			; Defaults for 16-bit and better ATA devices
-	mov		bx, DEVICE_ATA_PRIMARY_PORTCTRL
-	jbe		SHORT .WriteNonSerial
-
+.ChangingToXTIDEorXTCF:
 	mov		ax, DEVICE_XTIDE_DEFAULT_PORT		; Defaults for 8-bit XTIDE and XT-CF devices
 	mov		bx, DEVICE_XTIDE_DEFAULT_PORTCTRL
 
@@ -630,6 +682,7 @@ IdeControllerMenu_WriteDevice:
 
 .Done:
 	pop		ax
+.DoneWithNoChangeOfDevice:
 	pop		di			; IDEVARS.bDevice
 	pop		bx
 	ret

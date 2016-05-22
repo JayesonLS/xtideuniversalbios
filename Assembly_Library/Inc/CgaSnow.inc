@@ -1,14 +1,11 @@
-; File name		:	CgaSnow.inc
-; Project name	:	AssemblyLibrary
-; Created date	:	8.10.2010
-; Last update	:	11.10.2010
-; Author		:	Tomi Tilli
+; Project name	:	Assembly Library
 ; Description	:	Macros for preventing CGA snow.
 %ifndef CGASNOW_INC
 %define CGASNOW_INC
 
 ;--------------------------------------------------------------------
-; WAIT_RETRACE_IF_NECESSARY_THEN
+; CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN
+; JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN
 ;	Parameters:
 ;		%1:		Instruction that accessed CGA memory
 ;		AL:		Character to output
@@ -21,7 +18,7 @@
 ;	Corrupts registers:
 ;		AX, DX
 ;--------------------------------------------------------------------
-%macro WAIT_RETRACE_IF_NECESSARY_THEN 1
+%macro CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN 1
 %ifdef ELIMINATE_CGA_SNOW
 	%ifidn %1, stosb
 		call	CgaSnow_Stosb
@@ -30,13 +27,35 @@
 	%elifidn %1, rep movsb
 		call	CgaSnow_RepMovsb
 	%else
-		%error	"Invalid instruction passed to WAIT_RETRACE_IF_NECESSARY_THEN"
+		%error	"Invalid instruction passed to CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN"
 	%endif
 %else	; No CGA snow prevention
 	%ifidn %1, rep movsb
 		eSEG_STR rep, es, movsb
 	%else
 		%1	; Single instruction
+	%endif
+%endif
+%endmacro
+
+%macro JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN 1
+%ifdef ELIMINATE_CGA_SNOW
+	%ifidn %1, stosb
+		jmp		CgaSnow_Stosb
+	%elifidn %1, stosw
+		jmp		CgaSnow_Stosw
+	%elifidn %1, rep movsb
+		jmp		CgaSnow_RepMovsb
+	%else
+		%error	"Invalid instruction passed to JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN"
+	%endif
+%else	; No CGA snow prevention
+	%ifidn %1, rep movsb
+		eSEG_STR rep, es, movsb
+		ret
+	%else
+		%1	; Single instruction
+		ret
 	%endif
 %endif
 %endmacro

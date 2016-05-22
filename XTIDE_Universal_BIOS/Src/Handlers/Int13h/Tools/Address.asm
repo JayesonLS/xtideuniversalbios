@@ -173,14 +173,10 @@ ConvertAssistedLBAModeLCHStoLBARegisterValues:
 
 	; +=sectToSeek-1 (24-bit result)
 	; Max = 16,450,497 + 63 - 1 = 16,450,559 = FB03FFh
-	xor		bh, bh					; Sector number now in BX
+	mov		bh, ch					; Sector number now in BX, CH=zero
 	dec		bx						; sectToSeek-=1
-	add		ax, bx					; Add to loword
-	adc		dl, bh					; Add possible carry to byte2, BH=zero
-
-	; Copy DX:AX to proper return registers
-	xchg	bx, ax					; BL = Sector Number Register (LBA 7...0)
-	mov		cl, bh					; Low Cylinder Register (LBA 15...8)
-	mov		ch, dl					; High Cylinder Register (LBA 23...16)
-	mov		bh, dh					; Drive and Head Register (LBA 27...24)
+	add		bx, ax					; Add loword to BX (BL = Sector Number Register (LBA 7...0))
+	adc		ch, dl					; Add possible carry to byte2 (CH = High Cylinder Register (LBA 23...16))
+	mov		cl, bh					; CL = Low Cylinder Register (LBA 15...8)
+	mov		bh, dh					; BH = Drive and Head Register (LBA 27...24)
 	ret

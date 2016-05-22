@@ -41,17 +41,15 @@ Print_SetCharacterOutputToSTDOUT:
 ; DosCharOut
 ;	Parameters:
 ;		AL:		Character to output
-;		DS:		BDA segment (zero)
-;		ES:DI:	Ptr to video memory where to output
 ;	Returns:
-;		DI:		Incremented for next character
+;		Nothing
 ;	Corrupts registers:
 ;		AX, DX
 ;--------------------------------------------------------------------
 DosCharOut:
 	xchg	dx, ax
-	mov		ah, 02h		; DOS 1+ - WRITE CHARACTER TO STANDARD OUTPUT
-	int		21h			; Call DOS
+	mov		ah, WRITE_CHARACTER_TO_STANDARD_OUTPUT
+	int		DOS_INTERRUPT_21h
 	ret
 
 

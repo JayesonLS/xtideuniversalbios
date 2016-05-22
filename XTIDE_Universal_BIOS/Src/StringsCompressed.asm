@@ -256,10 +256,12 @@ g_szDeviceTypeValues_16bit:			; db	" 16",NULL
                            			; db	 20h,  31h,  36h,  00h    ; uncompressed
                            			  db	 20h,  2bh,  0fh          ; compressed
 
+%ifdef MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 g_szDeviceTypeValues_32bit:			; db	" 32",NULL
                            			; db	 20h,  33h,  32h,  00h    ; uncompressed
                            			  db	 20h,  2dh,  0ch          ; compressed
 
+%ifdef MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 g_szDeviceTypeValues_8bit:			; db	"  8",NULL
                           			; db	 20h,  20h,  38h,  00h    ; uncompressed
                           			  db	 20h,  20h,  10h          ; compressed
@@ -272,6 +274,7 @@ g_szDeviceTypeValues_XTIDEr2:		; db	"X8 ",NULL	; A0<->A3 swapped 8-bit
                              		; db	 58h,  38h,  20h,  00h    ; uncompressed
                              		  db	 5eh,  30h,  00h          ; compressed
 
+%ifdef MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 g_szDeviceTypeValues_XTCFpio8:		; db	"T8 ",NULL	; True 8-bit
                               		; db	 54h,  38h,  20h,  00h    ; uncompressed
                               		  db	 5ah,  30h,  00h          ; compressed
@@ -296,12 +299,18 @@ g_szDeviceTypeValues_ADP50L:		; db	"M8 ",NULL	; Memory Mapped 8-bit
                             		; db	 4dh,  38h,  20h,  00h    ; uncompressed
                             		  db	 53h,  30h,  00h          ; compressed
 
+%ifdef MODULE_SERIAL
 g_szDeviceTypeValues_Serial:		; db	"SER",NULL
                             		; db	 53h,  45h,  52h,  00h    ; uncompressed
                             		  db	 59h,  4bh,  98h          ; compressed
 
+%endif ; MODULE_SERIAL
+%endif ; MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+%endif ; MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+%endif ; MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 
-g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTypeValues)
+g_szDeviceTypeValues_Displacement equ 3		; 3 compressed, 4 uncompressed
+;g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTypeValues)
 ;
 ; Ensure that device type strings are correctly spaced in memory
 ;
@@ -309,9 +318,15 @@ g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTy
 %if g_szDeviceTypeValues_16bit <> g_szDeviceTypeValues
 %error "g_szDeviceTypeValues Displacement Incorrect 1"
 %endif
+
+%ifdef MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+
 %if g_szDeviceTypeValues_32bit <> g_szDeviceTypeValues_16bit + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 2"
 %endif
+
+%ifdef MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+
 %if g_szDeviceTypeValues_8bit <> g_szDeviceTypeValues_32bit + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 3"
 %endif
@@ -321,6 +336,9 @@ g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTy
 %if g_szDeviceTypeValues_XTIDEr2 <> g_szDeviceTypeValues_XTIDEr1 + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 5"
 %endif
+
+%ifdef MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+
 %if g_szDeviceTypeValues_XTCFpio8 <> g_szDeviceTypeValues_XTIDEr2 + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 6"
 %endif
@@ -339,9 +357,18 @@ g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTy
 %if g_szDeviceTypeValues_ADP50L <> g_szDeviceTypeValues_JrIde + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 11"
 %endif
+
+%ifdef MODULE_SERIAL
+
 %if g_szDeviceTypeValues_Serial <> g_szDeviceTypeValues_ADP50L + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 12"
 %endif
+
+%endif ; MODULE_SERIAL
+%endif ; MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+%endif ; MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+%endif ; MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
+
 %endif
 
 
@@ -566,40 +593,40 @@ StringsCompressed_TranslatesAndFormats:
 %endif
 
 ;; translated usage stats
-;; 172:2
-;; 47:2
-;; 171:2
-;; 46:3
-;; 48:2
-;; 181:1
-;; 200:1
-;; 54:2
-;; 45:2
-;; 49:2
 ;; 34:3
 ;; 179:8
-;; 56:8
+;; 46:3
+;; 44:1
+;; 200:1
+;; 48:2
+;; 175:1
+;; 171:2
+;; 51:3
+;; 50:2
 ;; 33:1
 ;; 53:2
+;; 45:2
+;; 47:2
+;; 172:2
+;; 56:8
 ;; 32:34
-;; 175:1
-;; 44:1
-;; 50:2
-;; 51:3
+;; 181:1
+;; 54:2
+;; 49:2
 ;; total translated: 20
 
 ;; format usage stats
-;; z:2
-;; nl:12
-;; u:6
 ;; 5-x:1
-;; c:13
-;; A:4
+;; 2-u:1
 ;; s:14
+;; nl:12
+;; A:4
 ;; 5-u:2
 ;; x:5
-;; 2-u:1
 ;; 2-I:1
+;; z:2
+;; u:6
+;; c:13
 ;; total format: 11
 
 ;; alphabet usage stats

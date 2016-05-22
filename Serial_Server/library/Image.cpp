@@ -2,7 +2,7 @@
 //
 // Project:     XTIDE Universal BIOS, Serial Port Server
 //
-// File:        image.cpp - Abstract base class for disk image support
+// File:        Image.cpp - Abstract base class for disk image support
 //
 
 //
@@ -21,7 +21,7 @@
 // Visit http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 //
 
-#include "library.h"
+#include "Library.h"
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>

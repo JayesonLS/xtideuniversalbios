@@ -238,7 +238,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ; AppendFileFromDTAinDSSItoOffScreenBuffer
 ;	Parameters:
-;		CX:		Files/directores found
+;		CX:		Files/directories found
 ;		DL:		Zero if root directory selected
 ;		DS:SI:	Ptr to DTA containing file information
 ;	Returns:

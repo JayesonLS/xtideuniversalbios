@@ -74,8 +74,8 @@ ALIGN JUMP_ALIGN
 	jc		SHORT .FileError
 
 	cmp		dx, MAX_EEPROM_SIZE_IN_BYTES >> 16
-	ja		SHORT .FileTooBig
 	jb		SHORT .FileNotTooBig
+	ja		SHORT .FileTooBig
 	cmp		ax, MAX_EEPROM_SIZE_IN_BYTES & 0FFFFh
 	ja		SHORT .FileTooBig
 .FileNotTooBig:

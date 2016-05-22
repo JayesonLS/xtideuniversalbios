@@ -36,17 +36,21 @@ SECTION .text
 ;--------------------------------------------------------------------
 AdvAtaInit_DetectControllerForIdeBaseInBX:
 	call	Vision_DetectAndReturnIDinAXandPortInDXifControllerPresent
-	jne		SHORT .NoAdvancedControllerForPortBX
+	jnz		SHORT .NoVisionControllerFound
+
 	call	Vision_DoesIdePortInBXbelongToControllerWithIDinAX
-	jne		SHORT .NoAdvancedControllerForPortBX
+	jz		SHORT .AdvancedControllerFoundForPortBX
+
+.NoVisionControllerFound:
 	call	PDC20x30_DetectControllerForIdeBaseInBX
 	jnc		SHORT .NoAdvancedControllerForPortBX
 
-	stc		; Advanced Controller found for port BX
+.AdvancedControllerFoundForPortBX:
+	stc
 	ret
 
 .NoAdvancedControllerForPortBX:
-	xor		ax, ax
+	xor		ax, ax		; Clear ID in AX and CF
 	ret
 
 
@@ -65,10 +69,15 @@ AdvAtaInit_DetectControllerForIdeBaseInBX:
 ;--------------------------------------------------------------------
 AdvAtaInit_GetControllerMaxPioModeToALandMinPioCycleTimeToBX:
 	cmp		ah, ID_QD6580_ALTERNATE
+%ifdef USE_386
+	jae		Vision_GetMaxPioModeToALandMinCycleTimeToBX
+	jmp		PDC20x30_GetMaxPioModeToALandMinPioCycleTimeToBX
+%else
 	jae		SHORT .Vision
 	jmp		PDC20x30_GetMaxPioModeToALandMinPioCycleTimeToBX
 .Vision:
 	jmp		Vision_GetMaxPioModeToALandMinCycleTimeToBX
+%endif
 
 
 ;--------------------------------------------------------------------
@@ -87,7 +96,7 @@ AdvAtaInit_InitializeControllerForDPTinDSDI:
 	mov		ax, [di+DPT_ADVANCED_ATA.wControllerID]
 	test	ax, ax
 	jz		SHORT .NoAdvancedController	; Return with CF cleared
-	
+
 	cmp		ah, ID_QD6580_ALTERNATE
 	jae		SHORT .Vision
 	jmp		PDC20x30_InitializeForDPTinDSDI
@@ -97,7 +106,7 @@ AdvAtaInit_InitializeControllerForDPTinDSDI:
 	push	si
 
 	call	AdvAtaInit_LoadMasterDPTtoDSSIifSlaveInDSDI
-	call	Vision_InitializeWithIDinAHandConfigInAL
+	call	Vision_InitializeWithIDinAH
 	xor		ax, ax						; Success
 
 	pop		si
@@ -115,7 +124,7 @@ AdvAtaInit_InitializeControllerForDPTinDSDI:
 ;		SI:		Offset to Master DPT if Slave Drive present
 ;				Zero if Slave Drive not present
 ;	Corrupts registers:
-;		AX
+;		AL
 ;--------------------------------------------------------------------
 AdvAtaInit_LoadMasterDPTtoDSSIifSlaveInDSDI:
 	; Must be Slave Drive if previous DPT has same IDEVARS offset

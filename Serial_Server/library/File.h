@@ -2,7 +2,7 @@
 //
 // Project:     XTIDE Universal BIOS, Serial Port Server
 //
-// File:        file.h - File access via standard "stdio.h" routines
+// File:        File.h - File access via standard "stdio.h" routines
 //
 // Routines for accessing the file system using generic routines, which
 // should work on all systems.  The issue with using these is that

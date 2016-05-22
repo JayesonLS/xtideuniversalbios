@@ -151,52 +151,12 @@ AH1Eh_ChangeXTCFmodeBasedOnModeInAL:
 	jmp		SHORT AH23h_Enable8bitPioMode
 
 
-%if 0
-	; We always need to enable 8-bit mode since 16-bit mode is restored
-	; when controller is reset (AH=00h or 0Dh)
-	ePUSH_T	bx, AH23h_Enable8bitPioMode
-
-	; Convert mode to device type (see XTCF.inc for full details)
-	and		ax, 3
-	jz		SHORT .Set8bitPioMode	; XTCF_8BIT_PIO_MODE = 0
-	dec		ax						; XTCF_8BIT_PIO_MODE_WITH_BIU_OFFLOAD = 1
-	jz		SHORT .Set8bitPioModeWithBIUOffload
-	dec		ax						; XTCF_16BIT_PIO_WITH_BIU_OFFLOAD = 2
-	jz		SHORT .Set16bitPioModeWithBIUOffload
-
-	; XTCF_DMA_MODE = 3
-	mov		BYTE [di+DPT_ATA.bDevice], DEVICE_8BIT_XTCF_DMA
-
-	; DMA transfers have limited block size
-	mov		al, [di+DPT_ATA.bBlockSize]
-	cmp		al, XTCF_DMA_MODE_MAX_BLOCK_SIZE
-	jbe		SHORT AH24h_SetBlockSize
-	mov		al, XTCF_DMA_MODE_MAX_BLOCK_SIZE
-	jmp		SHORT AH24h_SetBlockSize
-
-.Set16bitPioModeWithBIUOffload:
-	pop		bx								; Do not enable 8-bit PIO...
-	ePUSH_T	bx, AH23h_Disable8bitPioMode	; ...disable it instead
-	mov		al, DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
-	SKIP2B	bx
-
-.Set8bitPioMode:
-	mov		al, DEVICE_8BIT_XTCF_PIO8
-	SKIP2B	bx
-
-.Set8bitPioModeWithBIUOffload:
-	mov		al, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
-	mov		[di+DPT_ATA.bDevice], al
-	ret
-%endif ; 0
-
-
 ;--------------------------------------------------------------------
 ; AH1Eh_GetCurrentXTCFmodeToAX
 ;	Parameters:
 ;		DS:DI:	Ptr to DPT (in RAMVARS segment)
 ;	Returns:
-;		AX:		XT-CF mode (XTCF_8BIT_PIO_MODE, XTCF_8BIT_PIO_MODE_WITH_BIU_OFFLOAD, XTCF_16BIT_PIO_WITH_BIU_OFFLOAD or XTCF_DMA_MODE)
+;		AX:		XT-CF mode (see XTCF.inc)
 ;		CF:		Clear
 ;	Corrupts registers:
 ;		Nothing
@@ -207,10 +167,3 @@ AH1Eh_GetCurrentXTCFmodeToAX:
 	shr		al, 1
 	ret
 
-%if 0
-	mov		al, [di+DPT_ATA.bDevice]
-	shr		al, 1
-	cbw
-	sub		al, XTCF_DEVICE_OFFSET >> 1
-	ret
-%endif ; 0

@@ -116,7 +116,7 @@ istruc ROMVARS
 	at	ROMVARS.ideVars3+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	dw	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
 %ifdef MODULE_SERIAL
-	at	ROMVARS.ideVarsSerialAuto+IDEVARS.bDevice,		db	DEVICE_SERIAL_PORT
+	at	ROMVARS.ideVarsSerialAuto+IDEVARS.bDevice,	db	DEVICE_SERIAL_PORT
 %endif
 %else
 ;-----------------------------------;
@@ -133,28 +133,41 @@ istruc ROMVARS
 	at	ROMVARS.bStealSize,		db	1						; Steal 1kB from base memory in full mode
 	at	ROMVARS.bIdleTimeout,	db	0						; Standby timer disabled by default
 
-%ifdef MODULE_8BIT_IDE_ADVANCED
-	at	ROMVARS.ideVars0+IDEVARS.wBasePort,				dw	DEVICE_XTIDE_DEFAULT_PORT		; Controller Command Block base port
-	at	ROMVARS.ideVars0+IDEVARS.bDevice,				db	DEVICE_8BIT_XTCF_PIO8
+%ifndef MODULE_8BIT_IDE
+	at	ROMVARS.ideVars0+IDEVARS.wBasePort,			dw	DEVICE_ATA_PRIMARY_PORT 		; Controller Command Block base port
+	at	ROMVARS.ideVars0+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_PRIMARY_PORTCTRL 	; Controller Control Block base port
+	at	ROMVARS.ideVars0+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
+%elifdef MODULE_8BIT_IDE_ADVANCED
+	at	ROMVARS.ideVars0+IDEVARS.wBasePort,			dw	DEVICE_XTIDE_DEFAULT_PORT		; Controller Command Block base port
+	at	ROMVARS.ideVars0+IDEVARS.bDevice,			db	DEVICE_8BIT_XTCF_PIO8
 %else
-	at	ROMVARS.ideVars0+IDEVARS.wBasePort,				dw	DEVICE_XTIDE_DEFAULT_PORT		; Controller Command Block base port
-	at	ROMVARS.ideVars0+IDEVARS.wControlBlockPort,		dw	DEVICE_XTIDE_DEFAULT_PORTCTRL	; Controller Control Block base port
-	at	ROMVARS.ideVars0+IDEVARS.bDevice,				db	DEVICE_8BIT_XTIDE_REV1
+	at	ROMVARS.ideVars0+IDEVARS.wBasePort,			dw	DEVICE_XTIDE_DEFAULT_PORT		; Controller Command Block base port
+	at	ROMVARS.ideVars0+IDEVARS.wControlBlockPort,	dw	DEVICE_XTIDE_DEFAULT_PORTCTRL	; Controller Control Block base port
+	at	ROMVARS.ideVars0+IDEVARS.bDevice,			db	DEVICE_8BIT_XTIDE_REV1
 %endif
 	at	ROMVARS.ideVars0+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars0+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
+	at	ROMVARS.ideVars1+IDEVARS.wBasePort,			dw	DEVICE_ATA_SECONDARY_PORT
+	at	ROMVARS.ideVars1+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_SECONDARY_PORTCTRL
+	at	ROMVARS.ideVars1+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
 	at	ROMVARS.ideVars1+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars1+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
+	at	ROMVARS.ideVars2+IDEVARS.wBasePort,			dw	DEVICE_ATA_TERTIARY_PORT
+	at	ROMVARS.ideVars2+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_TERTIARY_PORTCTRL
+	at	ROMVARS.ideVars2+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
 	at	ROMVARS.ideVars2+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars2+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
+	at	ROMVARS.ideVars3+IDEVARS.wBasePort,			dw	DEVICE_ATA_QUATERNARY_PORT
+	at	ROMVARS.ideVars3+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_QUATERNARY_PORTCTRL
+	at	ROMVARS.ideVars3+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
 	at	ROMVARS.ideVars3+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars3+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	db	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
 %ifdef MODULE_SERIAL
-	at	ROMVARS.ideVarsSerialAuto+IDEVARS.bDevice,		db	DEVICE_SERIAL_PORT
+	at	ROMVARS.ideVarsSerialAuto+IDEVARS.bDevice,	db	DEVICE_SERIAL_PORT
 %endif
 %endif
 iend
@@ -284,4 +297,17 @@ iend
 	%include "AH47h_ExtendedSeek.asm"
 	%include "AH48h_GetExtendedDriveParameters.asm"
 	%include "AH41h_CheckIfExtensionsPresent.asm"
+%endif
+
+
+; Although it's very unlikely to happen, we give warnings for builds that cannot be automatically checksummed due to the size being too large.
+; In some cases it's theoretically possible to checksum the build anyway (manually) which is why these are warnings and not errors.
+%if BIOS_SIZE = 8192				; A small build, possibly a candidate for the ROM socket on a 3Com 3C503 card.
+	%if ($-$$) <= BIOS_SIZE			; Only give warnings when the problem isn't obvious anyway.
+		%if ($-$$) > BIOS_SIZE - 3
+			%warning "This build is too large to be auto-checksummed!"
+		%endif
+	%endif
+%elif ($-$$) = BIOS_SIZE			; A large build.
+	%warning "This build is too large to be auto-checksummed!"
 %endif

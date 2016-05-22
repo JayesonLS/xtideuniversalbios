@@ -91,9 +91,12 @@ AH23h_SetControllerFeatures:
 AH23h_Enable8bitPioMode:
 	mov		si, FEATURE_ENABLE_8BIT_PIO_TRANSFER_MODE
 	jmp		SHORT AH23h_SetControllerFeatures
+
+%ifdef MODULE_8BIT_IDE_ADVANCED
 AH23h_Disable8bitPioMode:
 	mov		si, FEATURE_DISABLE_8BIT_PIO_TRANSFER_MODE
 	call	AH23h_SetControllerFeatures
 	xor		ah, ah			; Clear error since modern drives might not understand the command and are
 	ret						; always in 16-bit mode anyway
-%endif
+%endif ; MODULE_8BIT_IDE_ADVANCED
+%endif ; MODULE_8BIT_IDE

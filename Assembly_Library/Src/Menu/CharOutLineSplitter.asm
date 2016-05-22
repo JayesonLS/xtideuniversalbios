@@ -161,7 +161,7 @@ ALIGN MENU_JUMP_ALIGN
 .MovePartialWordFromPreviousLineInESSItoNewLineInESDIwithSizeInCX:
 	push	si
 	push	cx
-	WAIT_RETRACE_IF_NECESSARY_THEN rep movsb
+	CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN rep movsb
 	pop		cx
 	pop		si
 

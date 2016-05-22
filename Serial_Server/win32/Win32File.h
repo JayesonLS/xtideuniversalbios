@@ -28,7 +28,7 @@
 
 #include <windows.h>
 #include <stdio.h>
-#include "../library/library.h"
+#include "../library/Library.h"
 
 class FileAccess
 {

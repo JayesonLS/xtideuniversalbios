@@ -172,8 +172,11 @@ ALIGN JUMP_ALIGN
 	mov		dx, [bp+PIOVARS.wDataPort]
 	cmp		[bp+PIOVARS.bSectorsLeft], cl
 	jbe		SHORT .WriteLastBlockToDrive
+	push	ds
+	push	es
+	pop		ds
 	call	[bp+PIOVARS.fnXfer]
-
+	pop		ds
 	; Wait until ready for next block and check for errors
 	call	IdeWait_IRQorDRQ					; Wait until ready to transfer
 	jc		SHORT ReturnWithTransferErrorInAH
@@ -188,7 +191,11 @@ ALIGN JUMP_ALIGN
 .WriteLastBlockToDrive:
 	mov		cl, [bp+PIOVARS.bSectorsLeft]		; CH is already zero
 	push	cx
+	push	ds
+	push	es
+	pop		ds
 	call	[bp+PIOVARS.fnXfer]					; Transfer possibly partial block
+	pop		ds
 	jmp		SHORT CheckErrorsAfterTransferringLastBlock
 
 
@@ -236,7 +243,6 @@ InitializePiovarsInSSBPwithSectorCountInAH:
 
 	; Convert ES:SI to physical address
 %ifdef USE_386
-
 	mov		dx, es
 	xor		ax, ax
 	shld	ax, dx, 4
@@ -246,54 +252,28 @@ InitializePiovarsInSSBPwithSectorCountInAH:
 	mov		es, ax
 
 %elifdef USE_186
-						; Bytes	EU Cycles(286)
-	mov		ax, es		; 2		2
-	rol		ax, 4		; 3		9
-	mov		dx, ax		; 2		2
-	and		ax, BYTE 0Fh; 3		3
-	xor		dx, ax		; 2		2
-	add		si, dx		; 2		2
-	adc		al, ah		; 2		2
-	mov		es, ax		; 2		2
-	;------------------------------------
-						; 18	24
+	mov		ax, es
+	rol		ax, 4
+	mov		dx, ax
+	and		ax, 0Fh
+	xor		dx, ax
+	add		si, dx
+	adc		al, ah
+	mov		es, ax
+
 %else ; 808x
-						; Bytes	EU Cycles(808x)
-	mov		al, 4		; 2		4
-	mov		dx, es		; 2		2
-	xchg	cx, ax		; 1		3
-	rol		dx, cl		; 2		24
-	mov		cx, dx		; 2		2
-	xchg	cx, ax		; 1		3
-	and		ax, BYTE 0Fh; 3		4
-	xor		dx, ax		; 2		3
-	add		si, dx		; 2		3
-	adc		al, ah		; 2		3
-	mov		es, ax		; 2		2
-	;------------------------------------
-						; 21	53
-;
-; Judging by the Execution Unit cycle count the above block of code is
-; apparently slower. However, the shifts and rotates in the block below
-; execute faster than the Bus Interface Unit on an 8088 can fetch them,
-; thus causing the EU to starve. The difference in true execution speed
-; (if any) might not be worth the extra 5 bytes.
-; In other words, we could use a real world test here.
-;
-%if 0
-						; Bytes	EU Cycles(808x/286)
-	xor		dx, dx		; 2		3/2
-	mov		ax, es		; 2		2/2
-%rep 4
-	shl		ax, 1		; 8		8/8
-	rcl		dx, 1		; 8		8/8
-%endrep
-	add		si, ax		; 2		3/2
-	adc		dl, dh		; 2		3/2
-	mov		es, dx		; 2		2/2
-	;------------------------------------
-						; 26	29/26
-%endif ; 0
+	mov		al, 4
+	mov		dx, es
+	xchg	cx, ax
+	rol		dx, cl
+	mov		cx, dx
+	xchg	cx, ax
+	and		ax, 0Fh
+	xor		dx, ax
+	add		si, dx
+	adc		al, ah
+	mov		es, ax
+
 %endif
 
 	ret		; With CF cleared (taken care of by the physical address conversion)
@@ -333,9 +313,13 @@ IdeTransfer_NormalizePointerInESSI:
 	NORMALIZE_FAR_POINTER	es, si, ax, dx
 %ifdef USE_AT		; CF is always clear for XT builds
 	; AH = RET_HD_INVALID (01) if CF set, RET_HD_SUCCESS (00) if not. CF unchanged.
+%ifdef USE_386
+	setc	ah
+%else
 	sbb		ah, ah
 	neg		ah
 %endif
+%endif ; USE_AT
 	ret
 
 
@@ -344,7 +328,11 @@ IdeTransfer_NormalizePointerInESSI:
 ALIGN WORD_ALIGN
 g_rgfnPioRead:
 		dw		IdePioBlock_ReadFrom16bitDataPort	; 0, DEVICE_16BIT_ATA
+%ifdef MODULE_ADVANCED_ATA
 		dw		IdePioBlock_ReadFrom32bitDataPort	; 1, DEVICE_32BIT_ATA
+%elifdef MODULE_8BIT_IDE
+		dw		NULL
+%endif ; MODULE_ADVANCED_ATA
 %ifdef MODULE_8BIT_IDE
 		dw		IdePioBlock_ReadFrom8bitDataPort	; 2, DEVICE_8BIT_ATA
 		dw		IdePioBlock_ReadFromXtideRev1		; 3, DEVICE_8BIT_XTIDE_REV1
@@ -360,7 +348,11 @@ g_rgfnPioRead:
 
 g_rgfnPioWrite:
 		dw		IdePioBlock_WriteTo16bitDataPort	; 0, DEVICE_16BIT_ATA
+%ifdef MODULE_ADVANCED_ATA
 		dw		IdePioBlock_WriteTo32bitDataPort	; 1, DEVICE_32BIT_ATA
+%elifdef MODULE_8BIT_IDE
+		dw		NULL
+%endif ; MODULE_ADVANCED_ATA
 %ifdef MODULE_8BIT_IDE
 		dw		IdePioBlock_WriteTo8bitDataPort		; 2, DEVICE_8BIT_ATA
 		dw		IdePioBlock_WriteToXtideRev1		; 3, DEVICE_8BIT_XTIDE_REV1

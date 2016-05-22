@@ -268,9 +268,10 @@ ALIGN DISPLAY_JUMP_ALIGN
 	test	BYTE [VIDEO_BDA.displayContext+DISPLAY_CONTEXT.bFlags], FLG_CONTEXT_ATTRIBUTES
 	jz		SHORT .CopyWithoutDisplayProcessing
 
-	WAIT_RETRACE_IF_NECESSARY_THEN rep movsb
+	CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN rep movsb
 	dec		di					; Point to preceeding character instead of attribute
 	ret
+
 ALIGN DISPLAY_JUMP_ALIGN
 .CopyWithoutDisplayProcessing:
 	eSEG_STR rep, es, movsb

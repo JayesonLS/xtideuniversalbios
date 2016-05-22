@@ -2,7 +2,7 @@
 //
 // Project:     XTIDE Universal BIOS, Serial Port Server
 //
-// File:        library.h - Include file for users of the library
+// File:        Library.h - Include file for users of the library
 //
 
 //
@@ -86,15 +86,15 @@ struct baudRate *baudRateMatchString( char *str );
 struct baudRate *baudRateMatchDivisor( unsigned char divisor );
 
 #ifdef WIN32
-#include "../win32/win32serial.h"
+#include "../win32/Win32Serial.h"
 #else
 // there is no standard way to read/write and configure the serial port, OS specific only
 #endif
 
 #ifdef WIN32
-#include "../win32/win32file.h"
+#include "../win32/Win32File.h"
 #else
-#include "file.h"
+#include "File.h"
 #endif
 
 void processRequests( SerialAccess *serial, Image *image0, Image *image1, int timeoutEnabled, int verboseLevel );

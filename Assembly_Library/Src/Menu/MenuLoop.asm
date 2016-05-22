@@ -105,18 +105,9 @@ ALIGN MENU_JUMP_ALIGN
 .ProcessMenuSystemKeystrokeFromAX:
 %ifndef MENU_NO_ESC
 	cmp		al, ESC
-	je		SHORT .LeaveMenuWithoutSelectingItem
-%endif
-	cmp		al, CR
-	je		SHORT .SelectItem
+	jne		SHORT .NotEscape
 
-	test	BYTE [bp+MENU.bFlags], FLG_MENU_USER_HANDLES_SCROLLING
-	jz		SHORT MenuLoop_ProcessScrollingKeysFromAX
-	ret		; Return with CF cleared since keystroke not processed
-
-%ifndef MENU_NO_ESC
-ALIGN MENU_JUMP_ALIGN
-.LeaveMenuWithoutSelectingItem:
+	; Leave menu without selecting item
 	call	MenuEvent_ExitMenu
 	jnc		SHORT .CancelMenuExit
 	call	MenuInit_CloseMenuWindow
@@ -127,11 +118,22 @@ ALIGN MENU_JUMP_ALIGN
 %endif
 
 ALIGN MENU_JUMP_ALIGN
-.SelectItem:
+.NotEscape:
+	cmp		al, CR
+	jne		SHORT .NotCarriageReturn
+
+	; Select item
 	mov		cx, [bp+MENUINIT.wHighlightedItem]
 	call	MenuEvent_ItemSelectedFromCX
 	stc
+.Return:
 	ret
+
+ALIGN MENU_JUMP_ALIGN
+.NotCarriageReturn:
+	test	BYTE [bp+MENU.bFlags], FLG_MENU_USER_HANDLES_SCROLLING
+	jnz		SHORT .Return	; With CF cleared since keystroke not processed
+	; Fall to MenuLoop_ProcessScrollingKeysFromAX
 
 
 ;--------------------------------------------------------------------
@@ -171,10 +173,9 @@ MenuLoop_ProcessScrollingKeysFromAX:
 ALIGN MENU_JUMP_ALIGN
 .ChangeToPreviousPage:
 	call	MenuScrollbars_GetMaxVisibleItemsOnPageToCX
-	xchg	ax, cx
-	neg		ax
-	mov		cx, [bp+MENUINIT.wHighlightedItem]
-	add		cx, ax
+	neg		cx
+	mov		ax, cx
+	add		cx, [bp+MENUINIT.wHighlightedItem]
 	jge		SHORT .MoveHighlightedItemByAX	; No rotation for PgUp
 	; Fall to .SelectFirstItem
 ALIGN MENU_JUMP_ALIGN
@@ -186,9 +187,8 @@ ALIGN MENU_JUMP_ALIGN
 ALIGN MENU_JUMP_ALIGN
 .ChangeToNextPage:
 	call	MenuScrollbars_GetMaxVisibleItemsOnPageToCX
-	xchg	ax, cx
-	mov		cx, [bp+MENUINIT.wHighlightedItem]
-	add		cx, ax
+	mov		ax, cx
+	add		cx, [bp+MENUINIT.wHighlightedItem]
 	cmp		cx, [bp+MENUINIT.wItems]
 	jb		SHORT .MoveHighlightedItemByAX	; No rotation for PgDn
 	; Fall to .SelectLastItem

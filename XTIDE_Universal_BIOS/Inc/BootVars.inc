@@ -40,7 +40,7 @@ struc BOOTVARS
 	.rgbMnuStack:
 	.dwPostStack		resb	4		; POST stack pointer when entering INT 19h
 %ifdef MODULE_HOTKEYS
-	.hotkeyVars				resb	HOTKEYVARS_size
+	.hotkeyVars			resb	HOTKEYVARS_size
 %endif
 	.rgDrvDetectInfo:					; Array containing DRVDETECTINFO structs
 endstruc

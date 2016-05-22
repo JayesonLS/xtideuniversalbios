@@ -21,7 +21,7 @@
 // Visit http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 //
 
-#include "library.h"
+#include "Library.h"
 #include <stdlib.h>
 #include <string.h>
 

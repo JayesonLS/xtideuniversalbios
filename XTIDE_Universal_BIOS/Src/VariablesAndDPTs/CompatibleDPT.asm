@@ -230,30 +230,32 @@ CompatibleDPT_CreateDeviceParameterTableExtensionToESBXfromDPTinDSSI:
 	eCMOVE	cl, FLG_LBA_TRANSLATION_ENABLED | FLG_32BIT_XFER_MODE
 
 	xor		dl, dl							; Clear DL for checksum
+	push	bp
+	mov		bp, StoswThenAddALandAHtoDL
 
 	; DPTE.wBasePort
 	mov		ax, [si+DPT.wBasePort]
-	call	StoswThenAddALandAHtoDL			; Bytes 0 and 1
+	call	bp								; Bytes 0 and 1
 
 	; DPTE.wControlBlockPort
 	eMOVZX	bx, [si+DPT.bIdevarsOffset]
 	mov		ax, [cs:bx+IDEVARS.wControlBlockPort]
-	call	StoswThenAddALandAHtoDL			; Bytes 2 and 3
+	call	bp								; Bytes 2 and 3
 
 	; DPTE.bDrvnhead and DPTE.bBiosVendor
 	xchg	di, si
 	call	AccessDPT_GetDriveSelectByteToAL
 	xchg	si, di
-	call	StoswThenAddALandAHtoDL			; Bytes 4 and 5
+	call	bp								; Bytes 4 and 5
 
 	; DPTE.bIRQ and DPTE.bBlockSize
 	mov		al, [cs:bx+IDEVARS.bIRQ]		; No way to define that we might not use IRQ
-	mov		ah, [si+DPT_ATA.bBlockSize]
-	cmp		ah, 1
-	jbe		SHORT .DoNotSetBlockModeFlag
+	mov		ah, [si+DPT_ATA.bBlockSize]		; DPT_ATA.bBlockSize must never be zero!
+	sahf									; Only block size = 1 sets CF
+	jc		SHORT .DoNotSetBlockModeFlag
 	or		cl, FLG_BLOCK_MODE_ENABLED
 .DoNotSetBlockModeFlag:
-	call	StoswThenAddALandAHtoDL			; Bytes 6 and 7
+	call	bp								; Bytes 6 and 7
 
 	; DPTE.bDmaChannelAndType and DPTE.bPioMode
 	xor		ax, ax
@@ -265,7 +267,7 @@ CompatibleDPT_CreateDeviceParameterTableExtensionToESBXfromDPTinDSSI:
 	cmp		WORD [si+DPT_ADVANCED_ATA.wControllerID], BYTE 1
 	sbb		cl, -1	; FLG_FAST_PIO_ENABLED (if .wControllerID > 0)
 .DoNotSetFastPioFlag:
-	call	StoswThenAddALandAHtoDL			; Bytes 8 and 9
+	call	bp								; Bytes 8 and 9
 %endif
 
 	; Set CHS translation flags and store DPTE.wFlags
@@ -278,7 +280,8 @@ CompatibleDPT_CreateDeviceParameterTableExtensionToESBXfromDPTinDSSI:
 	or		ch, LBA_ASSISTED_TRANSLATION << (TRANSLATION_TYPE_FIELD_POSITION - 8)
 .NoChsTranslationOrBitShiftTranslationSet:
 	xchg	ax, cx
-	call	StoswThenAddALandAHtoDL			; Bytes 10 and 11
+	call	bp								; Bytes 10 and 11
+	pop		bp
 
 	; DPTE.wReserved (must be zero)
 	xor		ax, ax

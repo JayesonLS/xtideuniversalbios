@@ -80,7 +80,7 @@ DetectDrives_FromAllIDEControllers:
 
 	mov		al, [cs:ROMVARS.wFlags]			; Configurator set to always scan?
 	or		al, [es:BDA.bKBFlgs1]			; Or, did the user hold down the ALT key?
-	and		al, 8							; 8 = alt key depressed, same as FLG_ROMVARS_SERIAL_ALWAYSDETECT
+	and		al, 8							; 8 = alt key depressed, same as FLG_ROMVARS_SERIAL_SCANDETECT
 	jnz		.DriveDetectLoop
 %endif ; MODULE_SERIAL
 
@@ -134,7 +134,7 @@ DetectDrives_FromAllIDEControllers:
 	pop		ax
 
 	shr		ch, 1							; number of drives, 1 or 2 only, to CF flag (clear=1, set=2)
-	rcl		al, 1							; starting drive number in upper 7 bits, number of drives in low bit
+	eRCL_IM	al, 1							; starting drive number in upper 7 bits, number of drives in low bit
 .NoFloppies:
 	mov		[RAMVARS.xlateVars+XLATEVARS.bFlopCntAndFirst], al
 %endif

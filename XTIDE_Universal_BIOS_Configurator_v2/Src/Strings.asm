@@ -20,9 +20,12 @@
 ; Section containing initialized data
 SECTION .data
 
+; DOS version check
+g_s$NotMinimumDosVersion:			db	LF,"This program requires DOS version 2 or higher.",LF,"$"
+
 ; Menu title
 g_szProgramTitle:					db	"Configuration and Flashing program for XTIDE Universal BIOS v2.0.0.",LF,CR,NULL
-g_szXtideUniversalBiosSignature:	db	"XTIDE205",NULL
+g_szXtideUniversalBiosSignature:	db	FLASH_SIGNATURE,NULL
 g_szBiosIsNotLoaded:				db	"BIOS is not loaded!",NULL
 g_szEEPROM:							db	"EEPROM",NULL
 g_szSourceAndTypeSeparator:			db	" : ",NULL
@@ -133,7 +136,7 @@ g_szSerialMoved:		db	"A Serial Controller has been moved to the end of the Contr
 g_szHelpCfgFullMode:	db	"Full mode supports up to 4 IDE controllers (8 drives). Full mode reserves a bit of RAM from the top of"
 						db	" Conventional memory. This makes it possible to use ROM BASIC and other software that requires"
 						db	" the interrupt vectors where XTIDE Universal BIOS parameters would be stored in Lite mode.",LF,LF
-						db	"Lite mode supports only one IDE controller (2 drives) and stores parameters to the top of the interrupt vectors"
+						db	"Lite mode supports only 2 IDE controllers (4 drives) and stores parameters to the top of the interrupt vectors"
 						db	" (30:0h) so no Conventional memory needs to be reserved. Lite mode cannot be used if some software requires"
 						db	" the top of interrupt vectors. Usually this is not a problem since only IBM ROM BASIC uses them.",LF,LF
 						db	"Tandy 1000 models with 640 kiB or less memory need to use Lite mode since the top of Conventional memory gets"
@@ -220,6 +223,8 @@ g_szDlgIdeCmdPort:			db	"Enter IDE command block (base port) address.",NULL
 g_szDlgIdeCtrlPort:			db	"Enter IDE control block address (usually command block + 200h).",NULL
 g_szDlgIdeEnIRQ:			db	"Enable interrupt?",NULL
 g_szDlgIdeIRQ:				db	"Enter IRQ channel (2...7 for 8-bit controllers, 2...15 for any other controller).",NULL
+g_szUnsupportedDevice:		db	"There is no support for this device type in the currently loaded BIOS."
+							db	" You must load a BIOS built with the proper module included to be able to use this type of device.",NULL
 
 g_szNfoIdeBackToCfgMenu:	db	"Back to XTIDE Universal BIOS Configuration Menu.",NULL
 g_szNfoIdeMaster:			db	"Settings for Master Drive.",NULL
@@ -274,9 +279,9 @@ g_szMultichoiceCfgDevice:	db	"16-bit ISA/VLB/PCI IDE",LF
 							db	"16-bit ISA IDE in 8-bit mode",LF
 							db	"XTIDE rev 1",LF
 							db	"XTIDE rev 2 or modded rev 1",LF
-							db	"XT-CF (PIO8)",LF
-							db	"XT-CF (PIO8 w/BIU offload)",LF
-							db	"XT-CF (PIO16 w/BIU offload)",LF
+							db	"XT-CF PIO8",LF
+							db	"XT-CF PIO8 (BIU offload)",LF
+							db	"XT-CF PIO16 (BIU offload)",LF
 							db	"XT-CF DMA (v3 only)",LF
 							db	"JR-IDE/ISA",LF
 							db	"SVC ADP50L",LF

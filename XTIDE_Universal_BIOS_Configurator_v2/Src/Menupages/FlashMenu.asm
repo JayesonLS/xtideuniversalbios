@@ -327,8 +327,8 @@ ALIGN JUMP_ALIGN
 .GetNumberOfPagesToFlashToAX:
 	call	.GetSelectedEepromSizeInWordsToAX
 	xor		dx, dx
-	shl		ax, 1		; Size in bytes to...
-	rcl		dx, 1		; ...DX:AX
+	eSHL_IM	ax, 1		; Size in bytes to...
+	eRCL_IM	dx, 1		; ...DX:AX
 
 	cmp		WORD [si+FLASHVARS.wEepromPageSize], BYTE 1
 	jbe		SHORT .PreventDivideException

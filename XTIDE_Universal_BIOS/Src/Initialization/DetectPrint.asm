@@ -89,8 +89,7 @@ DetectPrint_StartDetectWithAutodetectedBasePortInAXandIdeVarsInCSBP:
 
 %ifdef MODULE_SERIAL
 	cmp		dh, DEVICE_SERIAL_PORT			; Check if this is a serial device
-
-	jnz		.pushAndPrint					; CX = string to print, AX = port address, DX won't be used
+	jne		SHORT .pushAndPrint				; CX = string to print, AX = port address, DX won't be used
 
 	mov		cl, (g_szDetectCOM-$$) & 0xff	; Setup print string for COM ports
 	push	cx								; And push now.  We use the fact that format strings can contain
@@ -105,23 +104,23 @@ DetectPrint_StartDetectWithAutodetectedBasePortInAXandIdeVarsInCSBP:
  	mov		cl, (g_szDetectCOMAuto-$$) & 0xff	; Setup secondary print string for "Auto"
 
 	test	dl, dl							; Check if serial port "Auto"
-	jz		.pushAndPrintSerial				; CX = string to print, AX and DX won't be used
+	jz		SHORT .pushAndPrintSerial		; CX = string to print, AX and DX won't be used
 
 	mov		cl, (g_szDetectCOMLarge-$$) & 0xff	; Setup secondary print string for "COMn/xx.yK"
 
-	mov		al,ah							; baud rate divisor to AL
+	mov		al, ah							; baud rate divisor to AL
 	cbw										; clear AH, AL will always be less than 128
-	xchg	si,ax							; move AX to SI for divide
-	mov		ax,1152							; baud rate to display is 115200/divisor, the "00" is handled
+	xchg	si, ax							; move AX to SI for divide
+	mov		ax, 1152						; baud rate to display is 115200/divisor, the "00" is handled
 											; in the print strings
 	cwd										; clear top 16-bits of dividend
 	div		si								; and divide...  Now AX = baud rate/100, DX = 0 (always a clean divide)
 
-	mov		si,10							; Now separate the whole portion from the fractional for "K" display
+	mov		si, 10							; Now separate the whole portion from the fractional for "K" display
 	div		si								; and divide...  Now AX = baud rate/1000, DX = low order digit
 
-	cmp		ax,si							; < 10: "2400", "9600", etc.; >= 10: "19.2K", "38.4K", etc.
-	jae		.pushAndPrintSerial
+	cmp		ax, si							; < 10: "2400", "9600", etc.; >= 10: "19.2K", "38.4K", etc.
+	jae		SHORT .pushAndPrintSerial
 
 	mov		cl, (g_szDetectCOMSmall-$$) & 0xff	; Setup secondary print string for "COMn/XXy00"
 
@@ -149,10 +148,10 @@ DetectPrint_StartDetectWithAutodetectedBasePortInAXandIdeVarsInCSBP:
 ;--------------------------------------------------------------------
 DetectPrint_DriveNameFromDrvDetectInfoInESBX:
 	push	bp
-	mov		bp,sp
-	lea		si,[bx+DRVDETECTINFO.szDrvName]
+	mov		bp, sp
+	lea		si, [bx+DRVDETECTINFO.szDrvName]
 	push	si
-	mov		si,g_szDriveName
+	mov		si, g_szDriveName
 	jmp		SHORT DetectPrint_FormatCSSIfromParamsInSSBP
 
 
@@ -275,7 +274,7 @@ DetectPrint_NullTerminatedStringFromCSSIandSetCF:
 ; and results in smaller code size.
 ;
 	push	bp
-	mov		bp,sp
+	mov		bp, sp
 	; Fall to DetectPrint_FormatCSSIfromParamsInSSBP
 
 ;--------------------------------------------------------------------

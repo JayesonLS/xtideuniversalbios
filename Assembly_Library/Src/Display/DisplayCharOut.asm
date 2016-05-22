@@ -40,8 +40,7 @@ ALIGN DISPLAY_JUMP_ALIGN
 DisplayCharOut_TeletypeOutputWithAttribute:
 	cmp		al, ' '							; Printable character?
 	jb		SHORT DisplayCharOut_BiosTeletypeOutput
-	WAIT_RETRACE_IF_NECESSARY_THEN stosw
-	ret
+	JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN stosw
 
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayCharOut_TeletypeOutput:
@@ -95,19 +94,17 @@ ALIGN DISPLAY_JUMP_ALIGN
 DisplayCharOut_Attribute:
 	xchg	al, ah				; Swap character and attribute
 	inc		di					; Skip character
-	WAIT_RETRACE_IF_NECESSARY_THEN stosb
-	ret
+	JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN stosb
 
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayCharOut_Character:
-	WAIT_RETRACE_IF_NECESSARY_THEN stosb
+	CALL_WAIT_FOR_RETRACE_IF_NECESSARY_THEN stosb
 	inc		di					; Skip attribute
 	ret
 
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayCharOut_CharacterWithAttribute:
-	WAIT_RETRACE_IF_NECESSARY_THEN stosw
-	ret
+	JMP_WAIT_FOR_RETRACE_IF_NECESSARY_THEN stosw
 
 
 ;--------------------------------------------------------------------

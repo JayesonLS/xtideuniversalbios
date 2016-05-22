@@ -145,15 +145,10 @@ Bios_ReadEbiosVersionFromDriveDL:
 	mov		ah, CHECK_EXTENSIONS_PRESENT
 	mov		bx, 55AAh
 	int		BIOS_DISK_INTERRUPT_13h
-	jc		SHORT .NoEbiosPresent
-	cmp		bx, 0AA55h
-	jne		SHORT .NoEbiosPresent
-	eMOVZX	bx, ah			; Copy version to BX
-	xor		ah, ah
-	ret
-.NoEbiosPresent:
-	mov		ah, RET_HD_INVALID
-	stc
+	jc		SHORT ReturnInvalidErrorCodeInAH	; No EBIOS present
+	xor		bx, 0AA55h
+	jnz		SHORT ReturnInvalidErrorCodeInAH	; No EBIOS present
+	xchg	bl, ah			; Version to BX, BIOS error code to AH
 	ret
 
 

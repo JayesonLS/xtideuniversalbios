@@ -39,7 +39,7 @@ SECTION .text
 ;	Returns with INTPACK:
 ;		AH:		Int 13h/40h floppy return status
 ;		AL:		Burst error length if AH returns 11h (we never return error code 11h)
-;				Number of sectors actually read (only valid if CF set for someBIOSes)
+;				Number of sectors actually read (only valid if CF set for some BIOSes)
 ;		CF:		0 if successful, 1 if error
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN

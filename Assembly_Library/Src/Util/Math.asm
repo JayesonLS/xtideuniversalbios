@@ -35,6 +35,7 @@ SECTION .text
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 Math_DivQWatSSBPbyCX:
+%if 1
 	xor		dx, dx
 	mov		ax, [bp+6]		; Load highest divident WORD to DX:AX
 	div		cx
@@ -52,6 +53,21 @@ Math_DivQWatSSBPbyCX:
 	div		cx
 	mov		[bp], ax
 	ret
+%else ; ~1
+; This is about half the size compared to the above code but it's not tested which is why it's commented away.
+	push	di
+	mov		di, 6
+	xor		dx, dx
+.Next:
+	mov		ax, [bp+di]
+	div		cx
+	mov		[bp+di], ax
+	dec		di
+	dec		di
+	jns		.Next
+	pop		di
+	ret
+%endif ; 1
 %endif
 
 

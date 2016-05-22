@@ -183,8 +183,8 @@ AH9h_InitializeDriveForUse:
 	jz		SHORT .IordyNotSupported
 
 	; Advanced PIO mode 3 and above
-	mov		dl, [di+DPT_ADVANCED_ATA.bPioMode]
-	or		dl, PIO_FLOW_CONTROL_MODE_xxx
+	mov		dl, PIO_FLOW_CONTROL_MODE_xxx
+	or		dl, [di+DPT_ADVANCED_ATA.bPioMode]
 
 .IordyNotSupported:
 	mov		si, FEATURE_SET_TRANSFER_MODE

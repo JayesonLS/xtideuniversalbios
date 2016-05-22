@@ -55,7 +55,7 @@ IdeAutodetect_DetectIdeDeviceFromPortDXAndReturnControlBlockInSI:
 ;--------------------------------------------------------------------
 DetectMemoryMappedDeviceFromSegmentDX:
 	; *** Try to detect JR-IDE/ISA and ADP50L (only if MODULE_8BIT_IDE_ADVANCED is present) ***
-	test	WORD [di+ROMVARS.wFlags], FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED
+	test	BYTE [di+ROMVARS.wFlags], FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED
 	stc
 	jz		SHORT .NoIdeDeviceFound
 

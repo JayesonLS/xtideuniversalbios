@@ -239,9 +239,8 @@ Interrupts_UnmaskInterruptControllerForDriveInDSDI:
 .ClearBitFrom8259MaskRegister:
 	push	cx
 	xchg	ax, cx				; IRQ index to CL
-	mov		ch, 1				; Load 1 to be shifted
-	shl		ch, cl				; Shift bit to correct position
-	not		ch					; Invert to create bit mask for clearing
+	mov		ch, ~1				; Load bit mask to be rotated
+	rol		ch, cl				; Rotate mask to correct position for clearing
 	in		al, dx				; Read Interrupt Mask Register
 	and		al, ch				; Clear wanted bit
 	out		dx, al				; Write modified Interrupt Mask Register

@@ -75,21 +75,31 @@ Start:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Main_Start:
+	mov		ah, GET_DOS_VERSION
+	int		DOS_INTERRUPT_21h
+	cmp		al, 2
+	jae		SHORT .DosVersionIsOK
+	mov		dx, g_s$NotMinimumDosVersion
+	mov		ah, WRITE_STRING_TO_STANDARD_OUTPUT
+	int		DOS_INTERRUPT_21h
+	ret
+.DosVersionIsOK:
+
 	mov		ax, SCREEN_BACKGROUND_CHARACTER_AND_ATTRIBUTE
-	call	InitializeScreenWithBackgroudCharAndAttrInAX
+	call	InitializeScreenWithBackgroundCharAndAttrInAX
 
 	call	Main_InitializeCfgVars
 	call	MenuEvents_DisplayMenu
 	mov		ax, DOS_BACKGROUND_CHARACTER_AND_ATTRIBUTE
-	call	InitializeScreenWithBackgroudCharAndAttrInAX
+	call	InitializeScreenWithBackgroundCharAndAttrInAX
 
 	; Exit to DOS
-	mov 	ax, 4C00h			; Exit to DOS
-	int 	21h
+	mov 	ax, TERMINATE_WITH_RETURN_CODE<<8		; Errorlevel 0 in AL
+	int		DOS_INTERRUPT_21h
 
 
 ;--------------------------------------------------------------------
-; InitializeScreenWithBackgroudCharAndAttrInAX
+; InitializeScreenWithBackgroundCharAndAttrInAX
 ;	Parameters:
 ;		AL:		Background character
 ;		AH:		Background attribute
@@ -99,7 +109,7 @@ Main_Start:
 ;		AX, DX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-InitializeScreenWithBackgroudCharAndAttrInAX:
+InitializeScreenWithBackgroundCharAndAttrInAX:
 	xchg	dx, ax
 	CALL_DISPLAY_LIBRARY InitializeDisplayContext	; Reset cursor etc
 	xchg	ax, dx

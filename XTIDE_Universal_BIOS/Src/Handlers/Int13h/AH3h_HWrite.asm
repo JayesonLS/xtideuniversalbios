@@ -38,7 +38,7 @@ SECTION .text
 ;		ES:BX:	Pointer to source data
 ;	Returns with INTPACK:
 ;		AH:		Int 13h/40h floppy return status
-;		AL:		Number of sectors actually written (only valid if CF set for someBIOSes)
+;		AL:		Number of sectors actually written (only valid if CF set for some BIOSes)
 ;		CF:		0 if successful, 1 if error
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN

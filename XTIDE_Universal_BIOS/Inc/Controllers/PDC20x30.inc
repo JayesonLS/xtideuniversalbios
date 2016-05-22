@@ -1,8 +1,6 @@
 ; Project name	:	XTIDE Universal BIOS
 ; Description	:	Promise PDC 20230-C and 20630 VLB IDE controller
 ;					specifications.
-;
-;					Specifications can be found at 
 
 ;
 ; XTIDE Universal BIOS and Associated Tools

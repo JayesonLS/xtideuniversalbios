@@ -578,7 +578,17 @@ ALIGN JUMP_ALIGN
 %endmacro
 
 %macro eRCL_IM 2
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
+%ifdef USE_386
+	%if %2 = 1
+		adc		%1, %1	; Same size but faster on 386 and 486. Fails if %1 is a memory operand.
+	%else
+		eSHIFT_IM	%1, %2, rcl
+	%endif
+%else
 	eSHIFT_IM	%1, %2, rcl
+%endif
+%endif
 %endmacro
 
 

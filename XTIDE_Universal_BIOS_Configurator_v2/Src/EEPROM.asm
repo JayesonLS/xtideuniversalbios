@@ -80,6 +80,7 @@ EEPROM_GetXtideUniversalBiosSizeFromESDItoDXCX:
 	mov		ch, [es:di+ROMVARS.bRomSize]
 	mov		cl, dl
 	eSHL_IM	ch, 1
+	eRCL_IM	dl, 1
 	ret
 
 

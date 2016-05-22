@@ -93,11 +93,11 @@ TransferBlockToOrFromXTCF:
 	; If DI was zero carry flag will be cleared (and set otherwise)
 	; When DI is zero only one transfer is required since we've limited the
 	; XT-CFv3 block size to 32k
-	jnc		SHORT .TransferLastDmaPageWithSizeInCX
+	jnc		SHORT StartDMAtransferForXTCFwithDmaModeInBL
 
 	; CF was set, so DI != 0 and we might need one or two transfers
-	cmp		cx, ax									; if we won't cross a physical page boundary...
-	jbe		SHORT .TransferLastDmaPageWithSizeInCX	; ...perform the transfer in one operation
+	cmp		cx, ax											; if we won't cross a physical page boundary...
+	jbe		SHORT StartDMAtransferForXTCFwithDmaModeInBL	; ...perform the transfer in one operation
 
 	; Calculate how much we can transfer on first and second rounds
 	xchg	cx, ax		; CX = BYTEs for first page
@@ -107,14 +107,11 @@ TransferBlockToOrFromXTCF:
 	; Transfer first DMA page
 	call	StartDMAtransferForXTCFwithDmaModeInBL
 	pop		cx										; Pop size for second DMA page
-
-.TransferLastDmaPageWithSizeInCX:
 	; Fall to StartDMAtransferForXTCFwithDmaModeInBL
 
 
 ;--------------------------------------------------------------------
 ; StartDMAtransferForXTCFwithDmaModeInBL
-; Updated for XT-CFv3, 11-Apr-13
 ;	Parameters:
 ;		BL:		Byte for DMA Mode Register
 ;		CX:		Number of BYTEs to transfer (1...32768 since max block size is limited to 64)
