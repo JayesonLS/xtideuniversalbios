@@ -96,9 +96,9 @@ Display_FormatNullTerminatedStringFromCSSI:
 
 	%define FormatNullTerminatedStringFromCSSI				Display_FormatNullTerminatedStringFromCSSI
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
-	%define PrintSignedWordFromAXWithBaseInBX				DisplayPrint_SignedWordFromAXWithBaseInBX
+	%define PrintSignedWordFromAXWithBaseInBL				DisplayPrint_SignedWordFromAXWithBaseInBL
 %endif
-	%define PrintWordFromAXwithBaseInBX						DisplayPrint_WordFromAXWithBaseInBX
+	%define PrintWordFromAXWithBaseInBL						DisplayPrint_WordFromAXWithBaseInBL
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
 	%define PrintQWordFromSSBPwithBaseInBX					DisplayPrint_QWordFromSSBPwithBaseInBX
 %endif

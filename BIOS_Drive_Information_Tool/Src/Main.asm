@@ -27,7 +27,7 @@
 %include "Int13h.inc"			; From XTIDE Universal BIOS
 %include "EBIOS.inc"			; From XTIDE Universal BIOS
 %include "IdeRegisters.inc"		; From XTIDE Universal BIOS
-%include "Romvars.inc"			; From XTIDE Universal BIOS
+%include "RomVars.inc"			; From XTIDE Universal BIOS
 %include "CustomDPT.inc"		; From XTIDE Universal BIOS
 
 

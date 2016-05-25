@@ -333,30 +333,29 @@ A_FormatAttributeForRemainingString:
 ALIGN DISPLAY_JUMP_ALIGN
 d_FormatSignedDecimalWord:
 	mov		ax, [bp]
-	mov		bx, 10
-	jmp		DisplayPrint_SignedWordFromAXWithBaseInBX
+	mov		bl, 10
+	jmp		DisplayPrint_SignedWordFromAXWithBaseInBL
 %endif
 
 ALIGN DISPLAY_JUMP_ALIGN
 u_FormatUnsignedDecimalWord:
 	mov		ax, [bp]
-	mov		bx, 10
-	jmp		DisplayPrint_WordFromAXWithBaseInBX
+	mov		bl, 10
+	jmp		DisplayPrint_WordFromAXWithBaseInBL
 
 ALIGN DISPLAY_JUMP_ALIGN
 x_FormatHexadecimalWord:
 	mov		ax, [bp]
-	mov		bx, 16
-	call	DisplayPrint_WordFromAXWithBaseInBX
+	mov		bl, 16
+	call	DisplayPrint_WordFromAXWithBaseInBL
 	mov		al, 'h'
 	jmp		DisplayPrint_CharacterFromAL
 
 ALIGN DISPLAY_JUMP_ALIGN
 I_FormatDashForZero:
-	mov		ax, [bp]
-	test	ax,ax
-	jnz		u_FormatUnsignedDecimalWord
-	mov		[bp], word g_szDashForZero
+	cmp		WORD [bp], 0
+	jne		SHORT u_FormatUnsignedDecimalWord
+	mov		WORD [bp], g_szDashForZero
 ;;; fall-through
 
 ALIGN DISPLAY_JUMP_ALIGN
@@ -365,7 +364,7 @@ s_FormatStringFromSegmentCS:
 	push	cx
 	mov		si, [bp]
 
-	cmp		si, byte 07fh		;  well within the boundaries of ROMVARS_size
+	cmp		si, BYTE 7Fh		; well within the boundaries of ROMVARS_size
 	jb		.notFormatted
 
 	dec		bp

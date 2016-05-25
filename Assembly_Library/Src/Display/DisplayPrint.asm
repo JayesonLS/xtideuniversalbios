@@ -82,50 +82,51 @@ DisplayPrint_FormattedNullTerminatedStringFromCSSI:
 
 
 ;--------------------------------------------------------------------
-; DisplayPrint_SignedWordFromAXWithBaseInBX
+; DisplayPrint_SignedWordFromAXWithBaseInBL
 ;	Parameters:
 ;		AX:		Word to display
-;		BX:		Integer base (binary=2, octal=8, decimal=10, hexadecimal=16)
+;		BL:		Integer base (binary=2, octal=8, decimal=10, hexadecimal=16)
 ;		DS:		BDA segment (zero)
 ;		ES:DI:	Ptr to cursor location in video RAM
 ;	Returns:
 ;		DI:		Updated offset to video RAM
 ;	Corrupts registers:
-;		AX, DX
+;		AX, BH, DX
 ;--------------------------------------------------------------------
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
 ALIGN DISPLAY_JUMP_ALIGN
-DisplayPrint_SignedWordFromAXWithBaseInBX:
-	test	ax, ax
-	jns		SHORT DisplayPrint_WordFromAXWithBaseInBX
+DisplayPrint_SignedWordFromAXWithBaseInBL:
+	sahf
+	jns		SHORT DisplayPrint_WordFromAXWithBaseInBL
 
 	push	ax
 	mov		al, '-'
 	call	DisplayPrint_CharacterFromAL
 	pop		ax
 	neg		ax
-	; Fall to DisplayPrint_WordFromAXWithBaseInBX
+	; Fall to DisplayPrint_WordFromAXWithBaseInBL
 %endif
 
 
 ;--------------------------------------------------------------------
-; DisplayPrint_WordFromAXWithBaseInBX
+; DisplayPrint_WordFromAXWithBaseInBL
 ;	Parameters:
 ;		AX:		Word to display
-;		BX:		Integer base (binary=2, octal=8, decimal=10, hexadecimal=16)
+;		BL:		Integer base (binary=2, octal=8, decimal=10, hexadecimal=16)
 ;		DS:		BDA segment (zero)
 ;		ES:DI:	Ptr to cursor location in video RAM
 ;	Returns:
 ;		DI:		Updated offset to video RAM
 ;	Corrupts registers:
-;		AX, DX
+;		AX, BH, DX
 ;--------------------------------------------------------------------
 %ifndef MODULE_STRINGS_COMPRESSED
 ALIGN DISPLAY_JUMP_ALIGN
-DisplayPrint_WordFromAXWithBaseInBX:
+DisplayPrint_WordFromAXWithBaseInBL:
 	push	cx
 
 	xor		cx, cx
+	xor		bh, bh				; Base now in BX
 ALIGN DISPLAY_JUMP_ALIGN
 .DivideLoop:
 	inc		cx					; Increment character count

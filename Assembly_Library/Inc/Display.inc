@@ -81,9 +81,9 @@ struc DISPLAY_LIB
 
 	.FormatNullTerminatedStringFromCSSI				resb	2
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
-	.PrintSignedWordFromAXWithBaseInBX				resb	2
+	.PrintSignedWordFromAXWithBaseInBL				resb	2
 %endif
-	.PrintWordFromAXwithBaseInBX					resb	2
+	.PrintWordFromAXWithBaseInBL					resb	2
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
 	.PrintQWordFromSSBPwithBaseInBX					resb	2
 %endif

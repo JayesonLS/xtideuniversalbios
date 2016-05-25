@@ -21,9 +21,9 @@
 SECTION .data
 
 g_szProgramName:	db	"BIOS Drive Information Tool v1.0.2",CR,LF
-					db	"(C) 2012-2013 by XTIDE Universal BIOS Team",CR,LF
+					db	"(C) 2012-2016 by XTIDE Universal BIOS Team",CR,LF
 					db	"Released under GNU GPL v2",CR,LF
-					db	"http://code.google.com/p/xtideuniversalbios/",CR,LF,NULL
+					db	"http://xtideuniversalbios.org/",CR,LF,NULL
 
 g_szPressAnyKey:	db	CR,LF,"Press any key to display next drive.",CR,LF,NULL
 

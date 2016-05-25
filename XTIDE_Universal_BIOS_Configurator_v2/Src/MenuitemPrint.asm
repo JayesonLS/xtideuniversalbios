@@ -247,8 +247,8 @@ MenuitemPrint_WriteUnsignedValueStringToBufferInESDIfromItemInDSSI:
 	CALL_DISPLAY_LIBRARY PrepareOffScreenBufferInESBXwithLengthInCX
 
 	call	Menuitem_GetValueToAXfromMenuitemInDSSI
-	mov		bx, 10
-	CALL_DISPLAY_LIBRARY PrintWordFromAXwithBaseInBX
+	mov		bl, 10
+	CALL_DISPLAY_LIBRARY PrintWordFromAXWithBaseInBL
 	jmp		SHORT MenuitemPrint_FinishPrintingUnsignedOrHexValue
 
 ;--------------------------------------------------------------------
@@ -269,8 +269,8 @@ MenuitemPrint_WriteHexValueStringToBufferInESDIfromItemInDSSI:
 	CALL_DISPLAY_LIBRARY PrepareOffScreenBufferInESBXwithLengthInCX
 
 	call	Menuitem_GetValueToAXfromMenuitemInDSSI
-	mov		bx, 16
-	CALL_DISPLAY_LIBRARY PrintWordFromAXwithBaseInBX
+	mov		bl, 16
+	CALL_DISPLAY_LIBRARY PrintWordFromAXWithBaseInBL
 	mov		al, 'h'
 	CALL_DISPLAY_LIBRARY PrintCharacterFromAL
 ALIGN JUMP_ALIGN

@@ -21,8 +21,8 @@
 	push	ax
 
 	mov		ax, %1
-	mov		bx, %2
-	CALL_DISPLAY_LIBRARY PrintWordFromAXwithBaseInBX
+	mov		bl, %2
+	CALL_DISPLAY_LIBRARY PrintWordFromAXWithBaseInBL
 %ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
 	call	Keyboard_RemoveAllKeystrokesFromBuffer
 %endif

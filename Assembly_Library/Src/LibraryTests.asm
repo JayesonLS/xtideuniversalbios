@@ -597,10 +597,10 @@ LibraryTests_Sort:
 	push	cs
 	pop		ds
 	mov		si, .rgwItems
-	mov		bx, 16
+	mov		bl, 16
 .Loop:
 	lodsw
-	CALL_DISPLAY_LIBRARY PrintSignedWordFromAXWithBaseInBX
+	CALL_DISPLAY_LIBRARY PrintSignedWordFromAXWithBaseInBL
 	CALL_DISPLAY_LIBRARY PrintNewlineCharacters
 	loop	.Loop
 	ret
