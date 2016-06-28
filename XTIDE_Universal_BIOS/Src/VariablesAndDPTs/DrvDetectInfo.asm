@@ -45,7 +45,11 @@ DriveDetectInfo_CreateForHardDisk:
 	pop		ds
 
 	add		si, BYTE ATA1.strModel				; DS:SI now points drive name (Clears CF)
+%if DRVDETECTINFO.szDrvName = 0
+	mov		di, bx
+%else
 	lea		di, [bx+DRVDETECTINFO.szDrvName]	; ES:DI now points to name destination
+%endif
 	mov		cx, MAX_HARD_DISK_NAME_LENGTH / 2	; Max number of WORDs allowed
 .CopyNextWord:
 	lodsw
@@ -73,9 +77,21 @@ DriveDetectInfo_CreateForHardDisk:
 ;		AX
 ;--------------------------------------------------------------------
 DriveDetectInfo_ConvertDPTtoBX:
+%if DPT_DRVDETECTINFO_SIZE_MULTIPLIER = 2
+%if BOOTVARS.rgDrvDetectInfo & 1					; Should never be odd but better safe than sorry
+	lea		ax, [di-RAMVARS_size]
+	eSHL_IM	ax, 1
+	add		ax, BOOTVARS.rgDrvDetectInfo
+%else
+	lea		ax, [di-RAMVARS_size+(BOOTVARS.rgDrvDetectInfo/2)]
+;	eSHL_IM	ax, 1									; *FIXME* For some reason this will cause NASM to crap itself.
+	shl		ax, 1									; So this will have to suffice for now.
+%endif
+%else
 	lea		ax, [di-RAMVARS_size]					; subtract off base of DPTs
 	mov		bl, DPT_DRVDETECTINFO_SIZE_MULTIPLIER	; DRVDETECTINFO are a whole number multiple of DPT size
 	mul		bl
 	add		ax, BOOTVARS.rgDrvDetectInfo			; add base of DRVDETECTINFO
+%endif
 	xchg	bx, ax
 	ret
