@@ -42,7 +42,7 @@ AutoConfigure_ForThisSystem:
 	pop		ds								; ROMVARS now in DS:DI
 	call	ResetIdevarsToDefaultValues
 	call	DetectIdePortsAndDevices
-	call	EnableInterruptsForPrimaryAndSecondaryControllers
+	call	EnableInterruptsForAllStandardControllers
 	call	StoreAndDisplayNumberOfControllers
 
 	pop		ds
@@ -54,6 +54,7 @@ AutoConfigure_ForThisSystem:
 ; ResetIdevarsToDefaultValues
 ;	Parameters:
 ;		DS:DI:	Ptr to ROMVARS
+;		ES:DI:	Ptr to ROMVARS
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -122,17 +123,17 @@ DetectIdePortsAndDevices:
 
 
 ;--------------------------------------------------------------------
-; EnableInterruptsForPrimaryAndSecondaryControllers
+; EnableInterruptsForAllStandardControllers
 ;	Parameters:
 ;		DS:DI:	Ptr to ROMVARS
 ;		CX:		Number of controllers detected
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, ES
+;		AX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-EnableInterruptsForPrimaryAndSecondaryControllers:
+EnableInterruptsForAllStandardControllers:
 	jcxz	.NoControllersDetected
 	call	Buffers_IsXTbuildLoaded
 	je		SHORT .DoNotEnableIRQforXTbuilds
@@ -147,11 +148,25 @@ EnableInterruptsForPrimaryAndSecondaryControllers:
 
 	inc		ax	; 15
 	cmp		WORD [di+IDEVARS.wBasePort], DEVICE_ATA_SECONDARY_PORT
+
+%if 0
+	je		SHORT .EnableIrqAL
+
+	; Defaults on the GSI Inc. Model 2C EIDE controller
+	mov		al, 11
+	cmp		WORD [di+IDEVARS.wBasePort], DEVICE_ATA_TERTIARY_PORT
+	je		SHORT .EnableIrqAL
+
+	dec		ax	; 10
+	cmp		WORD [di+IDEVARS.wBasePort], DEVICE_ATA_QUATERNARY_PORT
+%endif
+
 	jne		SHORT .DoNotEnableIRQ
 
 .EnableIrqAL:
 	mov		[di+IDEVARS.bIRQ], al
 .DoNotEnableIRQ:
+	add		di, IDEVARS_size
 	loop	.CheckNextController
 	pop		cx
 	pop		di

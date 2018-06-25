@@ -131,7 +131,7 @@ Main_InitializeCfgVars:
 
 	call	Buffers_Clear
 	call	EEPROM_FindXtideUniversalBiosROMtoESDI
-	jnc		SHORT .InitializationCompleted
+	jc		SHORT .InitializationCompleted
 	mov		[CFGVARS.wEepromSegment], es
 .InitializationCompleted:
 	pop		es

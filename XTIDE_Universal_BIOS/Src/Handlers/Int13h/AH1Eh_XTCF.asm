@@ -120,9 +120,9 @@ AH1Eh_ChangeXTCFmodeBasedOnModeInAL:
 	; the data for presentation to the CPU.
 	;
 	; Also note that some machines, noteably the Olivetti M24 (also known as
-	; the AT&T PC6300 and Xerox 6060), have hardware errors in the BIU logic,
-	; resulting in reversed byte ordering.  Therefore, XTCF_8BIT_PIO_MODE is
-	; the default transfer mode for best system compatibility.
+	; the AT&T PC6300 or Xerox 6060 or Logabax Persona 1600), have hardware errors
+	; in the BIU logic, resulting in reversed byte ordering.  Therefore,
+	; XTCF_8BIT_PIO_MODE is the default transfer mode for best system compatibility.
 
 
 	; Is requested mode valid?

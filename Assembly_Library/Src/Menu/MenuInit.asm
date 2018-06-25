@@ -113,7 +113,7 @@ MenuInit_RefreshMenuWindow:
 ;	Corrupts registers:
 ;		AX, BX, DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN MENU_JUMP_ALIGN
 MenuInit_CloseMenuIfExitEventAllows:
 	call	MenuEvent_ExitMenu
@@ -137,7 +137,7 @@ MenuInit_CloseMenuWindow:
 	ret
 
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ;--------------------------------------------------------------------
 ; MenuInit_HighlightItemFromAX
 ;	Parameters
@@ -167,7 +167,7 @@ ALIGN MENU_JUMP_ALIGN
 MenuInit_GetHighlightedItemToAX:
 	mov		ax, [bp+MENUINIT.wHighlightedItem]
 	ret
-%endif ; EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%endif ; EXCLUDE_FROM_XUB
 
 
 ;--------------------------------------------------------------------
@@ -182,7 +182,8 @@ MenuInit_GetHighlightedItemToAX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN MENU_JUMP_ALIGN
 MenuInit_SetTitleHeightFromAL:
 	mov		[bp+MENUINIT.bTitleLines], al
@@ -192,12 +193,13 @@ ALIGN MENU_JUMP_ALIGN
 MenuInit_SetInformationHeightFromAL:
 	mov		[bp+MENUINIT.bInfoLines], al
 	ret
+%endif ; EXCLUDE_FROM_XTIDECFG
 
 ALIGN MENU_JUMP_ALIGN
 MenuInit_SetTotalItemsFromAX:
 	mov		[bp+MENUINIT.wItems], ax
 	ret
-%endif
+%endif ; EXCLUDE_FROM_XUB
 
 
 ;--------------------------------------------------------------------
@@ -211,15 +213,17 @@ MenuInit_SetTotalItemsFromAX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN MENU_JUMP_ALIGN
 MenuInit_SetUserDataFromDSSI:
 	mov		[bp+MENU.dwUserData], si
 	mov		[bp+MENU.dwUserData+2], ds
 	ret
+%endif ; EXCLUDE_FROM_XTIDECFG
 
 ALIGN MENU_JUMP_ALIGN
 MenuInit_GetUserDataToDSSI:
 	lds		si, [bp+MENU.dwUserData]
 	ret
-%endif
+%endif ; EXCLUDE_FROM_XUB

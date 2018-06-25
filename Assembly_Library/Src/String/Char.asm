@@ -50,13 +50,13 @@ SECTION .text
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_HOTKEYS
 		%define EXCLUDE
 	%endif
 %endif
 
-%ifndef EXCLUDE
+%ifndef EXCLUDE OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_IsLowerCaseLetterInAL:
 	IS_BETWEEN_IMMEDIATES al, 'a', 'z'
@@ -75,7 +75,7 @@ Char_IsLowerCaseLetterInAL:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_IsUpperCaseLetterInAL:
 	IS_BETWEEN_IMMEDIATES al, 'A', 'Z'
@@ -94,7 +94,7 @@ Char_IsUpperCaseLetterInAL:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_IsHexadecimalDigitInAL:
 	call	Char_IsDecimalDigitInAL
@@ -135,7 +135,7 @@ Char_IsDecimalDigitInAL:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_ConvertIntegerToALfromDigitInALwithBaseInBX:
 	push	dx
@@ -165,7 +165,7 @@ ALIGN STRING_JUMP_ALIGN
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_CharIsValid:
 	stc
@@ -173,7 +173,7 @@ Char_CharIsValid:
 %endif
 
 
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_HOTKEYS
 		%define EXCLUDE
 	%endif
@@ -200,7 +200,7 @@ Char_CharIsNotValid:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_ALtoLowerCaseLetter:
 	call	Char_IsUpperCaseLetterInAL	; Is upper case character?
@@ -217,7 +217,7 @@ Char_ALtoLowerCaseLetter:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_ALtoUpperCaseLetter:
 	call	Char_IsLowerCaseLetterInAL	; Is lower case character?
@@ -236,7 +236,7 @@ Char_ALtoUpperCaseLetter:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 Char_ChangeCaseInAL:
 	xor		al, 32
 .Return:
@@ -253,7 +253,7 @@ Char_ChangeCaseInAL:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN STRING_JUMP_ALIGN
 Char_GetFilterFunctionToDXforNumericBaseInBX:
 	mov		dx, Char_IsDecimalDigitInAL

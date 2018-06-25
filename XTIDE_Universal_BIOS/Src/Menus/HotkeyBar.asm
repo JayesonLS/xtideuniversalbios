@@ -406,7 +406,7 @@ HotkeyBar_StoreHotkeyToBootvarsIfValidKeystrokeInAX:
 .StoreDriveLetter:
 	sbb		di, BYTE 1				; Sub CF if Floppy Drive
 	xchg	ax, cx
-	mov		[es:di], al
+	stosb
 	stc								; Valid hotkey scancode returned in AL
 
 .KeystrokeIsNotValidDriveLetter:

@@ -117,8 +117,8 @@ DetectPortMappedDeviceFromPortDX:
 	; to detect Tertiary or Quaternary IDE controllers. Control Block port location is not standardized. For
 	; example Promise FloppyMAX has Control Block at STANDARD_CONTROL_BLOCK_OFFSET but Sound Blaster 16 (CT2290)
 	; use DEVICE_ATA_SECONDARY_PORTCTRL for Tertiary and Quaternary even though only Secondary should use that.
-	call	ChangeDifferentControlBlockAddressToSI
-	je		SHORT .RedetectTertiaryOrQuaternaryWithDifferentControlBlockAddress
+	call	ChangeControlBlockAddressInSI
+	jz		SHORT .RedetectTertiaryOrQuaternaryWithDifferentControlBlockAddress
 
 
 	; Detect 8-bit devices only if MODULE_8BIT_IDE is available
@@ -129,7 +129,7 @@ DetectPortMappedDeviceFromPortDX:
 	; *** Try to detect XT-CF ***
 	mov		si, dx
 	add		si, BYTE XTCF_CONTROL_BLOCK_OFFSET
-	shl		bx, 1						; SHL 1 register offsets for XT-CF
+	eSHL_IM	bx, 1						; SHL 1 register offsets for XT-CF
 	call	DetectIdeDeviceFromPortsDXandSIwithOffsetsInBLandBH
 	mov		al, DEVICE_8BIT_XTCF_PIO8
 	jnc		SHORT .IdeDeviceFound
@@ -232,7 +232,7 @@ NoIdeDeviceFound:
 
 
 ;--------------------------------------------------------------------
-; ChangeDifferentControlBlockAddressToSI
+; ChangeControlBlockAddressInSI
 ;	Parameters:
 ;		DX:		IDE Base Port address
 ;		SI:		IDE Control Block address
@@ -240,9 +240,9 @@ NoIdeDeviceFound:
 ;		ZF:		Set if SI changed
 ;				Cleared if different control block address is not possible
 ;	Corrupts registers:
-;		AH
+;		Nothing
 ;--------------------------------------------------------------------
-ChangeDifferentControlBlockAddressToSI:
+ChangeControlBlockAddressInSI:
 	cmp		si, 368h
 	je		SHORT .TrySecondAlternative
 	cmp		si, 3E8h
@@ -251,15 +251,15 @@ ChangeDifferentControlBlockAddressToSI:
 	cmp		si, 360h
 	je		SHORT .TryLastAlternative
 	cmp		si, 3E0h
-	je		SHORT .TryLastAlternative
-	ret		; Return with ZF cleared
+	jne		SHORT .Return	; With ZF cleared
 
 .TryLastAlternative:
 	mov		si, DEVICE_ATA_SECONDARY_PORTCTRL + 8	; Changes to 370h used by Sound Blaster 16 (CT2290)
 	; Fall to .TrySecondAlternative
 .TrySecondAlternative:
 	sub		si, BYTE 8h		; 368h to 360h, 3E8h to 3E0h
-	xor		ah, ah			; Set ZF
+	cmp		sp, sp			; Set ZF
+.Return:
 	ret
 
 

@@ -58,7 +58,7 @@ Registers_CopySSBPtoESDI:
 	ret
 %endif
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN JUMP_ALIGN
 Registers_CopySSBPtoDSSI:
 	COPY_SSBP_TO_DSSI
@@ -90,17 +90,17 @@ Registers_CopyESDItoDSSI:
 ; routine with Registers_NormalizeFinish.
 ;
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 Registers_NormalizeESSI:
 	mov			cx, si
-	and			si, byte 0fh
-	jmp			Registers_NormalizeFinish
+	and			si, BYTE 0Fh
+	jmp			SHORT Registers_NormalizeFinish
 
 ALIGN JUMP_ALIGN
 Registers_NormalizeESDI:
 	mov			cx, di
-	and			di, byte 0fh
+	and			di, BYTE 0Fh
 ;;; fall-through
 
 ALIGN JUMP_ALIGN

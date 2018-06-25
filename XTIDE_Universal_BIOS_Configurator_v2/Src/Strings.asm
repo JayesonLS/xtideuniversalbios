@@ -41,10 +41,10 @@ g_szNo:								db	"No",NULL
 g_szMultichoiceBooleanFlag:			db	"No",LF
 g_szYes:							db	"Yes",NULL
 
-; Exit messages
+; General Yes/No response type dialog messages
 g_szDlgExitToDos:		db	"Exit to DOS?",NULL
 g_szDlgSaveChanges:		db	"Do you want to save changes to XTIDE Universal BIOS image file?",NULL
-
+g_szDlgDriveNotReady:	db	"Drive not ready! Retry?",NULL
 
 ; Generic dialog strings
 g_szNotificationDialog:	db	"Notification.",NULL
@@ -91,12 +91,12 @@ g_szNfoMainLoadStngs:	db	"Load old XTIDE Universal BIOS settings from EEPROM.",N
 g_szNfoMainConfigure:	db	"Configure XTIDE Universal BIOS settings.",NULL
 g_szNfoMainFlash:		db	"Flash loaded BIOS image to EEPROM.",NULL
 g_szNfoMainSave:		db	"Save BIOS changes back to original file from which it was loaded.",NULL
-g_szNfoMainLicense:		db	"XTIDE Universal BIOS and XTIDECFG Copyright (C) 2009-2010 by Tomi Tilli, 2011-2016 by XTIDE Universal BIOS Team."
+g_szNfoMainLicense:		db	"XTIDE Universal BIOS and XTIDECFG Copyright (C) 2009-2010 by Tomi Tilli, 2011-2018 by XTIDE Universal BIOS Team."
 						db	" Released under GNU GPL v2, with ABSOLUTELY NO WARRANTY. Press ENTER for more details...",NULL
 g_szNfoMainHomePage:	db	"Visit http://xtideuniversalbios.org (home page) and http://vcfed.org/forum (support)",NULL
 
 g_szHelpMainLicense:	db	"XTIDE Universal BIOS and XTIDECFG Configuration program are Copyright 2009-2010 by Tomi Tilli,"
-						db	" 2011-2016 by XTIDE Universal BIOS Team. Released under GNU GPL v2. This software comes with ABSOLUTELY NO WARRANTY."
+						db	" 2011-2018 by XTIDE Universal BIOS Team. Released under GNU GPL v2. This software comes with ABSOLUTELY NO WARRANTY."
 						db	" This is free software, and you are welcome to redistribute it under certain conditions."
 						db	" See the LICENSE.TXT file that was included with this distribution,"
 						db	" visit http://www.gnu.org/licenses/ gpl-2.0.html, or visit http://xtideuniversalbios.org.",NULL
@@ -422,18 +422,21 @@ g_szValueDrvWrCaEn:		db	"Enabled",NULL
 g_szItemBootTimeout:	db	"Selection timeout",NULL
 g_szItemBootDrive:		db	"Default boot drive",NULL
 g_szItemBootDispMode:	db	"Display Mode",NULL
+g_szItemColorTheme:		db	"Color Theme",NULL
 g_szItemBootFloppyDrvs:	db	"Number of Floppy Drives",NULL
 g_szItemSerialDetect:	db	"Scan for Serial Drives",NULL
 
 g_szDlgBootTimeout:		db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
 g_szDlgBootDrive:		db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
 g_szDlgBootDispMode:	db	"Select display mode.",NULL
+g_szDlgColorTheme:		db	"Select color theme.",NULL
 g_szDlgBootFloppyDrvs:	db	"Select number of Floppy Drives in system.",NULL
 g_szDlgSerialDetect:	db	"Scan for serial drives?",NULL
 
 g_szNfoBootTimeout:		db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
 g_szNfoBootDrive:		db	"Default boot drive.",NULL
 g_szNfoDispMode:		db	"Display mode to set when booting.",NULL
+g_szNfoColorTheme:		db	"Color theme used by the boot menu and the hotkey bar.",NULL
 g_szNfoBootFloppyDrvs:	db	"Number of Floppy Drives in system.",NULL
 g_szNfoSerialDetect:	db	"Scans all standard COM ports for serial drives."
 						db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
@@ -441,12 +444,15 @@ g_szNfoSerialDetect:	db	"Scans all standard COM ports for serial drives."
 g_szHelpBootTimeout:	db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
 						db	" When timer goes to zero, currently selected drive will be booted automatically."
 						db	" Timeout can be disabled by setting this to 0.",NULL
-
 g_szHelpBootDrive:		db	"Drive to be set selected by default when Boot Menu is displayed.",NULL
-
+g_szHelpColorTheme:		db	"Pick a theme from a list of several pre-defined themes to customize the colors used by the boot menu and, if"
+						db	" available, the hotkey bar. Selecting a theme or loading a BIOS, or its settings, from file or from ROM will"
+						db	" make XTIDECFG apply the theme to itself for easy preview. The ability to preview themes requires that"
+						db	" XTIDECFG is running in a display mode that can display colors. In other words, you may configure the"
+						db	" BIOS on a machine with a monochrome graphics adapter and not be able to preview the theme but the BIOS will"
+						db	" still use the selected theme when installed in a machine with a color graphics adapter.",NULL
 g_szHelpBootFloppyDrvs:	db	"Detecting the correct number of floppy drives might fail when using a floppy controller with its own BIOS."
 						db	" A minimum number of floppy drives can be specified to force non-detected drives to appear on boot menu.",NULL
-
 g_szHelpSerialDetect:	db	"Set to Yes, at the end of normal drive detection, COM ports 1-7 (in reverse order) will be scanned for a connection"
 						db	" to a serial drive server. This option provides flexibility with the COM port and baud rate to be used,"
 						db	" it need not be configured ahead of time, but at the expense of a slower boot process."
@@ -467,6 +473,19 @@ g_szValueBootDispModeCO40:		db	"CO40",NULL
 g_szValueBootDispModeBW80:		db	"BW80",NULL
 g_szValueBootDispModeCO80:		db	"CO80",NULL
 g_szValueBootDispModeMono:		db	"Mono",NULL
+
+g_szMultichoiceColorTheme:		db	"Classic (default)",LF
+								db	"Argon Blue",LF
+								db	"Neon Red",LF
+								db	"Phosphor Green",LF
+								db	"Moon Surface",LF
+								db	"Toxic Waste",NULL
+g_szValueColorTheme0:			db	"Classic",NULL
+g_szValueColorTheme1:			db	"Argon",NULL
+g_szValueColorTheme2:			db	"Neon",NULL
+g_szValueColorTheme3:			db	"Phosphor",NULL
+g_szValueColorTheme4:			db	"Moon",NULL
+g_szValueColorTheme5:			db	"Toxic",NULL
 
 g_szMultichoiceBootFloppyDrvs:	db	"Autodetect",LF
 								db	"1",LF

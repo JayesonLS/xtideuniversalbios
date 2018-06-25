@@ -89,7 +89,7 @@ SECTION .text
 	%define STRING_JUMP_ALIGN 1
   %endif
 	%include "Char.asm"
-	%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+	%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 		%include "String.asm"
 		%include "StringProcess.asm"
 	%endif
@@ -105,7 +105,7 @@ SECTION .text
 %endif
 
 %ifdef INCLUDE_TIME_LIBRARY
-	%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+	%ifndef EXCLUDE_FROM_XUB
 		%include "Delay.asm"
 		%ifndef EXCLUDE_FROM_XTIDECFG
 			%include "SystemTimer.asm"
@@ -118,15 +118,19 @@ SECTION .text
   %ifndef UTIL_SIZE_JUMP_ALIGN
 	%define UTIL_SIZE_JUMP_ALIGN 1
   %endif
-	%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
-		%include "Bit.asm"
+	%ifndef EXCLUDE_FROM_XUB
+		%ifndef EXCLUDE_FROM_BIOSDRVS
+			%include "Bit.asm"
+		%endif
+		%include "Math.asm"
 	%endif
-	%include "Math.asm"
-	%include "Registers.asm"
-	%include "Reboot.asm"
-	%include "Memory.asm"
+	%ifndef EXCLUDE_FROM_BIOSDRVS
+		%include "Registers.asm"
+		%include "Reboot.asm"
+		%include "Memory.asm"
+	%endif
 	%include "Size.asm"
-	%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+	%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 		%include "Sort.asm"
 	%endif
 %endif

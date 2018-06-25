@@ -23,7 +23,7 @@
 	mov		ax, %1
 	mov		bl, %2
 	CALL_DISPLAY_LIBRARY PrintWordFromAXWithBaseInBL
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	call	Keyboard_RemoveAllKeystrokesFromBuffer
 %endif
 	call	Keyboard_GetKeystrokeToAXandWaitIfNecessary
@@ -51,7 +51,7 @@
 
 	mov		al, %1
 	CALL_DISPLAY_LIBRARY PrintCharacterFromAL
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	call	Keyboard_RemoveAllKeystrokesFromBuffer
 %endif
 	call	Keyboard_GetKeystrokeToAXandWaitIfNecessary
@@ -94,7 +94,7 @@
 ;--------------------------------------------------------------------
 %macro WAIT_ANY_KEY_TO_CONTINUE 0
 	push	ax
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	call	Keyboard_RemoveAllKeystrokesFromBuffer
 %endif
 	call	Keyboard_GetKeystrokeToAXandWaitIfNecessary

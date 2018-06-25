@@ -33,7 +33,7 @@ MAX_EEPROM_SIZE_IN_BYTES			EQU		65536
 ; Program global variables
 struc CFGVARS
 	.pMenupage			resb	2			; Offset to MENUPAGE to display
-	.wFlags				resb	2			; Program flags
+	.wFlags				resb	2			; Program flags - Only the low byte is used currently and code depend on this
 	.wImageSizeInWords	resb	2			; Size in words for loaded ROM or FILE
 	.wEepromSegment		resb	2			; Segment where EEPROM is located
 	.bEepromType		resb	1			; EEPROM type
@@ -43,7 +43,7 @@ struc CFGVARS
 	.szOpenedFile		resb	FILENAME_BUFFER_SIZE
 endstruc
 
-; Bit defines for CFGVARS.wFlags
+; Bit defines for CFGVARS.wFlags (changes here might require changes elsewhere)
 FLG_CFGVARS_FILELOADED	EQU		(1<<0)	; BIOS is loaded from file
 FLG_CFGVARS_ROMLOADED	EQU		(1<<1)	; BIOS is loaded from EEPROM
 FLG_CFGVARS_UNSAVED		EQU		(1<<2)	; BIOS has unsaved changes

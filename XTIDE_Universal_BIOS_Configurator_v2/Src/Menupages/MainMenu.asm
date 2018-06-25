@@ -154,7 +154,7 @@ MainMenu_EnterMenuOrModifyItemVisibility:
 ALIGN JUMP_ALIGN
 .EnableOrDisableXtideRomItems:
 	call	EEPROM_FindXtideUniversalBiosROMtoESDI
-	jnc		SHORT .DisableAllRomItems
+	jc		SHORT .DisableAllRomItems
 	or		BYTE [g_MenuitemMainMenuLoadXtideUniversalBiosFromRom+MENUITEM.bFlags], FLG_MENUITEM_VISIBLE
 	call	Buffers_IsXtideUniversalBiosLoaded
 	jne		SHORT .DisableLoadSettingFromRom
@@ -200,7 +200,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableFlashEeprom:
-	test	WORD [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED
+	test	BYTE [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED
 	jz		SHORT .DisableFlashEeprom
 	or		BYTE [g_MenuitemMainMenuFlashEeprom+MENUITEM.bFlags], FLG_MENUITEM_VISIBLE
 	ret
@@ -221,7 +221,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableSave:
-	test	WORD [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED
+	test	BYTE [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED
 	jz		SHORT .DisableSave
 	or		BYTE [g_MenuitemMainMenuSaveFile+MENUITEM.bFlags], FLG_MENUITEM_VISIBLE
 	ret
@@ -256,6 +256,8 @@ LoadBiosFromFile:
 
 	add		si, BYTE FILE_DIALOG_IO.szFile
 	call	BiosFile_LoadFileFromDSSItoRamBuffer
+	call	LoadColorTheme
+	; *FIXME* Will load themes even from unrecognized versions of the BIOS which isn't really a problem but still 'unexpected behaviour' and therefore a bug.
 	call	MainMenu_EnterMenuOrModifyItemVisibility
 .CancelFileLoading:
 	add		sp, BYTE FILE_DIALOG_IO_size
@@ -271,6 +273,7 @@ LoadXtideUniversalBiosFromRom:
 	call	Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
 	mov		dx, g_szDlgMainLoadROM
 	call	Dialogs_DisplayNotificationFromCSDX
+	call	LoadColorTheme
 	jmp		MainMenu_EnterMenuOrModifyItemVisibility
 
 
@@ -280,5 +283,25 @@ LoadOldSettingsFromEeprom:
 	call	EEPROM_LoadOldSettingsFromRomToRamBuffer
 	call	Buffers_SetUnsavedChanges
 	mov		dx, g_szDlgMainLoadStngs
-	jmp		Dialogs_DisplayNotificationFromCSDX
+	call	Dialogs_DisplayNotificationFromCSDX
+	call	EEPROM_FindXtideUniversalBiosROMtoESDI
+	call	LoadColorTheme.FromROM
+	jmp		MainMenu_EnterMenuOrModifyItemVisibility
+
+
+;--------------------------------------------------------------------
+; LoadColorTheme
+;	Parameters:
+;		ES:		ROMVARS segment (only when loading theme from ROM)
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX, DI, ES
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+LoadColorTheme:
+	call	Buffers_GetFileBufferToESDI
+.FromROM:
+	mov		ax, [es:ROMVARS.pColorTheme]
+	jmp		ReadColorTheme
 

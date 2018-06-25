@@ -126,7 +126,7 @@ EnablePdcProgrammingMode:
 	sti
 
 	; PDC20230C and PDC20630 clears the bit we set at the beginning
-	in		al, dx
+	in		al, dx	; 1F2h
 	dec		dx
 	dec		dx		; Base port
 	test	al, 80h	; Clears CF
@@ -138,8 +138,8 @@ EnablePdcProgrammingMode:
 ;	Parameters:
 ;		AX:		ID WORD specific for detected controller
 ;	Returns:
-;		AL:		Max supported PIO mode
-;		AH:		FLGH_DPT_IORDY if IORDY supported, zero otherwise
+;		AL:		Max supported PIO mode (only if ZF set)
+;		AH:		~FLGH_DPT_IORDY if IORDY not supported, -1 otherwise (only if ZF set)
 ;		BX:		Min PIO cycle time (only if ZF set)
 ;		ZF:		Set if PIO limit necessary
 ;				Cleared if no need to limit timings
@@ -147,11 +147,10 @@ EnablePdcProgrammingMode:
 ;		Nothing
 ;--------------------------------------------------------------------
 PDC20x30_GetMaxPioModeToALandMinPioCycleTimeToBX:
-	cmp		ah, ID_PDC20630
-	je		SHORT .Return		; No need to limit anything
-	mov		ax, 2				; Limit PIO to 2 for ID_PDC20230
+	cmp		ah, ID_PDC20230
+	jne		SHORT .Return							; No need to limit anything for ID_PDC20630
+	mov		ax, (~FLGH_DPT_IORDY & 0FFh) << 8 | 2	; Limit PIO to 2 for ID_PDC20230
 	mov		bx, PIO_2_MIN_CYCLE_TIME_NS
-	stc
 .Return:
 	ret
 
@@ -205,9 +204,11 @@ PDC20x30_InitializeForDPTinDSDI:
 ;		AX, BX
 ;--------------------------------------------------------------------
 SetSpeedForDriveInCX:
-	eMOVZX	bx, BYTE [di+DPT_ADVANCED_ATA.bPioMode]
-	MIN_U	bl, 2	; Limit to PIO2
-	mov		bl, [cs:bx+.rgbPioModeToPDCspeedValue]
+	mov		bx, .rgbPioModeToPDCspeedValue
+	mov		al, [di+DPT_ADVANCED_ATA.bPioMode]
+	MIN_U	al, 2	; Limit to PIO2
+	cs xlat
+	xchg	bx, ax
 
 	add		dx, BYTE SECTOR_NUMBER_REGISTER
 	mov		bh, ~MASK_PDCSCR_DEV1SPEED	; Assume slave

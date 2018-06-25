@@ -23,29 +23,22 @@ SECTION .text
 ;--------------------------------------------------------------------
 ; OPTIMIZE_STRING_OPERATION
 ;	Parameters
-;		%1:		Repeat instruction
-;		%2:		String instruction without size (for example MOVS and not MOVSB or MOVSW)
+;		%1:		String instruction without size (only MOVS and STOS is supported)
 ;		CX:		Number of BYTEs to operate
-;		DS:SI:	Ptr to source data
+;		DS:SI:	Ptr to source data (for MOVS)
 ;		ES:DI:	Ptr to destination
 ;	Returns:
+;		CF:		Cleared
+;		CX:		Zero
 ;		SI, DI:	Updated by number of bytes operated
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%macro OPTIMIZE_STRING_OPERATION 2
-	push	cx
-
-	shr		cx, 1			; Operate with WORDs for performance
-	jz	%%HandleRemainingByte
-	%1		%2w
-%%HandleRemainingByte:
-	jnc		SHORT %%OperationCompleted
-	%2b
-
-ALIGN JUMP_ALIGN
-%%OperationCompleted:
-	pop		cx
+%macro OPTIMIZE_STRING_OPERATION 1
+	shr		cx, 1
+	rep		%1w
+	eRCL_IM	cx, 1
+	rep		%1b
 %endmacro
 
 
@@ -56,14 +49,17 @@ ALIGN JUMP_ALIGN
 ;		DS:SI:	Ptr to source data
 ;		ES:DI:	Ptr to destination buffer
 ;	Returns:
+;		CF:		Cleared
 ;		SI, DI:	Updated by number of bytes copied
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN JUMP_ALIGN
 Memory_CopyCXbytesFromDSSItoESDI:
-	OPTIMIZE_STRING_OPERATION rep, movs
+	push	cx
+	OPTIMIZE_STRING_OPERATION movs
+	pop		cx
 	ret
 %endif
 
@@ -76,7 +72,7 @@ Memory_CopyCXbytesFromDSSItoESDI:
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		Nothing
+;		CX
 ;--------------------------------------------------------------------
 %ifdef INCLUDE_MENU_LIBRARY
 ALIGN JUMP_ALIGN
@@ -101,7 +97,7 @@ Memory_ZeroSSBPwithSizeInCX:
 ;	Returns:
 ;		DI:		Updated by number of BYTEs stored
 ;	Corrupts registers:
-;		AX
+;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Memory_ZeroESDIwithSizeInCX:
@@ -117,11 +113,10 @@ Memory_ZeroESDIwithSizeInCX:
 ;	Returns:
 ;		DI:		Updated by number of BYTEs stored
 ;	Corrupts registers:
-;		Nothing
+;		CX
 ;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
 Memory_StoreCXbytesFromAccumToESDI:
-	OPTIMIZE_STRING_OPERATION rep, stos
+	OPTIMIZE_STRING_OPERATION stos
 	ret
 
 
@@ -134,7 +129,7 @@ Memory_StoreCXbytesFromAccumToESDI:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN JUMP_ALIGN
 Memory_ReserveCXbytesFromStackToDSSI:
 	pop		ax

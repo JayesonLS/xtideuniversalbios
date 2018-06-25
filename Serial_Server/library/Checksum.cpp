@@ -342,7 +342,7 @@ int main( int argc, char *argv[] )
 			  a->bittest[ b ] = (a->checksum)( bbuff, BBUFF_LENGTH );
 			}
 
-			bbuff[ rand() % 512 ] ^= bit[ rand() % 8 ];
+			bbuff[ rand() & 511 ] ^= bit[ rand() & 7 ];
 
 			if( b > 0 )
 			{

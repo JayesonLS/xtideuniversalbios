@@ -48,9 +48,9 @@ Buffers_Clear:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_IsXtideUniversalBiosLoaded:
-	test	WORD [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED
+	test	BYTE [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED
 	jnz		SHORT .FileOrBiosLoaded
-	or		cl, 1		; Clear ZF
+	test	sp, sp		; Clear ZF
 	ret
 
 .FileOrBiosLoaded:
@@ -75,7 +75,9 @@ Buffers_IsXtideUniversalBiosSignatureInESDI:
 	mov		si, g_szXtideUniversalBiosSignature
 	add		di, BYTE ROMVARS.rgbSign
 	mov		cx, XTIDE_SIGNATURE_LENGTH / 2
+%ifdef CLD_NEEDED
 	cld
+%endif
 	eSEG_STR repe, cs, cmpsw
 
 	pop		di
@@ -90,13 +92,17 @@ Buffers_IsXtideUniversalBiosSignatureInESDI:
 ;		ZF:		Set if XT or XT+ build is loaded
 ;				Cleared if some other (AT, 386) build is loaded
 ;	Corrupts registers:
-;		DI, ES
+;		Nothing
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_IsXTbuildLoaded:
 %strlen BUILD_TYPE_OFFSET	TITLE_STRING_START
+	push	es
+	push	di
 	call	Buffers_GetFileBufferToESDI
 	cmp		WORD [es:di+ROMVARS.szTitle+BUILD_TYPE_OFFSET+1], 'XT'	; +1 is for '('
+	pop		di
+	pop		es
 	ret
 %undef BUILD_TYPE_OFFSET
 
@@ -104,17 +110,17 @@ Buffers_IsXTbuildLoaded:
 ;--------------------------------------------------------------------
 ; Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
 ;	Parameters:
-;		AX:		EEPROM source (FLG_CFGVARS_FILELOADED or FLG_CFGVARS_ROMLOADED)
+;		AL:		EEPROM source (FLG_CFGVARS_FILELOADED or FLG_CFGVARS_ROMLOADED)
 ;		DX:CX:	EEPROM size in bytes
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, CX, DX
+;		CX, DX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration:
-	and		WORD [cs:g_cfgVars+CFGVARS.wFlags], ~(FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED | FLG_CFGVARS_UNSAVED)
-	or		WORD [cs:g_cfgVars+CFGVARS.wFlags], ax
+	and		BYTE [cs:g_cfgVars+CFGVARS.wFlags], ~(FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED | FLG_CFGVARS_UNSAVED)
+	or		[cs:g_cfgVars+CFGVARS.wFlags], al
 	shr		dx, 1
 	rcr		cx, 1
 	adc		cx, BYTE 0		; Round up to next WORD
@@ -134,12 +140,12 @@ Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_SetUnsavedChanges:
-	or		WORD [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_UNSAVED
+	or		BYTE [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_UNSAVED
 	ret
 
 ALIGN JUMP_ALIGN
 Buffers_ClearUnsavedChanges:
-	and		WORD [cs:g_cfgVars+CFGVARS.wFlags], ~FLG_CFGVARS_UNSAVED
+	and		BYTE [cs:g_cfgVars+CFGVARS.wFlags], ~FLG_CFGVARS_UNSAVED
 	ret
 
 
@@ -154,11 +160,12 @@ Buffers_ClearUnsavedChanges:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_SaveChangesIfFileLoaded:
-	mov		ax, [cs:g_cfgVars+CFGVARS.wFlags]
-	and		ax, BYTE (FLG_CFGVARS_FILELOADED | FLG_CFGVARS_UNSAVED)
-	cmp		ax, BYTE (FLG_CFGVARS_FILELOADED | FLG_CFGVARS_UNSAVED)
-	jne		SHORT .NothingToSave
-	call	Dialogs_DisplaySaveChangesDialog
+	mov		al, [cs:g_cfgVars+CFGVARS.wFlags]
+	and		al, FLG_CFGVARS_FILELOADED | FLG_CFGVARS_UNSAVED
+	jz		SHORT .NothingToSave
+	jpo		SHORT .NothingToSave
+	mov		bx, g_szDlgSaveChanges
+	call	Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX
 	jnz		SHORT .NothingToSave
 	jmp		BiosFile_SaveUnsavedChanges
 ALIGN JUMP_ALIGN
@@ -180,16 +187,22 @@ Buffers_AppendZeroesIfNeeded:
 	push	es
 
 	eMOVZX	di, [cs:g_cfgVars+CFGVARS.bEepromType]
-	mov		cx, [cs:di+g_rgwEepromTypeToSizeInWords]
+;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
+	mov		cx, [cs:di]
+;%else
+;	mov		cx, [cs:di+g_rgwEepromTypeToSizeInWords]
+;%endif
 	sub		cx, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]	; CX = WORDs to append
 	jbe		SHORT .NoNeedToAppendZeroes
 
 	call	Buffers_GetFileBufferToESDI
 	mov		ax, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]
-	shl		ax, 1
+	eSHL_IM	ax, 1
 	add		di, ax			; ES:DI now point first unused image byte
 	xor		ax, ax
+%ifdef CLD_NEEDED
 	cld
+%endif
 	rep stosw
 ALIGN JUMP_ALIGN
 .NoNeedToAppendZeroes:
@@ -213,6 +226,9 @@ Buffers_GenerateChecksum:
 
 	call	Buffers_GetFileBufferToESDI
 	call	EEPROM_GetXtideUniversalBiosSizeFromESDItoDXCX
+%ifdef CLD_NEEDED
+	cld
+%endif
 
 ; Compatibility fix for 3Com 3C503 cards where the ASIC returns 8080h as the last two bytes of the ROM.
 
@@ -222,19 +238,17 @@ Buffers_GenerateChecksum:
 	cmp		cx, 8192 - 1
 	jne		SHORT .BiosSizeIsNot8K
 	; The BIOS size is 8K and therefore a potential candidate for a 3Com 3C503 card.
-	dec		cx
-	dec		cx
+	mov		cl, (8192 - 3) & 0FFh
 	mov		ah, 3
 ALIGN JUMP_ALIGN
 .BiosSizeIsNot8K:
 .SumNextByte:
 	add		al, [es:di]
-.NextChecksumByte:
 	inc		di
 	loop	.SumNextByte
+.NextChecksumByte:
 	neg		al
-	mov		[es:di], al
-	inc		cx
+	stosb
 	dec		ah
 	jnz		SHORT .NextChecksumByte
 
@@ -305,9 +319,9 @@ Buffers_GetIdeControllerCountToCX:
 
 
 ;--------------------------------------------------------------------
-; Buffers_GetFileBufferToESDI
 ; Buffers_GetFlashComparisonBufferToESDI
 ; Buffers_GetFileDialogItemBufferToESDI
+; Buffers_GetFileBufferToESDI
 ;	Parameters:
 ;		Nothing
 ;	Returns:
@@ -319,13 +333,8 @@ ALIGN JUMP_ALIGN
 Buffers_GetFlashComparisonBufferToESDI:
 Buffers_GetFileDialogItemBufferToESDI:
 	call	Buffers_GetFileBufferToESDI
-	push	di
 	mov		di, es
-	add		di, 1000h		; Third 64k page
-	mov		es, di
-	pop		di
-	ret
-ALIGN JUMP_ALIGN
+	SKIP2B	f
 Buffers_GetFileBufferToESDI:
 	mov		di, cs
 	add		di, 1000h		; Change to next 64k page

@@ -23,7 +23,7 @@ SECTION .text
 ;--------------------------------------------------------------------
 ; Bit_GetSetCountToCXfromDXAX
 ;	Parameters
-;		DX:AX:		Source DWORD
+;		DX:AX:	Source DWORD
 ;	Returns:
 ;		CX:		Number of bits set in DX:AX
 ;	Corrupts registers:
@@ -57,16 +57,14 @@ ALIGN JUMP_ALIGN
 Bit_GetSetCountToCXfromAX:
 	push	ax
 
-	xor		cx, cx
+	mov		cx, -1
 ALIGN JUMP_ALIGN
-.BitScanLoop:
+.IncrementCX:
+	inc		cx
+.ShiftLoop:
 	shr		ax, 1
-	jz		SHORT .LastBitInCF
-	adc		cl, ch
-	jmp		SHORT .BitScanLoop
-ALIGN JUMP_ALIGN
-.LastBitInCF:
-	adc		cl, ch
+	jc		SHORT .IncrementCX
+	jnz		SHORT .ShiftLoop
 
 	pop		ax
 	ret
@@ -94,6 +92,7 @@ Bit_SetToDXAXfromIndexInCL:
 	add		cl, 16
 	ret
 
+
 ;--------------------------------------------------------------------
 ; Bit_SetToAXfromIndexInCL
 ;	Parameters:
@@ -114,3 +113,4 @@ Bit_SetToAXfromIndexInCL:
 
 	pop		dx
 	ret
+

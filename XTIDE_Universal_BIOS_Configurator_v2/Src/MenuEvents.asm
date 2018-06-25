@@ -83,9 +83,8 @@ ALIGN JUMP_ALIGN
 	call	Menupage_GetVisibleMenuitemsToAXfromDSDI
 	pop		ds
 
-	mov		WORD [si+MENUINIT.wItems], ax
-	mov		WORD [si+MENUINIT.bTitleLines], TITLE_LINES_IN_MENU
-	mov		WORD [si+MENUINIT.bInfoLines], INFO_LINES_IN_MENU
+	mov		[si+MENUINIT.wItems], ax
+	mov		WORD [si+MENUINIT.wTitleAndInfoLines], INFO_LINES_IN_MENU << 8 | TITLE_LINES_IN_MENU
 	mov		BYTE [si+MENUINIT.bWidth], MENU_WIDTH
 	CALL_DISPLAY_LIBRARY GetColumnsToALandRowsToAH
 	mov		[si+MENUINIT.bHeight], ah
@@ -111,7 +110,8 @@ ALIGN JUMP_ALIGN
 
 ALIGN JUMP_ALIGN
 .QuitProgram:
-	call	Dialogs_DisplayQuitDialog
+	mov		bx, g_szDlgExitToDos
+	call	Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX
 	jz		SHORT .ExitToDOS
 	clc
 	ret
@@ -168,8 +168,9 @@ ALIGN JUMP_ALIGN
 ;	Cursor has been positioned to the beginning of item line
 ALIGN JUMP_ALIGN
 .RefreshItemFromCX:
-	cmp		cx, NO_ITEM_HIGHLIGHTED
-	je		SHORT .NothingToRefresh
+	inc		cx					; NO_ITEM_HIGHLIGHTED ?
+	jz		SHORT .NothingToRefresh
+	dec		cx
 	call	Menupage_GetActiveMenupageToDSDI
 	call	Menupage_GetCXthVisibleMenuitemToDSSIfromDSDI
 	jnc		SHORT .NothingToRefresh
@@ -184,8 +185,9 @@ ALIGN JUMP_ALIGN
 ;	Cursor has been positioned to the beginning of first line
 ALIGN JUMP_ALIGN
 .RefreshInformation:
-	cmp		cx, NO_ITEM_HIGHLIGHTED
-	je		SHORT .NothingToRefresh
+	inc		cx					; NO_ITEM_HIGHLIGHTED ?
+	jz		SHORT .NothingToRefresh
+	dec		cx
 	call	Menupage_GetActiveMenupageToDSDI
 	call	Menupage_GetCXthVisibleMenuitemToDSSIfromDSDI
 	call	MenuitemPrint_PrintQuickInfoFromDSSI
@@ -212,10 +214,10 @@ ALIGN JUMP_ALIGN
 
 ALIGN JUMP_ALIGN
 .PrintLoadStatus:
-	mov		ax, [g_cfgVars+CFGVARS.wFlags]
-	test	ax, FLG_CFGVARS_FILELOADED
+	mov		al, [g_cfgVars+CFGVARS.wFlags]
+	test	al, FLG_CFGVARS_FILELOADED
 	jnz		SHORT .PrintNameOfLoadedFile
-	test	ax, FLG_CFGVARS_ROMLOADED
+	test	al, FLG_CFGVARS_ROMLOADED
 	mov		si, g_szEEPROM
 	jnz		SHORT .PrintNameOfLoadedFileOrEeprom
 	; Fall to .PrintNothingLoaded
@@ -252,7 +254,7 @@ ALIGN JUMP_ALIGN
 
 ALIGN JUMP_ALIGN
 .PrintStatusOfUnsavedChanges:
-	test	WORD [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_UNSAVED
+	test	BYTE [g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_UNSAVED
 	jz		SHORT .ReturnSinceNothingToPrint
 	mov		si, g_szUnsaved
 	JMP_DISPLAY_LIBRARY PrintNullTerminatedStringFromCSSI

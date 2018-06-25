@@ -32,29 +32,9 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 Math_DivQWatSSBPbyCX:
-%if 1
-	xor		dx, dx
-	mov		ax, [bp+6]		; Load highest divident WORD to DX:AX
-	div		cx
-	mov		[bp+6], ax		; Store quotient
-
-	mov		ax, [bp+4]
-	div		cx
-	mov		[bp+4], ax
-
-	mov		ax, [bp+2]
-	div		cx
-	mov		[bp+2], ax
-
-	mov		ax, [bp]
-	div		cx
-	mov		[bp], ax
-	ret
-%else ; ~1
-; This is about half the size compared to the above code but it's not tested which is why it's commented away.
 	push	di
 	mov		di, 6
 	xor		dx, dx
@@ -64,10 +44,9 @@ Math_DivQWatSSBPbyCX:
 	mov		[bp+di], ax
 	dec		di
 	dec		di
-	jns		.Next
+	jns		SHORT .Next
 	pop		di
 	ret
-%endif ; 1
 %endif
 
 
@@ -82,7 +61,7 @@ Math_DivQWatSSBPbyCX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XTIDECFG OR EXCLUDE_FROM_BIOSDRVS
 ALIGN JUMP_ALIGN
 Math_DivDXAXbyCX:
 	xor		bx, bx

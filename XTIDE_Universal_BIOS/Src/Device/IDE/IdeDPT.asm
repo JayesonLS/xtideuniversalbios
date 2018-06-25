@@ -120,7 +120,7 @@ IdeDPT_Finalize:
 	call	AdvAtaInit_GetControllerMaxPioModeToALandMinPioCycleTimeToBX
 	jnz		SHORT .ChangeTo32bitDevice
 
-	and		BYTE [di+DPT.bFlagsHigh], ~FLGH_DPT_IORDY	; No IORDY supported if need to limit
+	and		[di+DPT.bFlagsHigh], ah		; Mask off FLGH_DPT_IORDY if IORDY not supported
 	MIN_U	[di+DPT_ADVANCED_ATA.bPioMode], al
 	mov		[di+DPT_ADVANCED_ATA.wMinPioCycleTime], bx
 

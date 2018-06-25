@@ -36,7 +36,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_ReadUserInputtedWordWhilePrinting:
 	push	ds
@@ -86,7 +86,7 @@ Keyboard_ReadUserInputtedWordWhilePrinting:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_ReadUserInputtedStringToESDIWhilePrinting:
 	push	di
@@ -97,7 +97,9 @@ Keyboard_ReadUserInputtedStringToESDIWhilePrinting:
 
 	xor		bx, bx								; Zero character counter
 	dec		cx									; Decrement buffer size for NULL
+%ifdef CLD_NEEDED
 	cld
+%endif
 ALIGN KEYBOARD_JUMP_ALIGN
 .GetCharacterFromUser:
 	call	Keyboard_GetKeystrokeToAXandWaitIfNecessary	; Get ASCII to AL
@@ -196,7 +198,7 @@ ALIGN KEYBOARD_JUMP_ALIGN
 .EndCharacterInput:
 	xor		al, al								; Set ZF and clear CF
 	ret
-%endif ; EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%endif ; EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 
 
 ;--------------------------------------------------------------------
@@ -208,7 +210,7 @@ ALIGN KEYBOARD_JUMP_ALIGN
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_PrintBackspace:
 	mov		al, BS
@@ -229,7 +231,7 @@ Keyboard_PrintBackspace:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_PlayBellForUnwantedKeystroke:
 	mov		al, BELL
@@ -245,7 +247,7 @@ Keyboard_PlayBellForUnwantedKeystroke:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_PrintInputtedCharacter:
 	push	di
@@ -265,7 +267,7 @@ Keyboard_PrintInputtedCharacter:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS	; Only used when debugging
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS				; Only used when debugging
 ALIGN KEYBOARD_JUMP_ALIGN
 Keyboard_RemoveAllKeystrokesFromBuffer:
 	call	Keyboard_GetKeystrokeToAX
@@ -288,7 +290,7 @@ Keyboard_RemoveAllKeystrokesFromBuffer:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%define EXCLUDE
 	%ifdef MODULE_HOTKEYS OR MODULE_BOOT_MENU
 		%undef EXCLUDE

@@ -141,7 +141,7 @@ ALIGN DISPLAY_JUMP_ALIGN
 	ret
 
 .rgcFormatCharToLookupIndex:
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	db		"aIAduxsSctz-+%"
 %else
 	db		"IAuxscz-"		; Required by XTIDE Universal BIOS
@@ -149,27 +149,27 @@ ALIGN DISPLAY_JUMP_ALIGN
 .rgcFormatCharToLookupIndexEnd:
 ALIGN WORD_ALIGN
 .rgfnFormatSpecifierParser:
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	dw		a_FormatAttributeForNextCharacter
 %endif
 	dw		I_FormatDashForZero
 	dw		A_FormatAttributeForRemainingString
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	dw		d_FormatSignedDecimalWord
 %endif
 	dw		u_FormatUnsignedDecimalWord
 	dw		x_FormatHexadecimalWord
 	dw		s_FormatStringFromSegmentCS
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	dw		S_FormatStringFromFarPointer
 %endif
 	dw		c_FormatCharacter
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	dw		t_FormatRepeatCharacter
 %endif
 	dw		z_FormatStringFromSegmentZero
 	dw		PrepareToPrependParameterWithSpaces
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	dw		PrepareToAppendSpacesAfterParameter
 	dw		percent_FormatPercent
 %endif
@@ -307,7 +307,7 @@ ALIGN DISPLAY_JUMP_ALIGN
 ;	Corrupts registers:
 ;		AX, BX, DX
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN DISPLAY_JUMP_ALIGN
 a_FormatAttributeForNextCharacter:
 	mov		bl, [bp]
@@ -329,7 +329,7 @@ A_FormatAttributeForRemainingString:
 	mov		[VIDEO_BDA.displayContext+DISPLAY_CONTEXT.bAttribute], al
 	ret
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN DISPLAY_JUMP_ALIGN
 d_FormatSignedDecimalWord:
 	mov		ax, [bp]
@@ -390,7 +390,7 @@ z_FormatStringFromSegmentZero:
 	mov		si, [bp]
 	ret
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN DISPLAY_JUMP_ALIGN
 S_FormatStringFromFarPointer:
 	mov		bx, [bp-2]
@@ -407,7 +407,7 @@ c_FormatCharacter:
 	mov		al, [bp]
 	jmp		DisplayPrint_CharacterFromAL
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN DISPLAY_JUMP_ALIGN
 t_FormatRepeatCharacter:
 	push	cx

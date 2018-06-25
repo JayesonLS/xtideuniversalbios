@@ -167,7 +167,7 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 MenuitemPrint_WriteLookupValueStringToBufferInESDIfromUnshiftedItemInDSSI:
 	call	Menuitem_GetValueToAXfromMenuitemInDSSI
-	shl		ax, 1
+	eSHL_IM	ax, 1
 	jmp		SHORT PrintLookupValueFromAXtoBufferInESDI
 
 ALIGN JUMP_ALIGN

@@ -96,7 +96,9 @@ Int13h_DiskFunctionsHandler:
 %ifndef RELOCATE_INT13H_STACK
 	sti									; Enable interrupts
 %endif
+%ifdef CLD_NEEDED
 	cld									; String instructions to increment pointers
+%endif
 	ePUSHA
 	push	ds
 	push	es
@@ -192,8 +194,12 @@ Int13h_DirectCallToAnotherBios:
 	ePUSH_T	di, .ReturnFromAnotherBios	; Can not corrupt flags
 
 	; Push old INT 13h handler and restore registers
+%ifdef USE_386
+	push	DWORD [RAMVARS.fpOldI13h]
+%else
 	push	WORD [RAMVARS.fpOldI13h+2]
 	push	WORD [RAMVARS.fpOldI13h]
+%endif
 	mov		bx, [bp+IDEPACK.intpack+INTPACK.bx]
 	mov		di, [bp+IDEPACK.intpack+INTPACK.di]
 	mov		ds, [bp+IDEPACK.intpack+INTPACK.ds]

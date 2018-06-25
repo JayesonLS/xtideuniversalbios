@@ -105,7 +105,7 @@ CgaSnow_Stosw:
 ;	Corrupts registers:
 ;		AX, CX, DX
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifdef MODULE_STRINGS_COMPRESSED
 		%define EXCLUDE
 	%endif

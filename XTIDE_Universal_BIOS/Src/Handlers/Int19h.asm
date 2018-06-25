@@ -29,7 +29,9 @@ SECTION .text
 ;--------------------------------------------------------------------
 Int19h_BootLoaderHandler:
 	sti											; Enable interrupts
+%ifdef CLD_NEEDED
 	cld											; String instructions to increment pointers
+%endif
 %ifdef MODULE_VERY_LATE_INIT
 	LOAD_BDA_SEGMENT_TO	ds, ax					; Load BDA segment (zero) to DS
 	les		ax, [TEMPORARY_VECTOR_FOR_SYSTEM_INT13h*4]

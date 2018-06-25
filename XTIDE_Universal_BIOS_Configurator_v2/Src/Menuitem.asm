@@ -52,14 +52,15 @@ Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI:
 	mov		cx, DIALOG_INPUT_size
 	call	Memory_ReserveCXbytesFromStackToDSSI
 	call	InitializeDialogInputInDSSIfromMenuitemInESDI
-	mov		ax, [es:di+MENUITEM.itemValue + ITEM_VALUE.szMultichoice]
+	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.szMultichoice]
 	mov		[si+DIALOG_INPUT.fszItems], ax
 	push	di
 	CALL_MENU_LIBRARY GetSelectionToAXwithInputInDSSI
 	pop		di
 
-	cmp		ax, BYTE NO_ITEM_SELECTED
-	je		SHORT .NothingToChange
+	inc		ax				; NO_ITEM_SELECTED ?
+	jz		SHORT .NothingToChange
+	dec		ax
 	call	Registers_CopyESDItoDSSI
 	call	Menuitem_StoreValueFromAXtoMenuitemInDSSI
 .NothingToChange:
@@ -69,24 +70,6 @@ Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI:
 
 ;--------------------------------------------------------------------
 ; Menuitem_ActivateHexInputForMenuitemInDSSI
-;	Parameters:
-;		DS:SI:	Ptr to MENUITEM
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX, BX, CX, SI, DI, ES
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-Menuitem_ActivateHexInputForMenuitemInDSSI:
-	call	Registers_CopyDSSItoESDI
-
-	mov		cx, WORD_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
-	call	InitializeDialogInputInDSSIfromMenuitemInESDI
-	mov		BYTE [si+WORD_DIALOG_IO.bNumericBase], 16
-	jmp		SHORT ContinueWordInput
-
-;--------------------------------------------------------------------
 ; Menuitem_ActivateUnsignedInputForMenuitemInDSSI
 ;	Parameters:
 ;		DS:SI:	Ptr to MENUITEM
@@ -96,18 +79,20 @@ Menuitem_ActivateHexInputForMenuitemInDSSI:
 ;	Corrupts registers:
 ;		AX, BX, CX, SI, DI, ES
 ;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
+Menuitem_ActivateHexInputForMenuitemInDSSI:
+	mov		bl, 16
+	SKIP2B	ax
 Menuitem_ActivateUnsignedInputForMenuitemInDSSI:
-	call	Registers_CopyDSSItoESDI
+	mov		bl, 10
 
+	call	Registers_CopyDSSItoESDI
 	mov		cx, WORD_DIALOG_IO_size
 	call	Memory_ReserveCXbytesFromStackToDSSI
 	call	InitializeDialogInputInDSSIfromMenuitemInESDI
-	mov		BYTE [si+WORD_DIALOG_IO.bNumericBase], 10
-ContinueWordInput:
-	mov		ax, [es:di+MENUITEM.itemValue + ITEM_VALUE.wMinValue]
+	mov		[si+WORD_DIALOG_IO.bNumericBase], bl
+	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.wMinValue]
 	mov		[si+WORD_DIALOG_IO.wMin], ax
-	mov		ax, [es:di+MENUITEM.itemValue + ITEM_VALUE.wMaxValue]
+	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.wMaxValue]
 	mov		[si+WORD_DIALOG_IO.wMax], ax
 	push	di
 	CALL_MENU_LIBRARY GetWordWithIoInDSSI
@@ -137,7 +122,7 @@ ContinueWordInput:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 InitializeDialogInputInDSSIfromMenuitemInESDI:
-	mov		ax, [es:di+MENUITEM.itemValue + ITEM_VALUE.szDialogTitle]
+	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.szDialogTitle]
 	mov		[si+DIALOG_INPUT.fszTitle], ax
 	mov		[si+DIALOG_INPUT.fszTitle+2], cs
 
@@ -161,30 +146,36 @@ InitializeDialogInputInDSSIfromMenuitemInESDI:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Menuitem_StoreValueFromAXtoMenuitemInDSSI:
+%if 0
+	; 3 bytes more but this will always invoke the Writer, even if it's an invalid item type (which might be useful).
 	eMOVZX	bx, [si+MENUITEM.bType]
 	cmp		bl, TYPE_MENUITEM_HEX
+%else
+	; This will only invoke the Writer for valid item types.
+	mov		bx, -TYPE_MENUITEM_MULTICHOICE & 0FFh
+	add		bl, [si+MENUITEM.bType]
+	jnc		SHORT .InvalidItemType
+	cmp		bl, TYPE_MENUITEM_HEX - TYPE_MENUITEM_MULTICHOICE
+%endif
 	ja		SHORT .InvalidItemType
 
 	call	GetConfigurationBufferToESDIforMenuitemInDSSI
 	add		di, [si+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 
-	push	bx
-	mov		bx,[si+MENUITEM.itemValue+ITEM_VALUE.fnValueWriter]
-	test	bx,bx
-	jz		SHORT .NoWriter
-	call	bx
-.NoWriter:
-	pop		bx
-
-	jmp		[cs:bx+.rgfnJumpToStoreValueBasedOnItemType]
+	push	WORD [cs:bx+.rgfnJumpToStoreValueBasedOnItemType]
+	mov		bx, [si+MENUITEM.itemValue+ITEM_VALUE.fnValueWriter]
+	test	bx, bx
+	jnz		SHORT .InvokeWriter
 .InvalidItemType:
-	ret
+	pop		bx
+.InvokeWriter:
+	jmp		bx				; The Writer can freely corrupt BX
 
 ALIGN WORD_ALIGN
 .rgfnJumpToStoreValueBasedOnItemType:
-	dw		.InvalidItemType									; TYPE_MENUITEM_PAGEBACK
-	dw		.InvalidItemType									; TYPE_MENUITEM_PAGENEXT
-	dw		.InvalidItemType									; TYPE_MENUITEM_ACTION
+;	dw		.InvalidItemType									; TYPE_MENUITEM_PAGEBACK
+;	dw		.InvalidItemType									; TYPE_MENUITEM_PAGENEXT
+;	dw		.InvalidItemType									; TYPE_MENUITEM_ACTION
 	dw		.StoreMultichoiceValueFromAXtoESDIwithItemInDSSI	; TYPE_MENUITEM_MULTICHOICE
 	dw		.StoreByteOrWordValueFromAXtoESDIwithItemInDSSI		; TYPE_MENUITEM_UNSIGNED
 	dw		.StoreByteOrWordValueFromAXtoESDIwithItemInDSSI		; TYPE_MENUITEM_HEX
@@ -236,7 +227,7 @@ ALIGN JUMP_ALIGN
 	test	bx, bx
 	jz		.StoreByteOrWordValueFromAXtoESDIwithItemInDSSI
 
-	shl		ax, 1			; Shift for WORD lookup
+	eSHL_IM	ax, 1			; Shift for WORD lookup
 	add		bx, ax
 	mov		ax, [bx]		; Lookup complete
 	; Fall to .StoreByteOrWordValueFromAXtoESDIwithItemInDSSI
@@ -316,7 +307,7 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		AX:		Menuitem value
 ;	Corrupts registers:
-;		BX
+;		Nothing
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Menuitem_GetValueToAXfromMenuitemInDSSI:
@@ -329,15 +320,15 @@ Menuitem_GetValueToAXfromMenuitemInDSSI:
 
 	test	BYTE [si+MENUITEM.bFlags], FLG_MENUITEM_BYTEVALUE
 	jz		SHORT .NoConvertWordToByteValue
-	xor		ah, ah				; conversion needs to happen before call to the reader,
-								; in case the reader unpacks the byte to a word
+	xor		ah, ah			; conversion needs to happen before call to the reader,
+							; in case the reader unpacks the byte to a word
 
 .NoConvertWordToByteValue:
 	mov		bx, [si+MENUITEM.itemValue+ITEM_VALUE.fnValueReader]
 	test	bx,bx
 	jz		SHORT .NoReader
 
-	call	bx
+	call	bx				; The Reader can freely corrupt BX, DI and ES
 
 .NoReader:
 	pop		bx

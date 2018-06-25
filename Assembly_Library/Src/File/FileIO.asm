@@ -34,11 +34,13 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX, BX
 ;--------------------------------------------------------------------
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 FileIO_CreateWithPathInDSSIandAttributesInCX:
 	mov		ah, CREATE_OR_TRUNCATE_FILE
 	SKIP2B	bx
 	; Fall to FileIO_OpenWithPathInDSSIandFileAccessInAL
+%endif
 
 ;--------------------------------------------------------------------
 ; FileIO_OpenWithPathInDSSIandFileAccessInAL

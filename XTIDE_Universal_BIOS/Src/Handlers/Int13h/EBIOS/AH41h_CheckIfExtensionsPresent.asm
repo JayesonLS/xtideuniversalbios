@@ -45,7 +45,7 @@ AH41h_HandlerForCheckIfExtensionsPresent:
 %endif
 
 	mov		BYTE [bp+IDEPACK.intpack+INTPACK.ah], EBIOS_VERSION
-	mov		WORD [bp+IDEPACK.intpack+INTPACK.bx], 0AA55h
+	not		WORD [bp+IDEPACK.intpack+INTPACK.bx]	; 55AAh = AA55h
 
 %ifdef MODULE_COMPATIBLE_TABLES
 	call	AH41h_GetSupportBitsToCX
@@ -74,13 +74,21 @@ AH41h_HandlerForCheckIfExtensionsPresent:
 ;		Nothing
 ;--------------------------------------------------------------------
 AH41h_GetSupportBitsToCX:
+%ifdef USE_AT	; Always in Full mode
+%ifndef MODULE_8BIT_IDE OR MODULE_SERIAL
+	mov		cx, ENHANCED_DRIVE_ACCESS_SUPPORT | ENHANCED_DISK_DRIVE_SUPPORT
+%else
+	mov		cx, ENHANCED_DRIVE_ACCESS_SUPPORT
+	cmp		BYTE [di+DPT_ATA.bDevice], DEVICE_8BIT_ATA
+	jae		SHORT .DoNotSetEDDflag
+	or		cl, ENHANCED_DISK_DRIVE_SUPPORT
+%endif
+%else ; ~USE_AT
 	mov		cx, ENHANCED_DRIVE_ACCESS_SUPPORT
 
 	; DPTE needs buffer from RAM so do not return it in lite mode
-%ifndef USE_AT
 	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_FULLMODE
 	jz		SHORT .DoNotSetEDDflag
-%endif
 
 %ifdef MODULE_8BIT_IDE OR MODULE_SERIAL
 	; DPTE contains information for device drivers. We should not return
@@ -90,6 +98,7 @@ AH41h_GetSupportBitsToCX:
 %endif
 
 	or		cl, ENHANCED_DISK_DRIVE_SUPPORT	; AH=48h returns DPTE
+%endif ; USE_AT
 .DoNotSetEDDflag:
 	ret
 

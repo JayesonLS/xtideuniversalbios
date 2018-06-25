@@ -20,8 +20,8 @@
 ; Section containing initialized data
 SECTION .data
 
-g_szProgramName:	db	"BIOS Drive Information Tool v1.0.2",CR,LF
-					db	"(C) 2012-2016 by XTIDE Universal BIOS Team",CR,LF
+g_szProgramName:	db	"BIOS Drive Information Tool v1.0.3",CR,LF
+					db	"(C) 2012-2018 by XTIDE Universal BIOS Team",CR,LF
 					db	"Released under GNU GPL v2",CR,LF
 					db	"http://xtideuniversalbios.org/",CR,LF,NULL
 
@@ -41,8 +41,8 @@ g_szLBA28:			db	" LBA28 sectors: ",NULL
 g_szLBA48:			db	" LBA48 sectors: ",NULL
 g_szBlockMode:		db	" Block mode   : Set to %u from max %u sectors",CR,LF,NULL
 g_szPIO:			db	" PIO mode     : Max %u, Min cycle times: %u ns, with IORDY %d ns",CR,LF,NULL
-g_szXTUB:			db	"XTIDE Universal BIOS %s generates following L-CHS...",CR,LF,NULL
-g_szXTUBversion:	db	ROM_VERSION_STRING	; This one is NULL terminated
+g_szXUB:			db	"XTIDE Universal BIOS %s generates following L-CHS...",CR,LF,NULL
+g_szXUBversion:		db	ROM_VERSION_STRING	; This one is NULL terminated
 
 g_szOldInfoHeader:	db	"Old INT 13h information from AH=08h and AH=15h...",CR,LF,NULL
 					;	Cylinders

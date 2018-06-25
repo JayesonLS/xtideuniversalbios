@@ -36,7 +36,7 @@
 
 char *bannerStrings[] = {
 	"SerDrive - XTIDE Universal BIOS Serial Drive Server",
-	"Copyright (C) 2012-2013 by XTIDE Universal BIOS Team",
+	"Copyright (C) 2012-2018 by XTIDE Universal BIOS Team",
 	"Released under GNU GPL v2, with ABSOLUTELY NO WARRANTY",
 	ROM_VERSION_STRING,
 	"",
@@ -48,8 +48,7 @@ char *usageStrings[] = {
 	"this distribution, visit the XTIDE Universal BIOS wiki (address below), or",
  	"http://www.gnu.org/licenses/gpl-2.0.html",
 	"",
-	"Visit the wiki on http://code.google.com/p/xtideuniversalbios for detailed",
-	"serial drive usage directions.",
+	"Visit the wiki on http://xtideuniversalbios.org for detailed usage directions.",
 	"",
 	"Usage: SerDrive [options] imagefile [[slave-options] slave-imagefile]",
 	"",

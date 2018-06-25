@@ -49,7 +49,7 @@ SECTION .text
 ;	Returns:
 ;		DX:CX:	BIOS size in bytes
 ;	Corrupts registers:
-;		AX, BX, SI, DI
+;		BX, SI, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 EEPROM_LoadXtideUniversalBiosFromRomToRamBufferAndReturnSizeInDXCX:
@@ -60,7 +60,6 @@ EEPROM_LoadXtideUniversalBiosFromRomToRamBufferAndReturnSizeInDXCX:
 	xor		si, si				; Load from beginning of ROM
 	call	LoadBytesFromRomToRamBuffer
 
-	call	EEPROM_GetXtideUniversalBiosSizeFromESDItoDXCX
 	pop		es
 	ret
 
@@ -89,10 +88,10 @@ EEPROM_GetXtideUniversalBiosSizeFromESDItoDXCX:
 ;	Parameters:
 ;		Nothing
 ;	Returns:
-;		CF:		Set if EEPROM was found
-;				Cleared if EEPROM not found
+;		CF:		Cleared if EEPROM was found
+;				Set if EEPROM not found
 ;	Corrupts registers:
-;		AX, BX, CX, SI, DI
+;		BX, CX, SI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 EEPROM_LoadOldSettingsFromRomToRamBuffer:
@@ -106,10 +105,10 @@ EEPROM_LoadOldSettingsFromRomToRamBuffer:
 ;		CX:		Number of bytes to load from ROM
 ;		SI:		Offset to first byte to load
 ;	Returns:
-;		CF:		Set if EEPROM was found
-;				Cleared if EEPROM not found
+;		CF:		Cleared if EEPROM was found
+;				Set if EEPROM not found
 ;	Corrupts registers:
-;		AX, BX, CX, SI
+;		BX, SI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 LoadBytesFromRomToRamBuffer:
@@ -118,16 +117,17 @@ LoadBytesFromRomToRamBuffer:
 	push	di
 
 	call	EEPROM_FindXtideUniversalBiosROMtoESDI
-	jnc		SHORT .XtideUniversalBiosNotFound
+	jc		SHORT .XtideUniversalBiosNotFound
 	push	es
 	pop		ds											; DS:SI points to ROM
 
 	call	Buffers_GetFileBufferToESDI
 	mov		di, si										; ES:DI points to RAM buffer
 
+%ifdef CLD_NEEDED
 	cld
-	call	Memory_CopyCXbytesFromDSSItoESDI
-	stc
+%endif
+	call	Memory_CopyCXbytesFromDSSItoESDI			; Clears CF
 
 .XtideUniversalBiosNotFound:
 	pop		di
@@ -142,10 +142,10 @@ LoadBytesFromRomToRamBuffer:
 ;		Nothing
 ;	Returns:
 ;		ES:DI:	EEPROM segment
-;		CF:		Set if EEPROM was found
-;				Cleared if EEPROM not found
+;		CF:		Cleared if EEPROM was found
+;				Set if EEPROM not found
 ;	Corrupts registers:
-;		AX, BX
+;		BX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 EEPROM_FindXtideUniversalBiosROMtoESDI:
@@ -158,15 +158,10 @@ ALIGN JUMP_ALIGN
 .SegmentLoop:
 	mov		es, bx					; Possible ROM segment to ES
 	call	Buffers_IsXtideUniversalBiosSignatureInESDI
-	je		SHORT .RomFound
+	je		SHORT .RomFound			; If equal, CF=0
 	add		bx, 80h					; Increment by 2kB (minimum possible distance from the beginning of one option ROM to the next)
 	jnc		SHORT .SegmentLoop		; Loop until segment overflows
-	clc
-	jmp		SHORT .ReturnWithoutUpdatingCF
-ALIGN JUMP_ALIGN
 .RomFound:
-	stc
-.ReturnWithoutUpdatingCF:
 	pop		cx
 	pop		si
 	ret
@@ -190,8 +185,14 @@ EEPROM_LoadFromRomToRamComparisonBuffer:
 	xor		si, si
 	call	Buffers_GetFlashComparisonBufferToESDI
 	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromType]
-	mov		cx, [cs:bx+g_rgwEepromTypeToSizeInWords]
+%ifdef CLD_NEEDED
 	cld
+%endif
+;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
+	mov		cx, [cs:bx]
+;%else
+;	mov		cx, [cs:bx+g_rgwEepromTypeToSizeInWords]
+;%endif
 	rep movsw
 
 	pop		ds

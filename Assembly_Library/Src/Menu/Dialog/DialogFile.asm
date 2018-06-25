@@ -248,8 +248,13 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 AppendFileFromDTAinDSSItoOffScreenBuffer:
-	call	.FilterCurrentDirectory			; We never want "."
-	call	.FilterUpDirectoryWhenInRoot	; No ".." when in root directory
+	cmp		WORD [si+DTA.szFile], CURRENTDIR_CHARACTERS
+	je		SHORT .Return					; We never want "."
+	test	dl, dl
+	jnz		SHORT .NotInRootDirectory
+	cmp		WORD [si+DTA.szFile], UPDIR_CHARACTERS
+	je		SHORT .Return					; No ".." when in root directory
+.NotInRootDirectory:
 	inc		cx								; Nothing filtered so increment files/directories
 
 	push	bp
@@ -261,36 +266,7 @@ AppendFileFromDTAinDSSItoOffScreenBuffer:
 	pop		dx
 	pop		si
 	pop		bp
-	ret
-
-;--------------------------------------------------------------------
-; .FilterCurrentDirectory
-; .FilterUpDirectoryWhenInRoot
-;	Parameters:
-;		DL:		Zero if root directory selected
-;		DS:SI:	Ptr to DTA containing file information
-;	Returns:
-;		Nothing
-;		Returns from AppendFileToBufferInESDIfromDtaInDSSI when filtering
-;	Corrupts registers:
-;		AX
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-.FilterCurrentDirectory:
-	cmp		WORD [si+DTA.szFile], CURRENTDIR_CHARACTERS
-	je		SHORT .DoFilter
-	ret
-
-ALIGN JUMP_ALIGN
-.FilterUpDirectoryWhenInRoot:
-	test	dl, dl			; Set ZF if root directory selected
-	jnz		SHORT .ReturnWithoutFiltering
-	cmp		WORD [si+DTA.szFile], UPDIR_CHARACTERS
-	jne		SHORT .ReturnWithoutFiltering
-.DoFilter:
-	add		sp, BYTE 2		; Remove return address from stack
-ALIGN JUMP_ALIGN, ret
-.ReturnWithoutFiltering:
+.Return:
 	ret
 
 ;--------------------------------------------------------------------
@@ -472,9 +448,9 @@ RemoveLastLFandTerminateESDIwithNull:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 GetInfoLinesToCXandDialogFlagsToAX:
-	xor		ax, ax
-	call	GetDialogFlagsToAL
-	jmp		Bit_GetSetCountToCXfromAX
+	ePUSH_T	ax, Bit_GetSetCountToCXfromAX
+	xor		ah, ah
+	; Fall to GetDialogFlagsToAL
 
 ;--------------------------------------------------------------------
 ; GetDialogFlagsToAL
@@ -695,6 +671,7 @@ HandleFunctionKeyForDriveChange:
 	call	.DisplayDriveSelectionDialogWithIoInDSSI
 	call	.ChangeDriveToUserSelectionFromIoInDSSI
 	add		sp, BYTE DRIVE_DIALOG_IO_size
+.UserCancelledDriveChange:
 	ret
 
 ;--------------------------------------------------------------------
@@ -728,11 +705,50 @@ ALIGN JUMP_ALIGN
 	cmp		BYTE [si+DRIVE_DIALOG_IO.bUserCancellation], FALSE
 	jne		SHORT .UserCancelledDriveChange
 
+	; Install our Custom Critical Error Handler to catch "Drive Not Ready" errors. This handler only works on DOS 3.0+ systems
+	; but that should be OK because only DOS 3.1+ will trigger it. Under older DOS versions drives are enumerated using
+	; GET_DOS_DRIVE_PARAMETER_BLOCK_FOR_SPECIFIC_DRIVE which will access the drive so we know it is available at this point.
+	mov		dx, DosCritical_CustomHandler
+	call	DosCritical_InstallNewHandlerFromCSDX
+
+	; Save the current drive on stack in case the selected drive is not ready and the user decides to cancel the change.
+	call	Drive_GetDefaultToAL
+	xchg	dx, ax
+
+.RetryDrive:
+	push	dx									; Save the previous current drive to stack
+
 	mov		dl, [si+DRIVE_DIALOG_IO.bReturnDriveNumber]
 	call	Drive_SetDefaultFromDL
+
+	; Now we must try to force a media access to catch "Drive Not Ready".
+	push	ds
+	push	ss
+	pop		ds
+	ePUSH_T	ax, CURRENTDIR_CHARACTERS
+	mov		cx, FLG_FILEATTR_DIRECTORY
+	mov		dx, sp
+	mov		ax, FIND_FIRST_MATCHING_FILE<<8
+	int		DOS_INTERRUPT_21h
+	pop		ax
+	pop		ds
+
+	pop		dx									; Restore the previous current drive from stack
+
+	xchg	ah, [cs:bLastCriticalError]			; Zero bLastCriticalError and fetch error code to AH
+	cmp		ah, ERR_DOS_DRIVE_NOT_READY
+	jne		SHORT .DriveIsReady
+
+	mov		bx, g_szDlgDriveNotReady
+	call	Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX
+	jz		SHORT .RetryDrive
+	; The user cancelled the drive change. Restore current drive to what it was previously.
+	call	Drive_SetDefaultFromDL
+	jmp		DosCritical_RestoreDosHandler
+
+.DriveIsReady:
+	call	DosCritical_RestoreDosHandler
 	jmp		RefreshFilesToDisplay
-.UserCancelledDriveChange:
-	ret
 
 
 ;--------------------------------------------------------------------

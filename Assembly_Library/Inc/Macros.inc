@@ -17,7 +17,7 @@
 ;	Corrupts registers:
 ;		%1
 ;--------------------------------------------------------------------
-%macro SKIP2B 1
+%macro SKIP2B 1.nolist
 	%ifidni		%1, f
 		db	03Dh					; Opcode byte for CMP AX, <immed>
 		;db	0A9h					; Alt. version TEST AX, <immed>

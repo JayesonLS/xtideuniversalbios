@@ -184,23 +184,21 @@ FlashMenu_EnterMenuOrModifyItemVisibility:
 	push	cs
 	pop		ds
 
-	cmp		WORD [cs:g_cfgVars+CFGVARS.wEepromSegment], 0
-	jne		.alreadySet
+	cmp		WORD [g_cfgVars+CFGVARS.wEepromSegment], 0
+	jne		SHORT .AlreadySet
 
 	push	es
 	push	di
 	call	EEPROM_FindXtideUniversalBiosROMtoESDI
-	push	es
-	pop		ax
+	mov		ax, es
 	pop		di
 	pop		es
-	jc		.storeEepromSegment
+	jnc		SHORT .StoreEepromSegment
 	mov		ax, DEFAULT_EEPROM_SEGMENT
-.storeEepromSegment:
-	mov		WORD [cs:g_cfgVars+CFGVARS.wEepromSegment], ax
+.StoreEepromSegment:
+	mov		[g_cfgVars+CFGVARS.wEepromSegment], ax
 
-.alreadySet:
-
+.AlreadySet:
 	mov		si, g_MenupageForFlashMenu
 	jmp		Menupage_ChangeToNewMenupageInDSSI
 
@@ -255,6 +253,7 @@ ALIGN JUMP_ALIGN
 	stc
 ALIGN JUMP_ALIGN, ret
 .ImageFitsInSelectedEeprom:
+.DoNotGenerateChecksumByte:
 	ret
 
 ;--------------------------------------------------------------------
@@ -270,11 +269,9 @@ ALIGN JUMP_ALIGN
 .PrepareBuffersForFlashing:
 	call	EEPROM_LoadFromRomToRamComparisonBuffer
 	call	Buffers_AppendZeroesIfNeeded
-	test	WORD [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_CHECKSUM
+	test	BYTE [cs:g_cfgVars+CFGVARS.wFlags], FLG_CFGVARS_CHECKSUM
 	jz		SHORT .DoNotGenerateChecksumByte
 	jmp		Buffers_GenerateChecksum
-.DoNotGenerateChecksumByte:
-	ret
 
 ;--------------------------------------------------------------------
 ; .InitializeFlashvarsFromDSSI
@@ -348,7 +345,11 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 .GetSelectedEepromSizeInWordsToAX:
 	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromType]
-	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
+;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
+	mov		ax, [cs:bx]
+;%else
+;	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
+;%endif
 	ret
 
 ;--------------------------------------------------------------------

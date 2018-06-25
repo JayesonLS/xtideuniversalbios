@@ -103,7 +103,7 @@ AtaID_VerifyFromESSI:
 ;	Returns:
 ;		DX:		User defined P-CHS to L-CHS translate mode
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, BX
 ;--------------------------------------------------------------------
 AtaID_ModifyESSIforUserDefinedLimitsAndReturnTranslateModeInDX:
 	call	AccessDPT_GetPointerToDRVPARAMStoCSBX
@@ -112,10 +112,10 @@ AtaID_ModifyESSIforUserDefinedLimitsAndReturnTranslateModeInDX:
 	push	cs
 	pop		ds
 
-	; Load User Defined CHS or LBA to CX:AX
-	mov		dx, [bx+DRVPARAMS.wFlags]
+	; Load User Defined CHS or LBA to BX:AX
+	mov		dl, [bx+DRVPARAMS.wFlags]			; Only load the flags we actually need
 	mov		ax, [bx+DRVPARAMS.wCylinders]		; Or .dwMaximumLBA
-	mov		cx, [bx+DRVPARAMS.wHeadsAndSectors]	; Or .dwMaximumLBA+2
+	mov		bx, [bx+DRVPARAMS.wHeadsAndSectors]	; Or .dwMaximumLBA+2
 
 	push	es
 	pop		ds		; DS:SI now points to ATA information
@@ -126,9 +126,9 @@ AtaID_ModifyESSIforUserDefinedLimitsAndReturnTranslateModeInDX:
 
 	; Apply new CHS and disable LBA (we also want to set CHS addressing)
 	mov		[si+ATA1.wCylCnt], ax
-	eMOVZX	ax, cl
+	eMOVZX	ax, bl
 	mov		[si+ATA1.wHeadCnt], ax
-	mov		al, ch
+	mov		al, bh
 	mov		[si+ATA1.wSPT], ax
 	and		BYTE [si+ATA1.wCaps+1], ~(A1_wCaps_LBA>>8)
 	and		BYTE [si+ATA6.wSetSup83+1], ~(A6_wSetSup83_LBA48>>8)
@@ -139,14 +139,14 @@ AtaID_ModifyESSIforUserDefinedLimitsAndReturnTranslateModeInDX:
 	jz		SHORT .NoUserDefinedLBA
 
 	; Apply new LBA and disable LBA48
-	cmp		cx, [si+ATA1.dwLBACnt+2]
+	cmp		bx, [si+ATA1.dwLBACnt+2]
 	ja		SHORT .NoUserDefinedLBA		; Do not set larger than drive
 	jb		SHORT .StoreNewLBA
 	cmp		ax, [si+ATA1.dwLBACnt]
 	ja		SHORT .NoUserDefinedLBA		; Allow same size to disable LBA48
 .StoreNewLBA:
 	mov		[si+ATA1.dwLBACnt], ax
-	mov		[si+ATA1.dwLBACnt+2], cx
+	mov		[si+ATA1.dwLBACnt+2], bx
 	and		BYTE [si+ATA6.wSetSup83+1], ~(A6_wSetSup83_LBA48>>8)
 .NoUserDefinedLBA:
 
@@ -172,26 +172,31 @@ AtaID_ModifyESSIforUserDefinedLimitsAndReturnTranslateModeInDX:
 ;--------------------------------------------------------------------
 AtaID_GetMaxPioModeToAXandMinCycleTimeToCX:
 	; Get PIO mode and cycle time for PIO 0...2
-	mov		bx, [es:si+ATA1.bPioMode]
-	mov		ax, bx					; AH = 0, AL = PIO mode 0, 1 or 2
-	eSHL_IM	bx, 1					; Shift for WORD lookup
+%ifdef USE_386
+	movzx	ax, [es:si+ATA1.bPioMode]	; AH = 0, AL = PIO mode 0, 1 or 2
+%else
+	mov		al, [es:si+ATA1.bPioMode]
+	cbw
+%endif
+	mov		bx, ax
+	eSHL_IM	bx, 1						; Shift for WORD lookup
 	mov		cx, [cs:bx+.rgwPio0to2CycleTimeInNanosecs]
 
 	; Check if IORDY is supported
 	test	BYTE [es:si+ATA2.wCaps+1], A2_wCaps_IORDY >> 8
-	jz		SHORT .ReturnPioTimings	; No PIO 3 or higher if no IORDY
-	mov		ah, FLGH_DPT_IORDY
+	jz		SHORT .ReturnPioTimings		; No PIO 3 or higher if no IORDY
+	mov		ah, FLGH_DPT_IORDY			; *FIXME* Actually, CF specification v4.1 says that use of IORDY is invalid for PIO modes 5 and 6.
 
 	; Check if Advanced PIO modes are supported (3 and above)
 	test	BYTE [es:si+ATA2.wFields], A2_wFields_64to70
 	jz		SHORT .ReturnPioTimings
 
-	; Get Advanced PIO mode
-	; (Hard Disks supports up to 4 but CF cards can support 5 and 6)
-	mov		bl, [es:si+ATA2.bPIOSupp]
+	; Get Advanced PIO mode (Hard Disks supports up to 4 but CF cards can support 5 and 6)
+	or		bh, [es:si+ATA2.bPIOSupp]
+	jz		SHORT .ReturnPioTimings
 .CheckNextFlag:
 	inc		ax
-	shr		bl, 1
+	shr		bh, 1
 	jnz		SHORT .CheckNextFlag
 	MIN_U	al, 6						; Make sure not above lookup tables
 	mov		cx, [es:si+ATA2.wPIOMinCyF]	; Advanced modes use IORDY

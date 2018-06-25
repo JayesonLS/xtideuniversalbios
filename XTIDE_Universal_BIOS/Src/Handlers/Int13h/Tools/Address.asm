@@ -109,14 +109,14 @@ Address_OldInt13hAddressToIdeAddress:
 	mov		al, [di+DPT.bFlagsLow]
 	and		al, MASKL_DPT_TRANSLATEMODE
 
-;;; 0: ADDRESSING_MODE_NORMAL
+;;; 0: TRANSLATEMODE_NORMAL
 	jz		SHORT DoNotConvertLCHS
 
-;;; 1: ADDRESSING_MODE_LARGE
+;;; 1: TRANSLATEMODE_LARGE
 	test	al, FLGL_DPT_ASSISTED_LBA
 	jz		SHORT ConvertLargeModeLCHStoPCHS
 
-;;; 2: ADDRESSING_MODE_ASSISTED_LBA
+;;; 2: TRANSLATEMODE_ASSISTED_LBA
 	; Fall to ConvertAssistedLBAModeLCHStoLBARegisterValues
 
 

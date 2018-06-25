@@ -244,7 +244,7 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		BX, DI, ES
+;		BX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableOperatingModeSelection:
@@ -261,13 +261,13 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX
+;		AX, BX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableKiBtoStealFromRAM:
 	call	Buffers_GetRomvarsFlagsToAX
 	mov		bx, g_MenuitemConfigurationKiBtoStealFromRAM
-	test	ax, FLG_ROMVARS_FULLMODE
+	test	al, FLG_ROMVARS_FULLMODE
 	jz		SHORT .DisableMenuitemFromCSBX
 	jmp		SHORT .EnableMenuitemFromCSBX
 
@@ -318,6 +318,22 @@ ALIGN JUMP_ALIGN
 ;	Corrupts registers:
 ;		All, except segments
 ;--------------------------------------------------------------------
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
+%if (ROMVARS.ideVars0 | ROMVARS.ideVars1 | ROMVARS.ideVars2 | ROMVARS.ideVars3) & 0FF00h = 0
+PrimaryIdeController:
+	mov		bl, ROMVARS.ideVars0 & 0FFh
+	SKIP2B	f
+SecondaryIdeController:
+	mov		bl, ROMVARS.ideVars1 & 0FFh
+	SKIP2B	f
+TertiaryIdeController:
+	mov		bl, ROMVARS.ideVars2 & 0FFh
+	SKIP2B	f
+QuaternaryIdeController:
+	mov		bl, ROMVARS.ideVars3 & 0FFh
+	xor		bh, bh
+	; Fall to DisplayIdeControllerMenu
+%else
 ALIGN JUMP_ALIGN
 PrimaryIdeController:
 	mov		bx, ROMVARS.ideVars0
@@ -337,6 +353,8 @@ ALIGN JUMP_ALIGN
 QuaternaryIdeController:
 	mov		bx, ROMVARS.ideVars3
 	; Fall to DisplayIdeControllerMenu
+%endif
+%endif
 
 ALIGN JUMP_ALIGN
 DisplayIdeControllerMenu:
@@ -382,7 +400,7 @@ LimitIdeControllersForLiteMode:
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		All
+;		AX, BX, CX, DX
 ;----------------------------------------------------------------------
 ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	push	es
@@ -427,17 +445,17 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 ;
 ; move serial to end of list, others up
 ;
+%ifdef CLD_NEEDED
 	cld
-
+%endif
 	mov		ax, di						; save end pointer of list after scan
-
 	sub		sp, IDEVARS_size			; copy serial to temporary space on stack
-
 	mov		di, sp
 
 	push	ss
 	pop		es
 
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 %if IDEVARS_size & 1
 	mov		cl, IDEVARS_size
 	rep	movsb
@@ -445,9 +463,9 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	mov		cl, IDEVARS_size / 2
 	rep movsw
 %endif
+%endif
 
 	lea		di, [si-IDEVARS_size]		; move up all the idevars below the serial, by one slot
-
 	mov		cx, ax						; restore end pointer of list, subtract off end of serial idevars
 	sub		cx, si
 
@@ -461,12 +479,14 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	pop		ds
 	; di is already at last IDEVARS position
 
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 %if IDEVARS_size & 1
 	mov		cl, IDEVARS_size
 	rep	movsb
 %else
 	mov		cl, IDEVARS_size / 2
 	rep movsw
+%endif
 %endif
 
 	add		sp, IDEVARS_size
@@ -475,7 +495,6 @@ ConfigurationMenu_CheckAndMoveSerialDrivesToBottom:
 	pop		ds
 
 	mov		dh, 1						; set flag that we have done a relocation
-
 	jmp		SHORT .outerLoop
 
 .done:

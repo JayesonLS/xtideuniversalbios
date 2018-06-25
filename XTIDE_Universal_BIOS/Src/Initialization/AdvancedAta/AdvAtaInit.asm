@@ -59,8 +59,8 @@ AdvAtaInit_DetectControllerForIdeBaseInBX:
 ;	Parameters:
 ;		AX:		ID WORD specific for detected controller
 ;	Returns:
-;		AL:		Max supported PIO mode
-;		AH:		FLGH_DPT_IORDY if IORDY supported, zero otherwise
+;		AL:		Max supported PIO mode (only if ZF set)
+;		AH:		~FLGH_DPT_IORDY if IORDY not supported, -1 otherwise (only if ZF set)
 ;		BX:		Min PIO cycle time (only if ZF set)
 ;		ZF:		Set if PIO limit necessary
 ;				Cleared if no need to limit timings

@@ -56,10 +56,10 @@
 %macro OUTPUT_AL_TO_IDE_CONTROL_BLOCK_REGISTER 1
 %ifndef MODULE_8BIT_IDE	; Standard IDE controllers only
 
+	eMOVZX	bx, [di+DPT.bIdevarsOffset]
 	%ifnidni %1, dx
 		mov		dx, %1
 	%endif
-	eMOVZX	bx, BYTE [di+DPT.bIdevarsOffset]
 	add		dx, [cs:bx+IDEVARS.wControlBlockPort]
 	out		dx, al
 

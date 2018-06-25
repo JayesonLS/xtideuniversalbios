@@ -195,7 +195,6 @@ g_rgwChoiceToValueLookupForWriteCache:
 	dw	DEFAULT_WRITE_CACHE
 	dw	DISABLE_WRITE_CACHE
 	dw	ENABLE_WRITE_CACHE
-
 g_rgszChoiceToStringLookupForWriteCache:
 	dw	g_szValueBootDispModeDefault
 	dw	g_szValueDrvWrCaDis
@@ -206,7 +205,6 @@ g_rgwChoiceToValueLookupForXlateMode:
 	dw	TRANSLATEMODE_LARGE
 	dw	TRANSLATEMODE_ASSISTED_LBA
 	dw	TRANSLATEMODE_AUTO
-
 g_rgszChoiceToStringLookupForXlateMode:
 	dw	g_szValueDrvXlateNormal
 	dw	g_szValueDrvXlateLarge
@@ -228,24 +226,37 @@ SECTION .text
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 MasterSlaveMenu_InitializeToDrvparamsOffsetInBX:
+	push	ds
+
+	push	cs
+	pop		ds
+
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
+%if DRVPARAMS.wFlags = 0
+	mov		ax, bx
+%else
 	lea		ax, [bx+DRVPARAMS.wFlags]
-	mov		[cs:g_MenuitemMasterSlaveBlockModeTransfers+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
-	mov		[cs:g_MenuitemMasterSlaveChsTranslateMode+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
-	mov		[cs:g_MenuitemMasterSlaveWriteCache+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
-	mov		[cs:g_MenuitemMasterSlaveUserCHS+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
-	mov		[cs:g_MenuitemMasterSlaveUserLBA+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+%endif
+%endif
+	mov		[g_MenuitemMasterSlaveBlockModeTransfers+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveChsTranslateMode+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveWriteCache+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveUserCHS+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveUserLBA+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 
 	lea		ax, [bx+DRVPARAMS.wCylinders]
-	mov		[cs:g_MenuitemMasterSlaveCylinders+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveCylinders+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 
 	lea		ax, [bx+DRVPARAMS.bHeads]
-	mov		[cs:g_MenuitemMasterSlaveHeads+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveHeads+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 
 	lea		ax, [bx+DRVPARAMS.bSect]
-	mov		[cs:g_MenuitemMasterSlaveSectors+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveSectors+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 
 	lea		ax, [bx+DRVPARAMS.dwMaximumLBA]
-	mov		[cs:g_MenuitemMasterSlaveUserLbaValue+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+	mov		[g_MenuitemMasterSlaveUserLbaValue+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
+
+	pop		ds
 	ret
 
 
@@ -282,9 +293,9 @@ ALIGN JUMP_ALIGN
 .EnableOrDisableUserCHSandLBA:
 	mov		bx, [g_MenuitemMasterSlaveUserLBA+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
-	test	ax, FLG_DRVPARAMS_USERLBA
+	test	al, FLG_DRVPARAMS_USERLBA
 	jnz		SHORT .DisableCHSandEnableLBA
-	test	ax, FLG_DRVPARAMS_USERCHS
+	test	al, FLG_DRVPARAMS_USERCHS
 	jnz		SHORT .EnableCHSandDisableLBA
 
 	; Enable both
@@ -319,11 +330,11 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableCHandS:
-	mov		bx, [cs:g_MenuitemMasterSlaveUserCHS+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
+	mov		bx, [g_MenuitemMasterSlaveUserCHS+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
-	test	ax, FLG_DRVPARAMS_USERCHS
+	test	al, FLG_DRVPARAMS_USERCHS
 	jz		SHORT .DisableCHandS
-	test	ax, FLG_DRVPARAMS_USERLBA
+	test	al, FLG_DRVPARAMS_USERLBA
 	jnz		SHORT .DisableCHandS
 
 	mov		bx, g_MenuitemMasterSlaveCylinders
@@ -354,12 +365,12 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .EnableOrDisableUserLbaValue:
-	mov		bx, [cs:g_MenuitemMasterSlaveUserLBA+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
+	mov		bx, [g_MenuitemMasterSlaveUserLBA+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
 	mov		bx, g_MenuitemMasterSlaveUserLbaValue
-	test	ax, FLG_DRVPARAMS_USERCHS
+	test	al, FLG_DRVPARAMS_USERCHS
 	jnz		SHORT .DisableMenuitemFromCSBX
-	test	ax, FLG_DRVPARAMS_USERLBA
+	test	al, FLG_DRVPARAMS_USERLBA
 	jz		SHORT .DisableMenuitemFromCSBX
 	; Fall to .EnableMenuitemFromCSBX
 
@@ -442,8 +453,8 @@ ValueWriterForUserLbaValue:
 ;
 ALIGN JUMP_ALIGN
 MasterSlaveMenu_WriteCHSFlag:
-	test	word [es:di], FLG_DRVPARAMS_USERCHS
-	jnz		.alreadySet
+	test	BYTE [es:di], FLG_DRVPARAMS_USERCHS
+	jnz		SHORT .AlreadySet
 
 	push	ax
 	push	di
@@ -465,7 +476,7 @@ MasterSlaveMenu_WriteCHSFlag:
 	pop		di
 	pop		ax
 
-.alreadySet:
+.AlreadySet:
 	ret
 
 ;
@@ -474,8 +485,8 @@ MasterSlaveMenu_WriteCHSFlag:
 ;
 ALIGN JUMP_ALIGN
 MasterSlaveMenu_WriteLBAFlag:
-	test	word [es:di], FLG_DRVPARAMS_USERLBA
-	jnz		.alreadySet
+	test	BYTE [es:di], FLG_DRVPARAMS_USERLBA
+	jnz		SHORT .AlreadySet
 
 	push	ax
 	push	di
@@ -489,5 +500,6 @@ MasterSlaveMenu_WriteLBAFlag:
 	pop		di
 	pop		ax
 
-.alreadySet:
+.AlreadySet:
 	ret
+

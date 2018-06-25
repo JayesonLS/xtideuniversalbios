@@ -93,7 +93,7 @@ DisplayPrint_FormattedNullTerminatedStringFromCSSI:
 ;	Corrupts registers:
 ;		AX, BH, DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayPrint_SignedWordFromAXWithBaseInBL:
 	sahf
@@ -162,7 +162,7 @@ PrintAllPushedDigits:			; Unused entrypoint OK
 ;	Corrupts registers:
 ;		AX, DX, [SS:BP]
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayPrint_QWordFromSSBPwithBaseInBX:
 	push	cx
@@ -193,7 +193,7 @@ ALIGN DISPLAY_JUMP_ALIGN
 ;	Corrupts registers:
 ;		AX, DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayPrint_CharacterBufferFromBXSIwithLengthInCX:
 	jcxz	.NothingToPrintSinceZeroLength
@@ -260,7 +260,7 @@ DisplayPrint_ClearScreenWithCharInALandAttributeInAH:
 ;	Corrupts registers:
 ;		AX, DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayPrint_ClearAreaWithHeightInAHandWidthInAL:
 	push	si
@@ -291,7 +291,7 @@ ALIGN DISPLAY_JUMP_ALIGN
 	ret
 %endif
 
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%define EXCLUDE
 	%ifndef MODULE_STRINGS_COMPRESSED
 		%undef EXCLUDE

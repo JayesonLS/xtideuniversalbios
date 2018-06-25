@@ -40,6 +40,7 @@
 # USE_386                     Use instructions supported by 386 and later (defines USE_286)        #
 # USE_AT                      Use features supported on AT and later systems (not available on XT) #
 # USE_UNDOC_INTEL             Optimizations for Intel CPU:s - do NOT use on NEC V20/V30/Sony CPU:s #
+# CLD_NEEDED                  Only needed for compatibility with buggy software/BIOSes             #
 #                                                                                                  #
 # ** AT Builds only (when USE_AT is defined)                                                       #
 # *** Use this only when certain known good drives are not being detected (eg WD Caviars)          #
@@ -102,7 +103,7 @@ HEADERS += $(LIBS)
 #################################################################
 # Assembler preprocessor defines.                               #
 #################################################################
-DEFINES_COMMON = MODULE_STRINGS_COMPRESSED MODULE_HOTKEYS MODULE_8BIT_IDE MODULE_EBIOS MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_POWER_MANAGEMENT RESERVE_DIAGNOSTIC_CYLINDER NO_ATAID_VALIDATION
+DEFINES_COMMON = MODULE_STRINGS_COMPRESSED MODULE_HOTKEYS MODULE_8BIT_IDE MODULE_EBIOS MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_POWER_MANAGEMENT RESERVE_DIAGNOSTIC_CYLINDER NO_ATAID_VALIDATION CLD_NEEDED
 DEFINES_COMMON_LARGE = MODULE_BOOT_MENU MODULE_8BIT_IDE_ADVANCED MODULE_COMPATIBLE_TABLES
 
 DEFINES_XT = $(DEFINES_COMMON) ELIMINATE_CGA_SNOW MODULE_8BIT_IDE_ADVANCED
@@ -113,7 +114,7 @@ DEFINES_XT_LARGE = $(DEFINES_XT) $(DEFINES_COMMON_LARGE)
 DEFINES_XTPLUS_LARGE = $(DEFINES_XTPLUS) $(DEFINES_COMMON_LARGE)
 DEFINES_AT_LARGE = $(DEFINES_AT) $(DEFINES_COMMON_LARGE)
 
-DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION
+DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION CLD_NEEDED
 DEFINES_386_8K = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA
 
 DEFINES_ALL_FEATURES = MODULE_8BIT_IDE MODULE_8BIT_IDE_ADVANCED MODULE_ADVANCED_ATA MODULE_EBIOS MODULE_BOOT_MENU MODULE_HOTKEYS MODULE_IRQ MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_STRINGS_COMPRESSED MODULE_POWER_MANAGEMENT MODULE_COMPATIBLE_TABLES
@@ -124,21 +125,21 @@ DEFINES_ALL_FEATURES += ELIMINATE_CGA_SNOW RELOCATE_INT13H_STACK RESERVE_DIAGNOS
 # Other variables #
 ###################
 
-# Target size of the ROM, used in main.asm for number of 512B blocks and by checksum Perl script below
-BIOS_SIZE = 8192		# For BIOS header (use even multiplier!)
-ROMSIZE = $(BIOS_SIZE)	# Size of binary to build when building with make checksum
-BIOS_SIZE_LARGE = 12288
-ROMSIZE_LARGE = $(BIOS_SIZE_LARGE)
+# Target size of the BIOS, used in main.asm for number of 512B blocks (CNT_ROM_BLOCKS) and by checksum Perl script below ('make checksum').
+# Note! The size must be a multiple of 2 KB for compatibility reasons.
+BIOS_SIZE_TINY = 4096
+BIOS_SIZE_SMALL = 8192
+BIOS_SIZE_LARGE = 10240
 
 # Add -D in front of every preprocessor define declaration
-DEFS_XT = $(DEFINES_XT:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE)
-DEFS_XTPLUS = $(DEFINES_XTPLUS:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE)
-DEFS_AT = $(DEFINES_AT:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE)
+DEFS_XT = $(DEFINES_XT:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
+DEFS_XTPLUS = $(DEFINES_XTPLUS:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
+DEFS_AT = $(DEFINES_AT:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
 DEFS_XT_LARGE = $(DEFINES_XT_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_XTPLUS_LARGE = $(DEFINES_XTPLUS_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_AT_LARGE = $(DEFINES_AT_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
-DEFS_XT_TINY = $(DEFINES_XT_TINY:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE)
-DEFS_386_8K = $(DEFINES_386_8K:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE)
+DEFS_XT_TINY = $(DEFINES_XT_TINY:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_TINY)
+DEFS_386_8K = $(DEFINES_386_8K:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
 DEFS_ALL_FEATURES = $(DEFINES_ALL_FEATURES:%=-D%)
 
 # Add -I in front of all header directories
@@ -219,7 +220,7 @@ xt_tiny:
 
 strings: src\Strings.asm
 	@$(AS) src\Strings.asm $(ASFLAGS) $(DEFS_AT_LARGE) -DCHECK_FOR_UNUSED_ENTRYPOINTS -DMODULE_STRINGS_COMPRESSED_PRECOMPRESS -o build\Strings.bin -l build\StringsPrecompress.lst
-	@perl ..\tools\StringsCompress.pl < build\StringsPrecompress.lst > src\StringsCompressed.asm
+	@perl ..\Tools\StringsCompress.pl < build\StringsPrecompress.lst > src\StringsCompressed.asm
 	@echo StringsCompressed.asm updated!
 
 clean:
@@ -227,35 +228,35 @@ clean:
 	@echo Deleted "(*.*)" from "$(BUILD_DIR)/"
 
 checksum: all
-	@perl ..\tools\checksum.pl $(TARGET)_tiny.bin $(ROMSIZE)
-	@perl ..\tools\checksum.pl $(TARGET)_xt.bin $(ROMSIZE)
-	@perl ..\tools\checksum.pl $(TARGET)_xtp.bin $(ROMSIZE)
-	@perl ..\tools\checksum.pl $(TARGET)_at.bin $(ROMSIZE)
-	@perl ..\tools\checksum.pl $(TARGET)_xtl.bin $(ROMSIZE_LARGE)
-	@perl ..\tools\checksum.pl $(TARGET)_xtpl.bin $(ROMSIZE_LARGE)
-	@perl ..\tools\checksum.pl $(TARGET)_atl.bin $(ROMSIZE_LARGE)
-	@perl ..\tools\checksum.pl $(TARGET)_386.bin $(ROMSIZE)
+	@perl ..\Tools\checksum.pl $(TARGET)_tiny.bin $(BIOS_SIZE_TINY)
+	@perl ..\Tools\checksum.pl $(TARGET)_xt.bin $(BIOS_SIZE_SMALL)
+	@perl ..\Tools\checksum.pl $(TARGET)_xtp.bin $(BIOS_SIZE_SMALL)
+	@perl ..\Tools\checksum.pl $(TARGET)_at.bin $(BIOS_SIZE_SMALL)
+	@perl ..\Tools\checksum.pl $(TARGET)_xtl.bin $(BIOS_SIZE_LARGE)
+	@perl ..\Tools\checksum.pl $(TARGET)_xtpl.bin $(BIOS_SIZE_LARGE)
+	@perl ..\Tools\checksum.pl $(TARGET)_atl.bin $(BIOS_SIZE_LARGE)
+	@perl ..\Tools\checksum.pl $(TARGET)_386.bin $(BIOS_SIZE_SMALL)
 
 unused:
 	@echo "All Features"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_ALL_FEATURES) $(DEFS_XT) $(DEFS_XT_PLUS) $(DEFS_AT) $(DEFS_XT_LARGE) $(DEFS_XTPLUS_LARGE) $(DEFS_AT_LARGE) $(DEFS_XT_TINY) $(DEFS_386_8K) -o"$(TARGET)_unused.asm" -l"$(TARGET)_unused.lst"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_ALL_FEATURES) $(DEFS_XT) $(DEFS_XT_PLUS) $(DEFS_AT) $(DEFS_XT_LARGE) $(DEFS_XTPLUS_LARGE) $(DEFS_AT_LARGE) $(DEFS_XT_TINY) $(DEFS_386_8K) -o"$(TARGET)_unused.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_unused.lst $(TARGET)_unused.asm
+	@perl ..\Tools\unused.pl $(TARGET)_unused.lst $(TARGET)_unused.asm
 	@echo "XT Small"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT) -o"$(TARGET)_unused_xt.asm" -l"$(TARGET)_unused_xt.lst"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT) -o"$(TARGET)_unused_xt.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_unused_xt.lst $(TARGET)_unused_xt.asm
+	@perl ..\Tools\unused.pl $(TARGET)_unused_xt.lst $(TARGET)_unused_xt.asm
 	@echo "XT Large"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT_LARGE) -o"$(TARGET)_unused_xtl.asm" -l"$(TARGET)_unused_xtl.lst"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT_LARGE) -o"$(TARGET)_unused_xtl.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_unused_xtl.lst $(TARGET)_unused_xtl.asm
+	@perl ..\Tools\unused.pl $(TARGET)_unused_xtl.lst $(TARGET)_unused_xtl.asm
 	@echo "AT Small"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_AT) -o"$(TARGET)_unused_at.asm" -l"$(TARGET)_unused_at.lst"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_AT) -o"$(TARGET)_unused_at.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_unused_at.lst $(TARGET)_unused_at.asm
+	@perl ..\Tools\unused.pl $(TARGET)_unused_at.lst $(TARGET)_unused_at.asm
 	@echo "AT Large"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_AT_LARGE) -o"$(TARGET)_unused_atl.asm" -l"$(TARGET)_unused_atl.lst"
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_AT_LARGE) -o"$(TARGET)_unused_atl.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_unused_atl.lst $(TARGET)_unused_atl.asm
+	@perl ..\Tools\unused.pl $(TARGET)_unused_atl.lst $(TARGET)_unused_atl.asm
 
 

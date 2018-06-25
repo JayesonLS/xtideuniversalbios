@@ -99,7 +99,7 @@ ASFLAGS = -f bin				# Produce binary object files
 ASFLAGS += $(DEFS)				# Preprocessor defines
 ASFLAGS += $(IHEADERS)			# Set header file directory paths
 ASFLAGS += -Worphan-labels		# Warn about labels without colon
-ASFLAGS += -O9					# Optimize operands to their shortest forms
+ASFLAGS += -Ox					# Optimize operands to their shortest forms
 
 
 ############################################
@@ -134,5 +134,5 @@ release: xt
 
 xt_unused: xt
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT) -o"$(TARGET)_xt_unused.asm" -E -DCHECK_FOR_UNUSED_ENTRYPOINTS
-	@perl ..\tools\unused.pl $(TARGET)_xt.lst $(TARGET)_xt_unused.asm
+	@perl ..\Tools\unused.pl $(TARGET)_xt.lst $(TARGET)_xt_unused.asm
 

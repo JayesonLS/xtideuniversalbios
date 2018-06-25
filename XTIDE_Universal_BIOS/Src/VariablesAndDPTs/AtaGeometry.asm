@@ -113,10 +113,106 @@ AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX:
 	; Assisted LBA provides most capacity but translation algorithm is
 	; slower. The speed difference doesn't matter on AT systems.
 .UseAssistedLBA:
-	call	GetSectorCountToDXAXfromCHSinAXBLBH
-	call	ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH
-	xor		cx, cx		; No bits to shift
+	; Fall to GetSectorCountToDXAXfromCHSinAXBLBH
+
+
+;--------------------------------------------------------------------
+; GetSectorCountToDXAXfromCHSinAXBLBH
+;	Parameters:
+;		AX:		Number of cylinders (1...16383)
+;		BL:		Number of heads (1...255)
+;		BH:		Number of sectors per track (1...63)
+;	Returns:
+;		DX:AX:	Total number of CHS addressable sectors
+;	Corrupts registers:
+;		BX
+;--------------------------------------------------------------------
+GetSectorCountToDXAXfromCHSinAXBLBH:
+	xchg	ax, bx
+	mul		ah			; AX = Heads * Sectors per track
+	mul		bx
+	; Fall to ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH
+
+
+;--------------------------------------------------------------------
+; LBA assist calculation (or Assisted LBA)
+;
+; This algorithm translates P-CHS sector count up to largest possible
+; L-CHS sector count (1024, 255, 63). Note that INT 13h interface allows
+; 256 heads but DOS supports up to 255 head. That is why BIOSes never
+; use 256 heads.
+;
+; L-CHS parameters generated here require the drive to use LBA addressing.
+;
+; Here is the algorithm:
+; If cylinders > 8192
+;  Variable CH = Total CHS Sectors / 63
+;  Divide (CH - 1) by 1024 and add 1
+;  Round the result up to the nearest of 16, 32, 64, 128 and 255. This is the value to be used for the number of heads.
+;  Divide CH by the number of heads. This is the value to be used for the number of cylinders.
+;
+; ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
+;	Parameters:
+;		DX:AX:	Total number of P-CHS sectors for CHS addressing
+;				(max = 16383 * 16 * 63 = 16,514,064)
+;	Returns:
+;		AX:		Number of cylinders (?...1027)
+;		BL:		Number of heads (16, 32, 64, 128 or 255)
+;		BH:		Number of sectors per track (always 63)
+;		CX:		Number of bits shifted (0)
+;		DL:		TRANSLATEMODE_ASSISTED_LBA
+;	Corrupts registers:
+;		DH
+;--------------------------------------------------------------------
+ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
+	; Value CH = Total sector count / 63
+	; Max = 16,514,064 / 63 = 262128
+	mov		cx, LBA_ASSIST_SPT			; CX = 63
+
+	; --- Math_DivDXAXbyCX inlined (and slightly modified) since it's only used here
+	xor		bx, bx
+	xchg	bx, ax
+	xchg	dx, ax
+	div		cx
+	xchg	ax, bx
+	div		cx
+	mov		dx, bx
+	; ---
+
+	push	ax
+	push	dx							; Value CH stored for later use
+
+	; BX:DX:AX = Value CH - 1
+	; Max = 262128 - 1 = 262127
+	xor		bx, bx
+	sub		ax, BYTE 1
+	sbb		dx, bx
+
+	; AX = Number of heads = ((Value CH - 1) / 1024) + 1
+	; Max = (262127 / 1024) + 1 = 256
+	call	Size_DivideSizeInBXDXAXby1024	; Preserves CX and returns with BH cleared
+	pop		dx
+	inc		ax							; + 1
+
+	; Heads must be 16, 32, 64, 128 or 255 (round up to the nearest)
+	; Max = 255
+	mov		bl, 16						; Min number of heads
+.CompareNextValidNumberOfHeads:
+	cmp		ax, bx
+	jbe		SHORT .NumberOfHeadsNowInBX
+	eSHL_IM	bx, 1						; Double number of heads
+	jpo		SHORT .CompareNextValidNumberOfHeads	; Reached 256 heads?
+	dec		bx							;  If so, limit heads to 255
+.NumberOfHeadsNowInBX:
+
+	; DX:AX = Number of cylinders = Value CH (without - 1) / number of heads
+	; Max = 262128 / 255 = 1027
+	pop		ax							; Value CH back to DX:AX
+	div		bx
+
+	xchg	bh, cl						; Sectors per Track to BH, zero to CL (CX)
 	mov		dl, TRANSLATEMODE_ASSISTED_LBA
+ReturnLCHSinAXBLBH:
 	ret
 
 
@@ -139,24 +235,6 @@ AtaGeometry_GetPCHStoAXBLBHfromAtaInfoInESSI:
 
 
 ;--------------------------------------------------------------------
-; GetSectorCountToDXAXfromCHSinAXBLBH
-;	Parameters:
-;		AX:		Number of cylinders (1...16383)
-;		BL:		Number of heads (1...255)
-;		BH:		Number of sectors per track (1...63)
-;	Returns:
-;		DX:AX:	Total number of CHS addressable sectors
-;	Corrupts registers:
-;		BX
-;--------------------------------------------------------------------
-GetSectorCountToDXAXfromCHSinAXBLBH:
-	xchg	ax, bx
-	mul		ah			; AX = Heads * Sectors per track
-	mul		bx
-	ret
-
-
-;--------------------------------------------------------------------
 ; Revised Enhanced CHS calculation (Revised ECHS)
 ;
 ; This algorithm translates P-CHS sector count to L-CHS sector count
@@ -174,6 +252,10 @@ GetSectorCountToDXAXfromCHSinAXBLBH:
 ;  Cylinders = cylinders * 16 / 15 (losing the fraction component)
 ;  Do a standard ECHS translation
 ;
+; *FIXME* The above algorithm seems to be conflicting with info found here
+; https://web.archive.org/web/20000817071418/http://www.firmware.com:80/support/bios/over4gb.htm
+; which says that Revised ECHS is used when the cylinder count is > 8191.
+;
 ; ConvertPCHfromAXBLtoRevisedEnhancedCHinAXBL:
 ;	Parameters:
 ;		AX:		Number of P-CHS cylinders (8193...16383)
@@ -182,7 +264,7 @@ GetSectorCountToDXAXfromCHSinAXBLBH:
 ;		AX:		Number of L-CHS cylinders (?...1024)
 ;		BL:		Number of L-CHS heads (?...240)
 ;		CX:		Number of bits shifted (0...3)
-;		DX:		ADDRESSING_MODE_NORMAL or ADDRESSING_MODE_LARGE
+;		DX:		TRANSLATEMODE_NORMAL or TRANSLATEMODE_LARGE
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
@@ -270,73 +352,3 @@ AtaGeometry_IsDriveSmallEnoughForECHS:
 .RevisedECHSisNotNeeded:
 	ret
 
-
-;--------------------------------------------------------------------
-; LBA assist calculation (or Assisted LBA)
-;
-; This algorithm translates P-CHS sector count up to largest possible
-; L-CHS sector count (1024, 255, 63). Note that INT 13h interface allows
-; 256 heads but DOS supports up to 255 head. That is why BIOSes never
-; use 256 heads.
-;
-; L-CHS parameters generated here require the drive to use LBA addressing.
-;
-; Here is the algorithm:
-; If cylinders > 8192
-;  Variable CH = Total CHS Sectors / 63
-;  Divide (CH – 1) by 1024 and add 1
-;  Round the result up to the nearest of 16, 32, 64, 128 and 255. This is the value to be used for the number of heads.
-;  Divide CH by the number of heads. This is the value to be used for the number of cylinders.
-;
-; ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
-;	Parameters:
-;		DX:AX:	Total number of P-CHS sectors for CHS addressing
-;				(max = 16383 * 16 * 63 = 16,514,064)
-;	Returns:
-;		AX:		Number of cylinders (?...1027)
-;		BL:		Number of heads (16, 32, 64, 128 or 255)
-;		BH:		Number of sectors per track (always 63)
-;	Corrupts registers:
-;		CX, DX
-;--------------------------------------------------------------------
-ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
-	; Value CH = Total sector count / 63
-	; Max = 16,514,064 / 63 = 262128
-	mov		cx, LBA_ASSIST_SPT			; CX = 63
-	call	Math_DivDXAXbyCX			; Preserves CX
-	push	dx
-	push	ax							; Value CH stored for later use
-
-	; BX:DX:AX = Value CH - 1
-	; Max = 262128 - 1 = 262127
-	xor		bx, bx
-	sub		ax, BYTE 1
-	sbb		dx, bx
-
-	; AX = Number of heads = ((Value CH - 1) / 1024) + 1
-	; Max = (262127 / 1024) + 1 = 256
-	call	Size_DivideSizeInBXDXAXby1024	; Preserves CX
-	inc		ax							; + 1
-
-	; Heads must be 16, 32, 64, 128 or 255 (round up to the nearest)
-	; Max = 255
-	mov		cl, 16						; Min number of heads
-.CompareNextValidNumberOfHeads:
-	cmp		ax, cx
-	jbe		SHORT .NumberOfHeadsNowInCX
-	eSHL_IM	cx, 1						; Double number of heads
-	jpo		SHORT .CompareNextValidNumberOfHeads	; Reached 256 heads?
-	dec		cx							;  If so, limit heads to 255
-.NumberOfHeadsNowInCX:
-	mov		bx, cx						; Number of heads are returned in BL
-	mov		bh, LBA_ASSIST_SPT			; Sectors per Track
-
-	; DX:AX = Number of cylinders = Value CH (without - 1) / number of heads
-	; Max = 262128 / 255 = 1027
-	pop		ax
-	pop		dx							; Value CH back to DX:AX
-	div		cx
-
-	; Return L-CHS
-ReturnLCHSinAXBLBH:
-	ret

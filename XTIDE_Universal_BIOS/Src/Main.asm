@@ -31,7 +31,7 @@
 	ORG 0							; Code start offset 0000h
 
 	; We must define included libraries before including "AssemblyLibrary.inc".
-%define	EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS	; Exclude unused library functions
+%define	EXCLUDE_FROM_XUB					; Exclude unused library functions
 %ifdef MODULE_BOOT_MENU
 	%define MENUEVENT_INLINE_OFFSETS		; Only one menu required, save space and inline offsets
 	%define INCLUDE_MENU_LIBRARY
@@ -80,6 +80,7 @@ istruc ROMVARS
 	at	ROMVARS.wDisplayMode,	dw	DEFAULT_TEXT_MODE
 %ifdef MODULE_BOOT_MENU
 	at	ROMVARS.wBootTimeout,	dw	BOOT_MENU_DEFAULT_TIMEOUT
+	at	ROMVARS.pColorTheme,	dw	ColorTheme				; Offset to the ATTRIBUTE_CHARS struc that holds the color theme
 %endif
 	at	ROMVARS.bIdeCnt,		db	2						; Number of supported controllers
 	at	ROMVARS.bBootDrv,		db	80h						; Boot Menu default drive
@@ -104,14 +105,14 @@ istruc ROMVARS
 	at	ROMVARS.ideVars2+IDEVARS.wBasePort,			dw	DEVICE_ATA_TERTIARY_PORT
 	at	ROMVARS.ideVars2+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_TERTIARY_PORTCTRL
 	at	ROMVARS.ideVars2+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
-	at	ROMVARS.ideVars2+IDEVARS.bIRQ,				db	0
+	at	ROMVARS.ideVars2+IDEVARS.bIRQ,				db	0	; Should be 11 on the GSI Inc. Model 2C
 	at	ROMVARS.ideVars2+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	dw	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars2+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	dw	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
 	at	ROMVARS.ideVars3+IDEVARS.wBasePort,			dw	DEVICE_ATA_QUATERNARY_PORT
 	at	ROMVARS.ideVars3+IDEVARS.wControlBlockPort,	dw	DEVICE_ATA_QUATERNARY_PORTCTRL
 	at	ROMVARS.ideVars3+IDEVARS.bDevice,			db	DEVICE_16BIT_ATA
-	at	ROMVARS.ideVars3+IDEVARS.bIRQ,				db	0
+	at	ROMVARS.ideVars3+IDEVARS.bIRQ,				db	0	; Should be 10 on the GSI Inc. Model 2C
 	at	ROMVARS.ideVars3+IDEVARS.drvParamsMaster+DRVPARAMS.wFlags,	dw	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 	at	ROMVARS.ideVars3+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags,	dw	DISABLE_WRITE_CACHE | FLG_DRVPARAMS_BLOCKMODE | (TRANSLATEMODE_AUTO<<TRANSLATEMODE_FIELD_POSITION)
 
@@ -126,6 +127,7 @@ istruc ROMVARS
 	at	ROMVARS.wDisplayMode,	dw	DEFAULT_TEXT_MODE
 %ifdef MODULE_BOOT_MENU
 	at	ROMVARS.wBootTimeout,	dw	BOOT_MENU_DEFAULT_TIMEOUT
+	at	ROMVARS.pColorTheme,	dw	ColorTheme				; Offset to the ATTRIBUTE_CHARS struc that holds the color theme
 %endif
 	at	ROMVARS.bIdeCnt,		db	1
 	at	ROMVARS.bBootDrv,		db	80h						; Boot Menu default drive
@@ -300,6 +302,7 @@ iend
 %endif
 
 
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 ; Although it's very unlikely to happen, we give warnings for builds that cannot be automatically checksummed due to the size being too large.
 ; In some cases it's theoretically possible to checksum the build anyway (manually) which is why these are warnings and not errors.
 %if BIOS_SIZE = 8192				; A small build, possibly a candidate for the ROM socket on a 3Com 3C503 card.
@@ -308,6 +311,7 @@ iend
 			%warning "This build is too large to be auto-checksummed!"
 		%endif
 	%endif
-%elif ($-$$) = BIOS_SIZE			; A large build.
+%elif ($-$$) = BIOS_SIZE			; A large or tiny build.
 	%warning "This build is too large to be auto-checksummed!"
+%endif
 %endif

@@ -69,24 +69,17 @@ ALIGN UTIL_SIZE_JUMP_ALIGN
 	cmp		ax, 10000					; 5 digits needed?
 	jae		SHORT Size_DivideSizeInBXDXAXby1024andIncrementMagnitudeInCX
 	add		sp, BYTE 2					; Clean return address from stack
-	xchg	si, cx						; CX = Remainder (0...1023), SI = Magnitude
 
 	; Convert remainder to tenths
-	xchg	bx, ax						; Store AX
-	mov		al, 5						; AH = 0
-	mul		cx							; DX:AX = remainder * (10 / 2)
-%ifdef USE_186
-	shr		ax, 9						; Divide AX by (1024 / 2)
-%else
-	shr		ax, 1
-	mov		al, ah
-	cbw
-%endif
-	xchg	cx, ax						; CX = tenths
-	xchg	ax, bx
+	mov		bx, 640
+	xchg	bx, ax						; BX = Size, AX = (10 / 1024) * 65536
+	mul		si							; DX = Remainder * (10 / 1024)
+	xchg	dx, ax
+	xchg	cx, ax						; CX = Tenths, AX = Magnitude
+	xchg	bx, ax						; AX = Size, BX	= Magnitude
 
 	; Convert magnitude to character
-	mov		dl, [cs:si+.rgbMagnitudeToChar]
+	mov		dl, [cs:bx+.rgbMagnitudeToChar]
 
 	pop		si
 %ifndef USE_186
@@ -153,7 +146,7 @@ ALIGN UTIL_SIZE_JUMP_ALIGN
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifdef USE_386
 		%define EXCLUDE
 	%endif

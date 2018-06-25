@@ -189,18 +189,10 @@ FloppyDrive_GetCountFromBIOS_or_BDA:
 	push	ds
 	LOAD_BDA_SEGMENT_TO	ds, ax
 	mov		al, [BDA.wEquipment]	; Load Equipment WORD low byte
-	pop		ds
-
-%ifdef USE_UNDOC_INTEL
-	and		al, 0C1h
+	and		al, 0C1h				; Leave bits 7..6 and 0
 	eAAM	64
-%else
-	mov		ah, al					; Copy it to AH
-	and		ax, 0C001h				; Leave bits 15..14 and 0
-	eROL_IM	ah, 2					; EW low byte bits 7..6 to 1..0
-%endif ; USE_UNDOC_INTEL
-
 	add		al, ah					; AL = Floppy Drive count
+	pop		ds
 %endif ; USE_AT
 
 	ret

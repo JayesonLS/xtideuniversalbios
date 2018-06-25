@@ -90,6 +90,7 @@ ALIGN MENU_JUMP_ALIGN
 
 
 .rgcColorAttributes:
+; Classic (default theme)
 istruc ATTRIBUTE_CHARS
 	at	ATTRIBUTE_CHARS.cBordersAndBackground,	db	COLOR_ATTRIBUTE(COLOR_YELLOW, COLOR_BLUE)
 	at	ATTRIBUTE_CHARS.cShadow,				db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)
@@ -99,6 +100,7 @@ istruc ATTRIBUTE_CHARS
 	at	ATTRIBUTE_CHARS.cHurryTimeout,			db	COLOR_ATTRIBUTE(COLOR_RED, COLOR_BLUE) | FLG_COLOR_BLINK
 	at	ATTRIBUTE_CHARS.cNormalTimeout,			db	COLOR_ATTRIBUTE(COLOR_GREEN, COLOR_BLUE)
 iend
+ColorTheme	equ		MenuAttribute_GetToAXfromTypeInSI.rgcColorAttributes
 
 .rgcBlackAndWhiteAttributes:	; Only COLOR_WHITE, COLOR_BRIGHT_WHITE and COLOR_BLACK should be used
 istruc ATTRIBUTE_CHARS

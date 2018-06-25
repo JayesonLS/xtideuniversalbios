@@ -62,7 +62,9 @@ Sort_ItemsFromDSSIwithCountInDXsizeInCXandComparatorInBX:
 	eENTER_STRUCT cx
 	push	cx
 
+%ifdef CLD_NEEDED
 	cld
+%endif
 	mov		cx, di						; Restore item size to CX
 	xor		ax, ax						; Zero starting index
 	dec		dx							; Count to index of last item
@@ -190,7 +192,7 @@ ArrangeItemsInRangeAXtoDXtoBothSidesOfPivotInESDI:
 	call	.GetIndexOfRightmostItemToDXforItemThatIsGreaterThanPivotInESDI
 
 	cmp		ax, dx	; If (left <= right)
-	jg		SHORT ArrangeItemsInRangeAXtoDXtoBothSidesOfPivotInESDI
+	jg		SHORT .BreakLoopSinceAllItemsExamined
 	call	SwapItemsFromIndexesAXandDX
 	inc		ax
 	dec		dx

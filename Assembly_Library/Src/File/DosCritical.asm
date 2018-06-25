@@ -1,8 +1,4 @@
-; File name		:	DosCritical.asm
 ; Project name	:	Assembly Library
-; Created date	:	1.9.2010
-; Last update	:	2.9.2010
-; Author		:	Tomi Tilli
 ; Description	:	DOS Critical Error Handler (24h) replacements.
 
 ;
@@ -21,13 +17,14 @@
 ; Visit http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 ;
 
+; Note! Only DOS functions 01h - 0Ch, 30h and 59h can be called from a Critical Error Handler.
 
 ; DOS Critical Error Handler return values
 struc CRITICAL_ERROR_ACTION
 	.ignoreErrorAndContinueProcessingRequest	resb	1
 	.retryOperation								resb	1
 	.terminateProgramAsThoughInt21hAH4ChCalled	resb	1
-	.failSystemCallInProgress					resb	1
+	.failSystemCallInProgress					resb	1	; Needs DOS 3.1+
 endstruc
 
 
@@ -82,6 +79,38 @@ DosCritical_RestoreDosHandler:
 
 
 ;--------------------------------------------------------------------
+; DosCritical_CustomHandler
+;	Parameters:
+;		Nothing
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		Nothing
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+DosCritical_CustomHandler:
+	add		sp, 6	; Remove the INT 24h return address and flags from stack
+
+	mov		ah, GET_EXTENDED_ERROR_INFORMATION	; Requires DOS 3.0+
+	xor		bx, bx
+	int		DOS_INTERRUPT_21h
+	mov		[cs:bLastCriticalError], al
+
+	pop		ax
+	pop		bx
+	pop		cx
+	pop		dx
+	pop		si
+	pop		di
+	pop		bp
+	pop		ds
+	pop		es
+	iret			; Return from the INT 21h call
+
+bLastCriticalError:		db	0
+
+
+;--------------------------------------------------------------------
 ; DosCritical_HandlerToIgnoreAllErrors
 ;	Parameters:
 ;		Nothing
@@ -94,3 +123,4 @@ ALIGN JUMP_ALIGN
 DosCritical_HandlerToIgnoreAllErrors:
 	mov		al, CRITICAL_ERROR_ACTION.ignoreErrorAndContinueProcessingRequest
 	iret
+

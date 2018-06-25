@@ -98,6 +98,7 @@ Directory_WriteCurrentPathToDSSI:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 Directory_GetMatchCountToAXforSearchStringInDSSIwithAttributesInCX:
 	push	dx
@@ -114,6 +115,7 @@ ALIGN JUMP_ALIGN
 	xchg	ax, dx				; Match count to AX
 	pop		dx
 	ret
+%endif
 
 
 ;--------------------------------------------------------------------

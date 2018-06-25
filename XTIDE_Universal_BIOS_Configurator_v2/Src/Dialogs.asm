@@ -40,7 +40,6 @@ Dialogs_DisplayHelpFromCSDXwithTitleInCSDI:
 
 	mov		cx, DIALOG_INPUT_size
 	call	Memory_ReserveCXbytesFromStackToDSSI
-	call	InitializeDialogInputFromDSSI
 	mov		[si+DIALOG_INPUT.fszTitle], di
 	jmp		SHORT DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
 
@@ -64,7 +63,6 @@ Dialogs_DisplayNotificationFromCSDX:
 
 	mov		cx, DIALOG_INPUT_size
 	call	Memory_ReserveCXbytesFromStackToDSSI
-	call	InitializeDialogInputFromDSSI
 	mov		WORD [si+DIALOG_INPUT.fszTitle], g_szNotificationDialog
 	jmp		SHORT DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
 
@@ -122,9 +120,9 @@ Dialogs_DisplayFileDialogWithDialogIoInDSSI:
 
 
 ;--------------------------------------------------------------------
-; Dialogs_DisplayQuitDialog
-; Dialogs_DisplaySaveChangesDialog
+; Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX
 ;	Parameters:
+;		BX:		Offset to dialog title string
 ;		SS:BP:	Menu handle
 ;	Returns:
 ;		ZF:		Set if user wants to do the action
@@ -133,29 +131,17 @@ Dialogs_DisplayFileDialogWithDialogIoInDSSI:
 ;		AX, CX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-Dialogs_DisplayQuitDialog:
+Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX:
 	push	ds
 
 	mov		cx, DIALOG_INPUT_size
 	call	Memory_ReserveCXbytesFromStackToDSSI
 	call	InitializeDialogInputFromDSSI
-	mov		WORD [si+DIALOG_INPUT.fszTitle], g_szDlgExitToDos
-	jmp		Dialogs_DisplayQuitAndSaveChangesDialogsSharedEnding
-
-
-ALIGN JUMP_ALIGN
-Dialogs_DisplaySaveChangesDialog:
-	push	ds
-
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
-	call	InitializeDialogInputFromDSSI
-	mov		WORD [si+DIALOG_INPUT.fszTitle], g_szDlgSaveChanges
-Dialogs_DisplayQuitAndSaveChangesDialogsSharedEnding:
+	mov		[si+DIALOG_INPUT.fszTitle], bx
 	mov		WORD [si+DIALOG_INPUT.fszItems], g_szMultichoiceBooleanFlag
 	CALL_MENU_LIBRARY GetSelectionToAXwithInputInDSSI
 	add		sp, BYTE DIALOG_INPUT_size
-	cmp		ax, BYTE 1		; 1 = YES
+	dec		ax				; -1 = NO, 0 = YES
 
 	pop		ds
 	ret

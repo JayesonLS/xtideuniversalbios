@@ -34,6 +34,7 @@ struc ROMVARS
 	.wFlags				resb	2	; Word for ROM flags
 	.wDisplayMode		resb	2	; Display mode for boot menu
 	.wBootTimeout		resb	2	; Boot Menu selection timeout in system timer ticks
+	.pColorTheme		resb	2	; Ptr to the color attribute struc used by the boot menu and hotkey bar
 	.bIdeCnt			resb	1	; Number of available IDE controllers
 	.bBootDrv			resb	1	; Default drive to boot from
 	.bMinFddCnt			resb	1	; Minimum number of Floppy Drives
@@ -181,7 +182,7 @@ struc DRVPARAMS
 	.bSect			resb	1	; User specified Sectors per track (1...63)
 endstruc
 
-; Bit defines for DRVPARAMS.wFlags
+; Bit defines for DRVPARAMS.wFlags - these flags are accessed as bytes so changes here might require changes elsewhere
 MASK_DRVPARAMS_WRITECACHE		EQU	(3<<0)	; Bits 0...1, Drive internal write cache settings (must start at bit 0)
 	DEFAULT_WRITE_CACHE				EQU	0	; Must be 0
 	DISABLE_WRITE_CACHE				EQU	1

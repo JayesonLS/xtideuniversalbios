@@ -47,13 +47,13 @@ DisplayCursor_GetDefaultCursorShapeToAX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_BOOT_MENU
 		%define EXCLUDE
 	%endif
 %endif
 
-%ifndef EXCLUDE
+%ifndef EXCLUDE OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayCursor_SetShapeFromAX:
 	mov		[VIDEO_BDA.displayContext+DISPLAY_CONTEXT.wCursorShape], ax

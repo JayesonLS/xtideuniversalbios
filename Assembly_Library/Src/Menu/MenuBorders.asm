@@ -86,7 +86,7 @@ MenuBorders_RedrawBottomBorderLine:
 ;	Corrupts registers:
 ;		AX, BX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN MENU_JUMP_ALIGN
 MenuBorders_RefreshItemBorders:
 	call	MenuBorders_AdjustDisplayContextForDrawingBorders

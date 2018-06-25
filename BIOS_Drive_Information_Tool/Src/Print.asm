@@ -148,7 +148,7 @@ Print_ModeFromDLandCHSfromAXLBH:
 	; Push translation mode
 	xor		dh, dh
 	mov		si, dx
-	shl		si, 1		; Shift for WORD lookup
+	eSHL_IM	si, 1		; Shift for WORD lookup
 	push	WORD [si+.rgszXlateModeToString]
 
 	mov		si, g_szChsAndMode
@@ -196,8 +196,12 @@ Print_CHSfromCXDXAX:
 ;		AX, CX, BP, SI, DI
 ;--------------------------------------------------------------------
 Print_NameFromAtaInfoInBX:
+%ifdef CLD_NEEDED
 	cld
+%endif
+	mov		bp, sp
 	lea		si, [bx+ATA1.strModel]
+	push	si
 	mov		di, si
 	mov		cx, A1_MODEL_NUMBER_LENGTH/2
 ALIGN JUMP_ALIGN
@@ -210,9 +214,6 @@ ALIGN JUMP_ALIGN
 	xchg	cx, ax
 	stosb				; Terminate with NULL
 
-	mov		bp, sp
-	lea		si, [bx+ATA1.strModel]
-	push	si
 	mov		si, g_szFormatDrvName
 	jmp		SHORT JumpToFormatNullTerminatedStringFromSI
 

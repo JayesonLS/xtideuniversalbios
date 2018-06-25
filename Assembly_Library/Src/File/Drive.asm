@@ -29,6 +29,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
+%ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 Drive_GetNumberOfAvailableDrivesToAX:
 	push	dx
@@ -41,6 +42,7 @@ Drive_GetNumberOfAvailableDrivesToAX:
 	pop		cx
 	pop		dx
 	ret
+%endif
 
 
 ;--------------------------------------------------------------------

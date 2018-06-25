@@ -1,5 +1,5 @@
 ; Project name	:	XTIDE Universal BIOS Configurator v2
-; Description	:	"Boot Menu Settings" menu structs and functions.
+; Description	:	"Boot settings" menu structs and functions.
 
 ;
 ; XTIDE Universal BIOS and Associated Tools
@@ -25,7 +25,7 @@ g_MenupageForBootMenuSettingsMenu:
 istruc MENUPAGE
 	at	MENUPAGE.fnEnter,			dw	BootMenuSettingsMenu_EnterMenuOrModifyItemVisibility
 	at	MENUPAGE.fnBack,			dw	ConfigurationMenu_EnterMenuOrModifyItemVisibility
-	at	MENUPAGE.wMenuitems,		dw	6
+	at	MENUPAGE.wMenuitems,		dw	7
 iend
 
 g_MenuitemBootMnuStngsBackToConfigurationMenu:
@@ -52,6 +52,24 @@ istruc MENUITEM
 	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceBootDispMode
 	at	MENUITEM.itemValue + ITEM_VALUE.rgwChoiceToValueLookup,		dw	g_rgwChoiceToValueLookupForDisplayModes
 	at	MENUITEM.itemValue + ITEM_VALUE.rgszValueToStringLookup,	dw	g_rgszValueToStringLookupForDisplayModes
+iend
+
+g_MenuitemBootMnuStngsColorTheme:
+istruc MENUITEM
+	at	MENUITEM.fnActivate,		dw	Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI
+	at	MENUITEM.fnFormatValue,		dw	MenuitemPrint_WriteLookupValueStringToBufferInESDIfromUnshiftedItemInDSSI
+	at	MENUITEM.szName,			dw	g_szItemColorTheme
+	at	MENUITEM.szQuickInfo,		dw	g_szNfoColorTheme
+	at	MENUITEM.szHelp,			dw	g_szHelpColorTheme
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_MODIFY_MENU
+	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
+	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	ROMVARS.pColorTheme		; Only ever read - never modified
+	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgColorTheme
+	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceColorTheme
+	at	MENUITEM.itemValue + ITEM_VALUE.rgwChoiceToValueLookup,		dw	NULL
+	at	MENUITEM.itemValue + ITEM_VALUE.rgszValueToStringLookup,	dw	g_rgszValueToStringLookupForColorTheme
+	at	MENUITEM.itemValue + ITEM_VALUE.fnValueReader,				dw	ReadColorTheme
+	at	MENUITEM.itemValue + ITEM_VALUE.fnValueWriter,				dw	WriteColorTheme
 iend
 
 g_MenuitemBootMnuStngsFloppyDrives:
@@ -116,11 +134,6 @@ istruc MENUITEM
 	at	MENUITEM.itemValue + ITEM_VALUE.wMaxValue,					dw	1092
 iend
 
-
-g_rgwChoiceToValueLookupForEnableBootMenu:
-	dw	FALSE
-	dw	BOOT_MENU_DEFAULT_TIMEOUT
-
 g_rgwChoiceToValueLookupForDisplayModes:
 	dw	DEFAULT_TEXT_MODE
 	dw	CGA_TEXT_MODE_BW40
@@ -145,6 +158,66 @@ g_rgszValueToStringLookupForFloppyDrives:
 	dw	g_szValueBootFloppyDrvs3
 	dw	g_szValueBootFloppyDrvs4
 
+g_rgszValueToStringLookupForColorTheme:
+	dw	g_szValueColorTheme0
+	dw	g_szValueColorTheme1
+	dw	g_szValueColorTheme2
+	dw	g_szValueColorTheme3
+	dw	g_szValueColorTheme4
+	dw	g_szValueColorTheme5
+
+ColorThemeTable:
+	; Classic (default)
+	db	COLOR_ATTRIBUTE(COLOR_YELLOW, COLOR_BLUE)							; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLUE)						; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLUE)							; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_CYAN)						; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_RED, COLOR_BLUE) | FLG_COLOR_BLINK			; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_GREEN, COLOR_BLUE)							; .cNormalTimeout
+	; Argon Blue
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_BLUE, COLOR_BLACK)						; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLACK)					; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLACK)							; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_BLUE, COLOR_BLACK)						; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_BLUE, COLOR_BLACK) | FLG_COLOR_BLINK	; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_BLUE, COLOR_BLACK)						; .cNormalTimeout
+	; Neon Red
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK)						; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLACK)					; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLACK)							; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK)						; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK) | FLG_COLOR_BLINK		; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK)						; .cNormalTimeout
+	; Phosphor Green
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK)						; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLACK)					; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLACK)							; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK)						; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK) | FLG_COLOR_BLINK	; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK)						; .cNormalTimeout
+	; Moon Surface
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLACK)					; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLACK)							; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_BROWN, COLOR_BLACK)							; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_BRIGHT_WHITE, COLOR_BLACK) | FLG_COLOR_BLINK	; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_WHITE, COLOR_BLACK)							; .cNormalTimeout
+	; Toxic Waste
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK)						; .cBordersAndBackground
+	db	COLOR_ATTRIBUTE(COLOR_GRAY, COLOR_BLACK)							; .cShadow
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_GREEN, COLOR_BLACK)						; .cTitle
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_CYAN, COLOR_BLACK)						; .cItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_CYAN, COLOR_BLUE)						; .cHighlightedItem
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK) | FLG_COLOR_BLINK		; .cHurryTimeout
+	db	COLOR_ATTRIBUTE(COLOR_LIGHT_RED, COLOR_BLACK)						; .cNormalTimeout
+EndOfColorThemeTable:
+CountOfThemes	equ		(EndOfColorThemeTable-ColorThemeTable) / ATTRIBUTE_CHARS_size
+
 
 ; Section containing code
 SECTION .text
@@ -165,6 +238,7 @@ BootMenuSettingsMenu_EnterMenuOrModifyItemVisibility:
 	call	Buffers_GetRomvarsFlagsToAX
 	call	.EnableOrDisableScanForSerialDrives
 	call	.EnableOrDisableDefaultBootDrive
+	call	.EnableOrDisableColorThemeSelection
 	call	.EnableOrDisableBootMenuSelectionTimeout
 	mov		si, g_MenupageForBootMenuSettingsMenu
 	jmp		Menupage_ChangeToNewMenupageInDSSI
@@ -201,6 +275,23 @@ ALIGN JUMP_ALIGN
 .EnableOrDisableDefaultBootDrive:
 	mov		bx, g_MenuitemBootMnuStngsDefaultBootDrive
 	test	ax, FLG_ROMVARS_MODULE_HOTKEYS | FLG_ROMVARS_MODULE_BOOT_MENU
+	jmp		SHORT .DisableMenuitemFromCSBXifZFset
+
+
+;--------------------------------------------------------------------
+; .EnableOrDisableColorThemeSelection
+;	Parameters:
+;		AX:		ROMVARS.wFlags
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.EnableOrDisableColorThemeSelection:
+	mov		bx, g_MenuitemBootMnuStngsColorTheme
+	test	ax, FLG_ROMVARS_MODULE_BOOT_MENU
 	jmp		SHORT .DisableMenuitemFromCSBXifZFset
 
 
@@ -243,20 +334,93 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
-; MENUITEM value reader functions
+; ReadColorTheme
 ;	Parameters:
-;		AX:		Value from MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset
-;		DS:SI:	Ptr to MENUITEM
-;		ES:DI:	Ptr to value variable
+;		AX:		Value read from the ROMVARS location
+;		ES:DI:	ROMVARS location where the value was just read from
+;		DS:SI:	MENUITEM pointer
 ;	Returns:
-;		AX:		Value with possible modifications
+;		AX:		Value that the MENUITEM system will interact with and display
+;	Corrupts registers:
+;		BX, DI, ES
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+ReadColorTheme:
+	push	ds
+
+	push	es							; ES -> DS
+	pop		ds
+	push	cs							; CS -> ES
+	pop		es
+
+	mov		di, EndOfColorThemeTable-1	; ES:DI now points to the end of the last theme in the table of available themes in XTIDECFG
+	xor		bx, bx
+
+	push	si
+	push	cx
+	mov		cx, CountOfThemes
+	std
+.NextTheme:
+	push	cx
+	mov		cl, ATTRIBUTE_CHARS_size
+	mov		si, ax						; [ROMVARS.pColorTheme] to SI
+	dec		si
+	add		si, cx						; DS:SI now points to the end of the ColorTheme in the loaded BIOS
+	sub		di, bx						; Update the pointer to the end of the next theme in the table
+
+	; We verify that the theme in the loaded BIOS exists in our table. If it doesn't exist then that most likely means
+	; the loaded BIOS doesn't contain MODULE_BOOT_MENU and the theme actually isn't a theme - it's code. Either way,
+	; we don't trust it enough to copy it over as corrupt/invalid settings could render the UI in XTIDECFG unreadable.
+	repe	cmpsb
+	mov		bx, cx
+	pop		cx
+	loopne	.NextTheme
+	cld
+	mov		ax, cx
+	jne		SHORT .SkipCopy
+
+	; Copy the color theme fron the loaded BIOS overwriting XTIDECFG's own theme
+	inc		si
+	mov		di, ColorTheme				; ES:DI now points to ColorTheme in XTIDECFG
+
+	mov		cl, ATTRIBUTE_CHARS_size
+	call	Memory_CopyCXbytesFromDSSItoESDI
+
+.SkipCopy:
+	pop		cx
+	pop		si
+	pop		ds
+	ret
+
+
+;--------------------------------------------------------------------
+; WriteColorTheme
+;	Parameters:
+;		AX:		Value that the MENUITEM system was interacting with
+;		ES:DI:	ROMVARS location where the value is to be stored
+;		DS:SI:	MENUITEM pointer
+;	Returns:
+;		AX:		Value to actually write to ROMVARS
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-ValueReaderForEnableBootMenu:
-	test	ax, ax
-	jz		SHORT .NoNeedToModify
-	mov		ax, TRUE<<1
-.NoNeedToModify:
+WriteColorTheme:
+	push	cx
+	push	si
+	push	di
+
+	mov		cx, ATTRIBUTE_CHARS_size
+	mul		cl							; Multiply with the menu choice index
+	mov		si, ColorThemeTable
+	add		si, ax
+	mov		ax, [es:di]					; Fetch the ptr to ColorTheme
+	mov		di, ax
+
+	call	Memory_CopyCXbytesFromDSSItoESDI
+
+	pop		di
+	pop		si
+	pop		cx
 	ret
+

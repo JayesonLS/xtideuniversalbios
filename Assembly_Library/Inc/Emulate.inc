@@ -59,6 +59,36 @@ BITS 16							; Set 16 bit code generation
 ;==========================================================================
 
 ;--------------------------------------------------------------------
+; Find String In String
+;
+; FSIS
+;	Parameters:
+;		%1:		String to search for (case-insensitive)
+;		%2:		String to search in
+;	Returns:
+;	strpos:		Position of %1 in %2 if found, 0 if not found
+;--------------------------------------------------------------------
+%macro FSIS 2.nolist
+%defstr	s1 %1
+%defstr	s2 %2
+%strlen sl1 s1
+%strlen sl2 s2
+%assign strpos 0
+	%if sl1 <= sl2
+		%assign strpos sl2 - sl1 + 1
+		%rep strpos
+			%substr %%ss s2 strpos, sl1
+			%ifidni %%ss, s1
+				%exitrep
+			%else
+				%assign strpos strpos - 1
+			%endif
+		%endrep
+	%endif
+%endmacro
+
+
+;--------------------------------------------------------------------
 ; The undocumented instruction SALC (Set AL According to CF).
 ; Available on all Intel processors and truly compatible clones.
 ; Does not work on the NEC V20/V30 or Sony CXQ70108 processors.
@@ -107,9 +137,6 @@ BITS 16							; Set 16 bit code generation
 
 ;--------------------------------------------------------------------
 ; The AAM instruction (ASCII Adjust after Multiplication).
-; Available on all Intel processors and truly compatible clones.
-; Does not work on the NEC V20/V30 or Sony CXQ70108 processors
-; unless %1 is 10 (0Ah).
 ;
 ; eAAM
 ;	Parameters:
@@ -151,23 +178,24 @@ BITS 16							; Set 16 bit code generation
 ;--------------------------------------------------------------------
 %macro eBSF 2
 %ifndef USE_386
-	push	cx
 	cmp		WORD %2, BYTE 0		; Source operand is zero?
 	je		SHORT %%Return		;  If so, return with ZF set
 
 	; Set destination to zero and load mask for bit 0
+	push	cx
 	xor		%1, %1
 	mov		cx, 1
 
 ALIGN JUMP_ALIGN
 %%BitLoop:
 	test	%2, cx				; Bit set?
-	jnz		SHORT %%Return		;  If so, return with ZF cleared
+	jnz		SHORT %%PopAndReturn;  If so, return with ZF cleared
 	shl		cx, 1				; Prepare to test next bit
 	inc		%1					; Increment bit index
 	jmp		SHORT %%BitLoop		; Loop until bit found
-%%Return:
+%%PopAndReturn:
 	pop		cx
+%%Return:
 ;-----------------------------------
 %else
 	bsf		%1, %2
@@ -192,23 +220,24 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 %macro eBSR 2
 %ifndef USE_386
-	push	cx
 	cmp		WORD %2, BYTE 0		; Source operand is zero?
 	je		SHORT %%Return		;  If so, return with ZF set
 
 	; Load mask for highest order bit
+	push	cx
 	mov		cx, 1<<15
 	mov		%1, 15
 
 ALIGN JUMP_ALIGN
 %%BitLoop:
 	test	%2, cx				; Bit set?
-	jnz		SHORT %%Return		;  If so, return with ZF cleared
+	jnz		SHORT %%PopAndReturn;  If so, return with ZF cleared
 	shr		cx, 1				; Prepare to test next bit
 	dec		%1					; Decrement bit index
 	jmp		SHORT %%BitLoop		; Loop until bit found
-%%Return:
+%%PopAndReturn:
 	pop		cx
+%%Return:
 ;-----------------------------------
 %else
 	bsr		%1, %2
@@ -259,17 +288,15 @@ ALIGN JUMP_ALIGN
 %endmacro
 
 %macro eCMOVE 2
-	eCMOVZ %1, %2
+	eCMOVZ	%1, %2
 %endmacro
 
 %macro eCMOVNE 2
-	eCMOVNZ %1, %2
+	eCMOVNZ	%1, %2
 %endmacro
 
 %macro eCMOVB 2
-	jnb		SHORT %%Return
-	mov		%1, %2
-%%Return:
+	eCMOVC	%1, %2
 %endmacro
 
 %macro eCMOVS 2
@@ -288,7 +315,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ; Conditional Set.
 ;
-; eCSETcc
+; eSETcc
 ;	Parameters:
 ;		%1:		Destination data
 ;	Returns:
@@ -296,14 +323,14 @@ ALIGN JUMP_ALIGN
 ;	Corrupts registers:
 ;		Flags
 ;--------------------------------------------------------------------
-%macro eCSETZ 1
+%macro eSETZ 1
 	mov		%1, 0			; Clear while preserving flags
 	jnz		SHORT %%Return	; Nothing to set
 	inc		%1
 %%Return:
 %endmacro
 
-%macro eCSETNZ 1
+%macro eSETNZ 1
 	mov		%1, 0			; Clear while preserving flags
 	jz		SHORT %%Return	; Nothing to set
 	inc		%1
@@ -338,11 +365,19 @@ ALIGN JUMP_ALIGN
 		mov		dl, %2
 		xor		dh, dh
 	%else	; SI, DI, BP (all may be used in effective address)
-		push	ax
-		mov		al, %2
-		xor		ah, ah
-		xchg	ax, %1
-		pop		ax
+		FSIS	%1, %2
+		%if strpos
+			push	ax
+			mov		al, %2
+			xor		ah, ah
+			xchg	%1, ax
+			pop		ax
+		%else
+			xchg	%1, ax
+			mov		al, %2
+			xor		ah, ah
+			xchg	%1, ax
+		%endif
 	%endif
 ;-----------------------------------
 %else
@@ -483,14 +518,14 @@ ALIGN JUMP_ALIGN
 ;
 ; eSEG_STR
 ;	Parameters:
-;		%1:		REP/REPNE or REPE prefix
+;		%1:		REP/REPE/REPZ or REPNE/REPNZ prefix
 ;		%2:		Source segment override (destination is always ES)
 ;		%3:		String instruction
 ;		CX:		Repeat count
 ;	Returns:
 ;		FLAGS for cmps and scas only
 ;	Corrupts registers:
-;		Nothing
+;		FLAGS
 ;--------------------------------------------------------------------
 %macro eSEG_STR 3
 %ifndef USE_186	; 8088/8086 has string instruction restart bug when more than one prefix
@@ -498,9 +533,18 @@ ALIGN JUMP_ALIGN
 		%1						; REP is the prefix that can be lost
 		%2						; SEG is the prefix that won't be lost
 		%3						; String instruction
+FSIS	cmps, %3
+%ifn strpos
+	FSIS	scas, %3
+%endif
+%if strpos						; Must preserve FLAGS
 		jcxz	%%End			; Jump to end if no repeats left (preserves FLAGS)
 		jmp		SHORT %%Loop	; Loop while repeats left
 	%%End:
+%else							; No need to preserve FLAGS
+		inc		cx
+		loop	%%Loop
+%endif
 %else	; No bug on V20/V30 and later, don't know about 188/186
 	%2
 	%1 %3
@@ -555,7 +599,12 @@ ALIGN JUMP_ALIGN
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 %ifdef USE_386
 	%if %2 = 1
-		add		%1, %1	; Same size but faster on 386 and 486. Fails if %1 is a memory operand.
+		FSIS	], %1
+		%if strpos
+			eSHIFT_IM	%1, %2, shl
+		%else
+			add		%1, %1	; Same size but faster on 386 and 486.
+		%endif
 	%else
 		eSHIFT_IM	%1, %2, shl
 	%endif
@@ -581,7 +630,12 @@ ALIGN JUMP_ALIGN
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 %ifdef USE_386
 	%if %2 = 1
-		adc		%1, %1	; Same size but faster on 386 and 486. Fails if %1 is a memory operand.
+		FSIS	], %1
+		%if strpos
+			eSHIFT_IM	%1, %2, rcl
+		%else
+			adc		%1, %1	; Same size but faster on 386 and 486.
+		%endif
 	%else
 		eSHIFT_IM	%1, %2, rcl
 	%endif

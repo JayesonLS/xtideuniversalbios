@@ -47,7 +47,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		CX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 %ifndef EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 TimerTicks_GetHoursToAXandRemainderTicksToDXfromTicksInDXAX:
@@ -63,9 +63,9 @@ TimerTicks_GetMinutesToAXandRemainderTicksToDXfromTicksInDX:
 	mov		cx, TICKS_PER_MINUTE
 	div		cx		; Divide DX:AX by CX, Minutes to AX, remainder ticks to DX
 	ret
-%endif ; EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%endif ; EXCLUDE_FROM_XUB
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 TimerTicks_GetSecondsToAXandRemainderTicksToDXfromTicksInDX:
 	; This procedure can handle at most 4607 ticks in DX (almost 256 seconds)
@@ -79,7 +79,7 @@ TimerTicks_GetSecondsToAXandRemainderTicksToDXfromTicksInDX:
 %endif
 
 
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_BOOT_MENU
 		%define EXCLUDE
 	%endif
@@ -163,7 +163,7 @@ TimerTicks_GetTimeoutTicksLeftToAXfromDSBX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 TimerTicks_GetElapsedToAXandResetDSBX:
 	call	TimerTicks_ReadFromBdaToAX
@@ -183,7 +183,7 @@ TimerTicks_GetElapsedToAXandResetDSBX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN JUMP_ALIGN
 TimerTicks_GetElapsedToAXfromDSBX:
 	call	TimerTicks_ReadFromBdaToAX
@@ -201,7 +201,7 @@ TimerTicks_GetElapsedToAXfromDSBX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_BOOT_MENU OR MODULE_HOTKEYS
 		%define EXCLUDE
 	%endif

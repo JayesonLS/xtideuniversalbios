@@ -30,7 +30,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX, DX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayPage_SetFromAL:
 	xor		ah, ah
@@ -40,14 +40,14 @@ DisplayPage_SetFromAL:
 %endif
 
 
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%define EXCLUDE
 	%ifdef MODULE_HOTKEYS OR MODULE_BOOT_MENU
 		%undef EXCLUDE
 	%endif
 %endif
 
-%ifndef EXCLUDE
+%ifndef EXCLUDE OR EXCLUDE_FROM_BIOSDRVS
 ;--------------------------------------------------------------------
 ; DisplayPage_GetColumnsToALandRowsToAH
 ;	Parameters:

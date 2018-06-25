@@ -130,8 +130,8 @@ Vision_DoesIdePortInBXbelongToControllerWithIDinAX:
 ;		AL:		QD65xx Config Register contents
 ;		AH:		QDI Vision Controller ID
 ;	Returns:
-;		AL:		Max supported PIO mode
-;		AH:		FLGH_DPT_IORDY if IORDY supported, zero otherwise
+;		AL:		Max supported PIO mode (only if ZF set)
+;		AH:		~FLGH_DPT_IORDY if IORDY not supported, -1 otherwise (only if ZF set)
 ;		BX:		Min PIO Cycle Time (only if ZF set)
 ;		ZF:		Set if PIO limit necessary
 ;				Cleared if no need to limit timings
@@ -141,8 +141,7 @@ Vision_DoesIdePortInBXbelongToControllerWithIDinAX:
 Vision_GetMaxPioModeToALandMinCycleTimeToBX:
 	cmp		ah, ID_QD6500
 	jne		SHORT .NoNeedToLimitForQD6580
-
-	mov		ax, 2	; Limit to PIO 2 because QD6500 does not support IORDY
+	mov		ax, (~FLGH_DPT_IORDY & 0FFh) << 8 | 2	; Limit to PIO 2 because QD6500 does not support IORDY
 	mov		bx, PIO_2_MIN_CYCLE_TIME_NS
 .NoNeedToLimitForQD6580:
 	ret

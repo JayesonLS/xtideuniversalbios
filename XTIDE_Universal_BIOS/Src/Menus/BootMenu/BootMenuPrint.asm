@@ -53,7 +53,7 @@ BootMenuPrint_RefreshItem:
 
 	test	dl, dl
 	js		SHORT .go
-	mov		bl, ((g_szFloppyDrv)-$$ & 0xff)			; and revisit the earlier assumption...
+	mov		bl, (g_szFloppyDrv - $$) & 0xff			; and revisit the earlier assumption...
 
 .go:
 	mov		ax, dx									; preserve DL for the floppy drive letter addition

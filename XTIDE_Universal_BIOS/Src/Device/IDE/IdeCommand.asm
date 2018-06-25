@@ -199,10 +199,14 @@ IdeCommand_OutputWithParameters:
 .WaitUntilNonTransferCommandCompletes:
 %ifdef MODULE_IRQ
 	test	BYTE [bp+IDEPACK.bDeviceControl], FLG_DEVCONTROL_nIEN
+%ifdef USE_386
+	jnz		IdeWait_IRQorStatusFlagInBLwithTimeoutInBH
+%else
 	jz		SHORT .PollStatusFlagInsteadOfWaitIrq
 	jmp		IdeWait_IRQorStatusFlagInBLwithTimeoutInBH
 .PollStatusFlagInsteadOfWaitIrq:
 %endif
+%endif ; MODULE_IRQ
 	jmp		IdeWait_PollStatusFlagInBLwithTimeoutInBH
 
 .DriveNotReady:

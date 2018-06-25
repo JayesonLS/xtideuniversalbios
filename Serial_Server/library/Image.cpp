@@ -130,7 +130,7 @@ void Image::init( char *name, int p_readOnly, int p_drive, unsigned long p_cyl, 
 			head = 16;
 			sect = 63;
 		}
-		else if( (totallba % 16) != 0 || ((totallba/16) % 63) != 0 )
+		else if( (totallba & 15) != 0 || ((totallba/16) % 63) != 0 )
 		{
 			log( -1, "'%s', file size does not match standard CHS geometry (x:16:63), please specify geometry explicitly with -g", name );
 		}

@@ -146,7 +146,7 @@ CheckErrorsAfterTransferringLastMemoryMappedBlock:
 ReturnWithMemoryIOtransferErrorInAH:
 	lds		di, [bp+MEMPIOVARS.fpDPT]			; DPT now in DS:DI
 %ifdef USE_386
-	movzx	cx, BYTE [bp+MEMPIOVARS.bSectorsDone]
+	movzx	cx, [bp+MEMPIOVARS.bSectorsDone]
 %else
 	mov		ch, 0								; Preserve CF
 	mov		cl, [bp+MEMPIOVARS.bSectorsDone]

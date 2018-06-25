@@ -149,8 +149,14 @@ DetectPrint_StartDetectWithAutodetectedBasePortInAXandIdeVarsInCSBP:
 DetectPrint_DriveNameFromDrvDetectInfoInESBX:
 	push	bp
 	mov		bp, sp
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
+%if DRVDETECTINFO.szDrvName = 0
+	push	bx
+%else
 	lea		si, [bx+DRVDETECTINFO.szDrvName]
 	push	si
+%endif
+%endif
 	mov		si, g_szDriveName
 	jmp		SHORT DetectPrint_FormatCSSIfromParamsInSSBP
 

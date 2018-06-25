@@ -60,8 +60,10 @@ SerialServer_SendReceive:
 		push	ax				; save sector count for return value
 		push	ax				; working copy on the top of the stack
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS	; DF already cleared in Int13h.asm
+%ifndef EXCLUDE_FROM_XUB		; DF already cleared in Int13h.asm
+%ifdef CLD_NEEDED
 		cld
+%endif
 %endif
 
 ;----------------------------------------------------------------------

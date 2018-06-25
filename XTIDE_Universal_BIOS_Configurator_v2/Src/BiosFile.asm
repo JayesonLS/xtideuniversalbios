@@ -43,13 +43,12 @@ BiosFile_LoadFileFromDSSItoRamBuffer:
 	call	Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
 	call	FileIO_CloseUsingHandleFromBX
 	call	DisplayFileLoadedSuccessfully
-	jmp		SHORT .Return
+	pop		ds
+	ret
 
 .DisplayErrorMessage:
 	call	FileIO_CloseUsingHandleFromBX
 	call	DisplayFailedToLoadFile
-ALIGN JUMP_ALIGN
-.Return:
 	pop		ds
 	ret
 
@@ -116,7 +115,9 @@ ALIGN JUMP_ALIGN
 	push	cs
 	pop		es
 	mov		di, g_cfgVars+CFGVARS.szOpenedFile
+%ifdef CLD_NEEDED
 	cld
+%endif
 	call	String_CopyDSSItoESDIandGetLengthToCX
 	clc
 

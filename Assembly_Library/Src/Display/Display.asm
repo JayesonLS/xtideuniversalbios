@@ -37,7 +37,9 @@ Display_FunctionFromDI:
 	push	ds
 	push	dx
 
+%ifdef CLD_NEEDED
 	cld
+%endif
 	LOAD_BDA_SEGMENT_TO	ds, dx
 	mov		dx, di
 	les		di, [VIDEO_BDA.displayContext+DISPLAY_CONTEXT.fpCursorPosition]
@@ -75,7 +77,7 @@ Display_FormatNullTerminatedStringFromCSSI:
 
 	%define InitializeDisplayContext						DisplayContext_Initialize
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	%define SetCharacterPointerFromBXAX						DisplayContext_SetCharacterPointerFromBXAX
 %endif
 	%define SetCharOutputFunctionFromAXwithAttribFlagInBL	DisplayContext_SetCharOutputFunctionFromAXwithAttribFlagInBL
@@ -88,18 +90,18 @@ Display_FormatNullTerminatedStringFromCSSI:
 %endif
 	%define SynchronizeDisplayContextToHardware				DisplayContext_SynchronizeToHardware
 
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	%define GetCharacterPointerToBXAX						DisplayContext_GetCharacterPointerToBXAX
 %endif
 	%define GetSoftwareCoordinatesToAX						DisplayCursor_GetSoftwareCoordinatesToAX
 	%define GetColumnsToALandRowsToAH						DisplayPage_GetColumnsToALandRowsToAH
 
 	%define FormatNullTerminatedStringFromCSSI				Display_FormatNullTerminatedStringFromCSSI
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	%define PrintSignedWordFromAXWithBaseInBL				DisplayPrint_SignedWordFromAXWithBaseInBL
 %endif
 	%define PrintWordFromAXWithBaseInBL						DisplayPrint_WordFromAXWithBaseInBL
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 	%define PrintQWordFromSSBPwithBaseInBX					DisplayPrint_QWordFromSSBPwithBaseInBX
 %endif
 	%define PrintCharBufferFromBXSIwithLengthInCX			DisplayPrint_CharacterBufferFromBXSIwithLengthInCX
@@ -108,7 +110,7 @@ Display_FormatNullTerminatedStringFromCSSI:
 	%define PrintRepeatedCharacterFromALwithCountInCX		DisplayPrint_RepeatCharacterFromALwithCountInCX
 	%define PrintCharacterFromAL							DisplayPrint_CharacterFromAL
 	%define PrintNewlineCharacters							DisplayPrint_Newline
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB
 	%define ClearAreaWithHeightInAHandWidthInAL				DisplayPrint_ClearAreaWithHeightInAHandWidthInAL
 %endif
 	%define ClearScreenWithCharInALandAttrInAH				DisplayPrint_ClearScreenWithCharInALandAttributeInAH

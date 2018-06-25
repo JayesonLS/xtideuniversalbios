@@ -109,13 +109,13 @@ DisplayContext_SynchronizeToHardware:
 ;	Corrupts registers:
 ;		AX, DI
 ;--------------------------------------------------------------------
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_BOOT_MENU
 		%define EXCLUDE
 	%endif
 %endif
 
-%ifndef EXCLUDE
+%ifndef EXCLUDE OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_Push:
 	mov		di, ds					; Backup DS
@@ -169,7 +169,7 @@ DisplayContext_Pop:
 	pop		dx
 	mov		ds, di					; Restore DS
 	ret
-%endif ; EXCLUDE
+%endif ; EXCLUDE OR EXCLUDE_FROM_BIOSDRVS
 %undef EXCLUDE
 
 
@@ -183,7 +183,7 @@ DisplayContext_Pop:
 ;	Corrupts registers:
 ;		AX, DI
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_PrepareOffScreenBufferInESBXwithLengthInCX:
 	push	ds
@@ -201,7 +201,7 @@ DisplayContext_PrepareOffScreenBufferInESBXwithLengthInCX:
 	mov		bx, di
 	pop		ds
 	ret
-%endif ; EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%endif ; EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 
 
 ;--------------------------------------------------------------------
@@ -214,7 +214,7 @@ DisplayContext_PrepareOffScreenBufferInESBXwithLengthInCX:
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_SetCharacterPointerFromBXAX:
 	mov		[VIDEO_BDA.displayContext+DISPLAY_CONTEXT.fpCursorPosition], ax
@@ -234,7 +234,7 @@ DisplayContext_SetCharacterPointerFromBXAX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_GetCharacterPointerToBXAX:
 	mov		ax, [VIDEO_BDA.displayContext+DISPLAY_CONTEXT.fpCursorPosition]
@@ -243,7 +243,7 @@ DisplayContext_GetCharacterPointerToBXAX:
 %endif
 
 
-%ifdef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifdef EXCLUDE_FROM_XUB
 	%ifndef MODULE_BOOT_MENU
 		%define EXCLUDE
 	%endif
@@ -281,10 +281,12 @@ DisplayContext_SetCharOutputFunctionFromAXwithAttribFlagInBL:
 ;		Nothing
 ;--------------------------------------------------------------------
 %ifndef EXCLUDE	; 2 of 3
+%ifndef EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_SetCharacterAttributeFromAL:
 	mov		[VIDEO_BDA.displayContext+DISPLAY_CONTEXT.bAttribute], al
 	ret
+%endif
 %endif
 
 
@@ -299,10 +301,12 @@ DisplayContext_SetCharacterAttributeFromAL:
 ;		Nothing
 ;--------------------------------------------------------------------
 %ifndef EXCLUDE	; 3 of 3
+%ifndef EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_SetCharacterOutputParameterFromAX:
 	mov		[VIDEO_BDA.displayContext+DISPLAY_CONTEXT.wCharOutParam], ax
 	ret
+%endif
 %endif
 
 %undef EXCLUDE
@@ -317,7 +321,7 @@ DisplayContext_SetCharacterOutputParameterFromAX:
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS OR EXCLUDE_FROM_XTIDECFG
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG OR EXCLUDE_FROM_BIOSDRVS
 ALIGN DISPLAY_JUMP_ALIGN
 DisplayContext_GetCharacterOutputParameterToDX:
 	mov		dx, [VIDEO_BDA.displayContext+DISPLAY_CONTEXT.wCharOutParam]

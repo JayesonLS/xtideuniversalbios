@@ -31,7 +31,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX, BX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
-%ifndef EXCLUDE_FROM_XTIDE_UNIVERSAL_BIOS
+%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_XTIDECFG
 ALIGN MENU_JUMP_ALIGN
 MenuText_ClearTitleArea:
 	CALL_DISPLAY_LIBRARY PushDisplayContext		; Save cursor coordinates

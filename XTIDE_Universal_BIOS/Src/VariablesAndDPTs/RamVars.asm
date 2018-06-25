@@ -30,22 +30,11 @@ SECTION .text
 ;	Returns:
 ;		DS:		RAMVARS segment
 ;	Corrupts registers:
-;		AX, CX, DI
+;		AX, CX, DX, DI
 ;--------------------------------------------------------------------
 RamVars_Initialize:
 	push	es
-	; Fall to .StealMemoryForRAMVARS
 
-;--------------------------------------------------------------------
-; .StealMemoryForRAMVARS
-;	Parameters:
-;		Nothing
-;	Returns:
-;		DS:		RAMVARS segment
-;	Corrupts registers:
-;		AX, CL
-;--------------------------------------------------------------------
-.StealMemoryForRAMVARS:
 %ifndef USE_AT
 	mov		ax, LITE_MODE_RAMVARS_SEGMENT
 	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_FULLMODE
@@ -55,29 +44,18 @@ RamVars_Initialize:
 	LOAD_BDA_SEGMENT_TO	ds, ax, !		; Zero AX
 	mov		al, [cs:ROMVARS.bStealSize]
 	sub		[BDA.wBaseMem], ax
-	mov		ax, [BDA.wBaseMem]
 %ifdef USE_186
-	shl		ax, 6						; Segment to first stolen kB (*=40h)
+	imul	ax, [BDA.wBaseMem], 64
 %else
-	mov		cl, 6
-	shl		ax, cl
+	mov		al, 64
+	mul		WORD [BDA.wBaseMem]
 %endif
-	; Fall to .InitializeRamvars
 
-;--------------------------------------------------------------------
-; .InitializeRamvars
-;	Parameters:
-;		AX:		RAMVARS segment
-;	Returns:
-;		DS:		RAMVARS segment
-;	Corrupts registers:
-;		AX, CX, DI, ES
-;--------------------------------------------------------------------
 .InitializeRamvars:
+	xor		di, di
 	mov		ds, ax
 	mov		es, ax
 	mov		cx, RAMVARS_size
-	xor		di, di
 	call	Memory_ZeroESDIwithSizeInCX
 	mov		WORD [RAMVARS.wDrvDetectSignature], RAMVARS_DRV_DETECT_SIGNATURE
 	mov		WORD [RAMVARS.wSignature], RAMVARS_RAM_SIGNATURE
@@ -120,8 +98,12 @@ RamVars_GetSegmentToDS:
 ALIGN JUMP_ALIGN
 .GetStolenSegmentToDS:
 	LOAD_BDA_SEGMENT_TO	ds, di
+;%ifdef USE_186
+;	imul	di, [BDA.wBaseMem], 64	; 2 bytes less but slower, especially on 386/486 processors
+;%else
 	mov		di, [BDA.wBaseMem]		; Load available base memory size in kB
 	eSHL_IM	di, 6					; Segment to first stolen kB (*=40h)
+;%endif
 ALIGN JUMP_ALIGN
 .LoopStolenKBs:
 	mov		ds, di					; EBDA segment to DS

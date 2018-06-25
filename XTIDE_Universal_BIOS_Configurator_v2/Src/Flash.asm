@@ -77,7 +77,9 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Flash_SinglePageWithFlashvarsInSSBP:
+%ifdef CLD_NEEDED
 	cld
+%endif
 	call	AreSourceAndDestinationPagesEqualFromFlashvarsInSSBP
 	je		SHORT .NoNeedToFlashThePage	; CF cleared
 
@@ -304,55 +306,23 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 WaitUntilEepromPageWriteHasCompleted:
-	call	.InitializeTimeoutCounterForEepromPollingWithFlashvarsInSSBP
-	mov		es, [bp+FLASHVARS.fpNextDestinationPage+2]
-	mov		di, [bp+FLASHVARS.wLastOffsetWritten]
-ALIGN JUMP_ALIGN
-.PollEeprom:
-	call	.HasWriteCycleCompleted
-	je		SHORT .PageWriteCompleted	; CF cleared
-	call	TimerTicks_GetTimeoutTicksLeftToAXfromDSBX
-	jnc		SHORT .PollEeprom
-ALIGN JUMP_ALIGN
-.PageWriteCompleted:
-	ret
-
-;--------------------------------------------------------------------
-; .InitializeTimeoutCounterForEepromPollingWithFlashvarsInSSBP
-;	Parameters:
-;		SS:BP:	Ptr to FLASHVARS
-;	Returns:
-;		DS:BX:	Ptr to timeout counter variable
-;	Corrupts registers:
-;		AX
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-.InitializeTimeoutCounterForEepromPollingWithFlashvarsInSSBP:
 	push	ss
 	pop		ds
 	lea		bx, [bp+FLASHVARS.wTimeoutCounter]
 	mov		ax, EEPROM_POLLING_TIMEOUT_TICKS
-	jmp		TimerTicks_InitializeTimeoutFromAX
-
-;--------------------------------------------------------------------
-; .HasWriteCycleCompleted
-;	Parameters:
-;		ES:DI:	Ptr to last written byte in EEPROM
-;		SS:BP:	Ptr to FLASHVARS
-;	Returns:
-;		ZF:		Set if write cycle has completed
-;				Cleared if write cycle in progress
-;	Corrupts registers:
-;		AX
-;--------------------------------------------------------------------
+	call	TimerTicks_InitializeTimeoutFromAX
+	mov		es, [bp+FLASHVARS.fpNextDestinationPage+2]
+	mov		di, [bp+FLASHVARS.wLastOffsetWritten]
 ALIGN JUMP_ALIGN
-.HasWriteCycleCompleted:
-	mov		ah, [es:di]		; Load byte from EEPROM
-	mov		al, [bp+FLASHVARS.bLastByteWritten]
-	and		ax, 8080h		; Clear all but bit 7 from both bytes
-	cmp		al, ah			; Set ZF if high bits are the same
+.PollEeprom:
+	mov		al, [es:di]							; Load byte from EEPROM
+	xor		al, [bp+FLASHVARS.bLastByteWritten]	; Clear SF if the most significant bits are the same
+	jns		SHORT .PageWriteCompleted			; With CF cleared
+	call	TimerTicks_GetTimeoutTicksLeftToAXfromDSBX
+	jnc		SHORT .PollEeprom
+ALIGN JUMP_ALIGN, ret
+.PageWriteCompleted:
 	ret
-
 
 ;--------------------------------------------------------------------
 ; DisplayFlashProgressWithPagesLeftInCXandFlashvarsInSSBP

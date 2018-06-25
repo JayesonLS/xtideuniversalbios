@@ -62,8 +62,12 @@ SECTION .text
 	;; at the same time multiplies by the size of the string displacement.  The result is in AH,
 	;; with AL clear, and so we exchange AL and AH after the multiply for the final result.
 	;;
+%ifdef USE_186
+	imul	ax, g_szAddressingModes_Displacement << (8-TRANSLATEMODE_FIELD_POSITION)
+%else
 	mov		cx, g_szAddressingModes_Displacement << (8-TRANSLATEMODE_FIELD_POSITION)
 	mul		cx
+%endif
 	xchg	al, ah		; AL = always zero after above multiplication
 	add		ax, g_szAddressingModes
 	push	ax

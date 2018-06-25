@@ -140,7 +140,7 @@ EventInitializeMenuinitFromSSBP:
 	CALL_MENU_LIBRARY StartSelectionTimeoutWithTicksInAX
 
 	; Store default Menuitem (=default drive to boot from)
-	eMOVZX	dx, BYTE [cs:ROMVARS.bBootDrv]
+	eMOVZX	dx, [cs:ROMVARS.bBootDrv]
 	call	GetMenuitemToDXforDriveInDL
 	mov		[bp+MENUINIT.wHighlightedItem], dx
 

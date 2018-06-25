@@ -125,7 +125,7 @@ ResetHardDisksHandledByOurBIOS:
 	;
 	mov		cx, NUMBER_OF_IDEVARS
 
-.loop:
+.Loop:
 	call	FindDPT_MasterOrSingleForIdevarsOffsetInDL
 	jc		SHORT .ControllerNotAvailable
 
@@ -161,5 +161,5 @@ ResetHardDisksHandledByOurBIOS:
 	pop		cx
 .ControllerNotAvailable:
 	add		dl, IDEVARS_size							; move Idevars pointer forward
-	loop	.loop
+	loop	.Loop
 	ret

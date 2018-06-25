@@ -28,8 +28,6 @@ DEFAULT_HARD_DRIVE_LETTER				EQU	'C'
 ; Number of times to retry booting before accepting error
 BOOT_READ_RETRY_TIMES		EQU		3
 
-
-
 ; Pre-boot variables. These do not exist after successful boot to OS.
 ; Segment is always 0000h, same as BDA segment
 struc BOOTVARS
@@ -68,6 +66,9 @@ FLG_HOTKEY_HD_FIRST			EQU		(1<<0)	; First try to boot from HDD, then FDD
 
 %endif ; MODULE_HOTKEYS
 
+; MAX_HARD_DISK_NAME_LENGTH must be defined ahead of the DRVDETECTINFO structure to avoid problems with NASM
+MAX_HARD_DISK_NAME_LENGTH	EQU		30		; Bytes reserved for drive name
+
 struc DRVDETECTINFO
 	.StartOfDrvDetectInfo:
 	.szDrvName				resb	MAX_HARD_DISK_NAME_LENGTH
@@ -78,26 +79,12 @@ struc DRVDETECTINFO
 	.EndOfDriveDetectInfo:	resb	LARGEST_DPT_SIZE - (.EndOfDriveDetectInfo % LARGEST_DPT_SIZE)
 endstruc
 
-; Boot Menu Information Table. These are generated for all XTIDE Universal
-; BIOS drives. Available only until boot is successful.
-MAX_HARD_DISK_NAME_LENGTH			EQU		30		; Bytes reserved for drive name
 DPT_DRVDETECTINFO_SIZE_MULTIPLIER	EQU		DRVDETECTINFO_size / LARGEST_DPT_SIZE
 
-
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
-
 %if MAX_HARD_DISK_NAME_LENGTH % 2 <> 0
 	%error "MAX_HARD_DISK_NAME_LENGTH needs to be a multiple of 2, memory is moved with word operations."
 %endif
-
-%if DRVDETECTINFO_size % LARGEST_DPT_SIZE <> 0
-	%error "DRVDETECTINFO's size must be an even multiple of DPT's size.  Add or remove padding at the bottom of DRVDETECTINFO to bring the two sizes into alignment.  As DRVDETECTINFO is only used at boot time, with plenty of memory to consume, it is OK to waste some space here."
-%endif
-
-%if DRVDETECTINFO.szDrvName <> 0
-	%error "DRVDETECTINFO.szDrvName is assumed to be the first member of struc DRVDETECTINFO, in BootMenuPrint_RefreshItem"
-%endif
-
 %endif
 
 
