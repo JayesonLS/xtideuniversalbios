@@ -130,8 +130,14 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 .IsValidDriveNumberInDL:
 	push	ds
-	push	bx
 	push	ax
+	cmp		dl, 1
+	jbe		SHORT .FloppyDrive
+
+.MessageSuppressedByInt2FhHandler:
+.MoreThanOneFloppyDrive:
+.NoFloppyDrive:
+	push	bx
 
 	inc		dx			; Default drive is 00h and first drive is 01h
 	mov		ax, CHECK_IF_BLOCK_DEVICE_REMOTE	; Needs DOS 3.1+
@@ -151,10 +157,29 @@ ALIGN JUMP_ALIGN
 	dec		dx
 	test	al, al
 
-	pop		ax
 	pop		bx
+.ReturnFromFloppyDriveFiltering:
+	pop		ax
 	pop		ds
 	ret
+
+.FloppyDrive:
+; On single-floppy-drive systems, both A: and B: will point to the same physical drive. The problem is that DOS will print a message telling the user
+; to "insert a disk and press any key to continue" when swapping from one logical drive to the other. To avoid this mess we hook interrupt 2Fh/AX=4A00h
+; to signal to DOS that we will handle this ourselves. However, this only works on DOS 5+ so on older DOS versions we instead try to filter out
+; the "other" logical drive (the one that isn't the current drive) during drive enumeration so the user can't select the "phantom" drive to begin with.
+; This will have the somewhat strange effect of having a drive B: but no drive A: if B: happens to be the current logical floppy drive.
+
+	cmp		BYTE [bDosVersionMajor], 5		; bDosVersionMajor must be provided by the application as it's not part of the library
+	jae		SHORT .MessageSuppressedByInt2FhHandler
+	LOAD_BDA_SEGMENT_TO ds, ax
+	mov		al, [BDA.wEquipment]
+	test	al, 0C0h
+	jnz		SHORT .MoreThanOneFloppyDrive	; No phantom drive so no need for any filtering
+	test	al, 1							; Any floppy drive at all?
+	jz		SHORT .NoFloppyDrive			; A pre-DOS 5 machine with no FDD is indeed a strange beast. However, don't trust the BIOS - let DOS decide
+	cmp		dl, [504h]						; MS-DOS - LOGICAL DRIVE FOR SINGLE-FLOPPY SYSTEM (A: / B:)
+	jmp		SHORT .ReturnFromFloppyDriveFiltering
 
 ;--------------------------------------------------------------------
 ; .SetFlagToBXAXfromDriveInDL

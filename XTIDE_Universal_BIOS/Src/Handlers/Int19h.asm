@@ -89,11 +89,6 @@ Int19h_BootLoaderHandler:
 ;		DS:		RAMVARS segment
 ;--------------------------------------------------------------------
 .InitializeBiosAndDetectDrives:
-%ifdef MODULE_HOTKEYS
-	call	TimerTicks_ReadFromBdaToAX
-	mov		[es:BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed], ax
-%endif
-
 	call	Initialize_AndDetectDrives
 
 %ifdef MODULE_HOTKEYS

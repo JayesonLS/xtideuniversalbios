@@ -36,7 +36,7 @@ CgaSnow_IsCgaPresent:
 	jne		SHORT .CgaNotFound
 
 	; All standard CGA modes use 25 rows but only EGA and later store it to BDA.
-	cmp		BYTE [BDA.bVidRows], 25		; *FIXME* Shouldn't this be 24 (rows - 1)?
+	cmp		BYTE [BDA.bVidRows], 24		; BDA contains rows - 1
 	jae		SHORT .CgaNotFound
 	ret
 ALIGN DISPLAY_JUMP_ALIGN

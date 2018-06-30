@@ -4,7 +4,7 @@
 
 ;
 ; XTIDE Universal BIOS and Associated Tools
-; Copyright (C) 2009-2010 by Tomi Tilli, 2011-2013 by XTIDE Universal BIOS Team.
+; Copyright (C) 2009-2010 by Tomi Tilli, 2011-2018 by XTIDE Universal BIOS Team.
 ;
 ; This program is free software; you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ SECTION .text
 	%include "DosCritical.asm"
 	%include "Drive.asm"
 	%include "FileIO.asm"
+	%include "InterruptHandlers.asm"
 %endif
 
 %ifdef INCLUDE_KEYBOARD_LIBRARY
@@ -133,5 +134,9 @@ SECTION .text
 	%ifndef EXCLUDE_FROM_XUB OR EXCLUDE_FROM_BIOSDRVS
 		%include "Sort.asm"
 	%endif
+
+%ifdef INCLUDE_CMOS_LIBRARY
+	%include "CMOS.asm"
+%endif
 %endif
 

@@ -63,7 +63,7 @@ AccessDPT_GetDeviceControlByteToAL:
 	jnz		SHORT .EnableDeviceIrq
 	mov		al, FLG_DEVCONTROL_nIEN	; Disable IRQ
 .EnableDeviceIrq:
-%else
+%else	; ifndef MODULE_IRQ
 	mov		al, FLG_DEVCONTROL_nIEN	; Disable IRQ
 %endif ; MODULE_IRQ
 	ret

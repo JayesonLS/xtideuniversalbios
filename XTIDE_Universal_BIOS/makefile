@@ -28,18 +28,19 @@
 # MODULE_STRINGS_COMPRESSED   Use compressed strings to save space                                 #
 # MODULE_VERY_LATE_INIT       Initialize on INT 13h if our INT 19h handler is not called           #
 # MODULE_POWER_MANAGEMENT     Power Management support                                             #
+# MODULE_WIN95_CMOS_HACK      Hack for Windows 95 compatibility                                    #
 #                                                                                                  #
 # Not modules but these affect the assembly:                                                       #
 # ELIMINATE_CGA_SNOW          Prevents CGA snowing at the cost of a few bytes                      #
 # RELOCATE_INT13H_STACK **    Relocates INT 13h stack to beginning of stolen conventional memory   #
 # RESERVE_DIAGNOSTIC_CYLINDER Reserve one L-CHS cylinder for compatibility with old BIOSes         #
-# DANGEROUS_DETECTION         Scans Advanced Controllers from dangerous ports like mirrored PIC    #
 # NO_ATAID_VALIDATION ***     Excludes code that tries to ensure proper communication with drives  #
 # USE_186                     Use instructions supported by 80188/80186 and V20/V30 and later      #
 # USE_286                     Use instructions supported by 286 and later (defines USE_UNDOC_INTEL)#
 # USE_386                     Use instructions supported by 386 and later (defines USE_286)        #
 # USE_AT                      Use features supported on AT and later systems (not available on XT) #
 # USE_UNDOC_INTEL             Optimizations for Intel CPU:s - do NOT use on NEC V20/V30/Sony CPU:s #
+# USE_NEC_V                   Optimizations for use with NEC V20/V30 processors only               #
 # CLD_NEEDED                  Only needed for compatibility with buggy software/BIOSes             #
 #                                                                                                  #
 # ** AT Builds only (when USE_AT is defined)                                                       #
@@ -115,10 +116,11 @@ DEFINES_XTPLUS_LARGE = $(DEFINES_XTPLUS) $(DEFINES_COMMON_LARGE)
 DEFINES_AT_LARGE = $(DEFINES_AT) $(DEFINES_COMMON_LARGE)
 
 DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION CLD_NEEDED
-DEFINES_386_8K = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA
+DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN95_CMOS_HACK
+DEFINES_386_LARGE = $(DEFINES_AT_LARGE) USE_386 MODULE_ADVANCED_ATA MODULE_WIN95_CMOS_HACK
 
 DEFINES_ALL_FEATURES = MODULE_8BIT_IDE MODULE_8BIT_IDE_ADVANCED MODULE_ADVANCED_ATA MODULE_EBIOS MODULE_BOOT_MENU MODULE_HOTKEYS MODULE_IRQ MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_STRINGS_COMPRESSED MODULE_POWER_MANAGEMENT MODULE_COMPATIBLE_TABLES
-DEFINES_ALL_FEATURES += ELIMINATE_CGA_SNOW RELOCATE_INT13H_STACK RESERVE_DIAGNOSTIC_CYLINDER
+DEFINES_ALL_FEATURES += ELIMINATE_CGA_SNOW RELOCATE_INT13H_STACK RESERVE_DIAGNOSTIC_CYLINDER MODULE_WIN95_CMOS_HACK
 
 
 ###################
@@ -139,7 +141,8 @@ DEFS_XT_LARGE = $(DEFINES_XT_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_XTPLUS_LARGE = $(DEFINES_XTPLUS_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_AT_LARGE = $(DEFINES_AT_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_XT_TINY = $(DEFINES_XT_TINY:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_TINY)
-DEFS_386_8K = $(DEFINES_386_8K:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
+DEFS_386 = $(DEFINES_386:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
+DEFS_386_LARGE = $(DEFINES_386_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_ALL_FEATURES = $(DEFINES_ALL_FEATURES:%=-D%)
 
 # Add -I in front of all header directories
@@ -180,10 +183,10 @@ ASFLAGS += -Ox					# Optimize operands to their shortest forms
 all: clean small large
 	@echo All done!
 
-small: xt_tiny xt xtplus at 386_8k
+small: xt_tiny xt xtplus at 386
 	@echo All small binaries built!
 
-large: xt_large xtplus_large at_large
+large: xt_large xtplus_large at_large 386_large
 	@echo All large binaries built!
 
 at:
@@ -214,9 +217,13 @@ xt_tiny:
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_XT_TINY) -l"$(TARGET)_tiny.lst" -o"$(TARGET)_tiny.bin"
 	@echo * Tiny XT version "$(TARGET)_tiny.bin" built.
 
-386_8k:
-	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_386_8K) -l"$(TARGET)_386.lst" -o"$(TARGET)_386.bin"
+386:
+	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_386) -l"$(TARGET)_386.lst" -o"$(TARGET)_386.bin"
 	@echo * Small 386 version "$(TARGET)_386.bin" built.
+
+386_large:
+	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_386_LARGE) -l"$(TARGET)_386l.lst" -o"$(TARGET)_386l.bin"
+	@echo * Large 386 version "$(TARGET)_386l.bin" built.
 
 strings: src\Strings.asm
 	@$(AS) src\Strings.asm $(ASFLAGS) $(DEFS_AT_LARGE) -DCHECK_FOR_UNUSED_ENTRYPOINTS -DMODULE_STRINGS_COMPRESSED_PRECOMPRESS -o build\Strings.bin -l build\StringsPrecompress.lst
@@ -236,6 +243,7 @@ checksum: all
 	@perl ..\Tools\checksum.pl $(TARGET)_xtpl.bin $(BIOS_SIZE_LARGE)
 	@perl ..\Tools\checksum.pl $(TARGET)_atl.bin $(BIOS_SIZE_LARGE)
 	@perl ..\Tools\checksum.pl $(TARGET)_386.bin $(BIOS_SIZE_SMALL)
+	@perl ..\Tools\checksum.pl $(TARGET)_386l.bin $(BIOS_SIZE_LARGE)
 
 unused:
 	@echo "All Features"

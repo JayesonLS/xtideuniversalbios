@@ -31,13 +31,13 @@ SECTION .text
 ;	Returns:
 ;		AX:		Selected item
 ;	Corrupts registers:
-;		BX, CX, DX, SI, DI
+;		BX, CX, DX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Dialog_DisplayWithDialogInputInDSSIandHandlerInBX:
 	push	es
 	push	ds
-	mov		di, bp								; Backup parent MENU
+	mov		di, bp							; Backup parent MENU
 	mov		cx, DIALOG_size
 	eENTER_STRUCT cx
 
@@ -51,6 +51,7 @@ Dialog_DisplayWithDialogInputInDSSIandHandlerInBX:
 	call	Keyboard_RemoveAllKeystrokesFromBuffer
 
 	mov		ax, [bp+MENUINIT.wHighlightedItem]
+	mov		si, [bp+DIALOG.fpDialogIO]		; Restore SI
 	eLEAVE_STRUCT DIALOG_size
 	pop		ds
 	pop		es

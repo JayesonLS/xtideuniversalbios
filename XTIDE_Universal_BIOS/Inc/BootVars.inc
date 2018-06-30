@@ -28,21 +28,6 @@ DEFAULT_HARD_DRIVE_LETTER				EQU	'C'
 ; Number of times to retry booting before accepting error
 BOOT_READ_RETRY_TIMES		EQU		3
 
-; Pre-boot variables. These do not exist after successful boot to OS.
-; Segment is always 0000h, same as BDA segment
-struc BOOTVARS
-						resb	7C00h
-	.rgbAtaInfo:						; 7C00h, ATA Information for drive detection
-	.rgbBootSect		resb 	512		; 7C00h, Boot sector
-						resb	256		; Boot Menu stack
-	.rgbMnuStack:
-	.dwPostStack		resb	4		; POST stack pointer when entering INT 19h
-%ifdef MODULE_HOTKEYS
-	.hotkeyVars			resb	HOTKEYVARS_size
-%endif
-	.rgDrvDetectInfo:					; Array containing DRVDETECTINFO structs
-endstruc
-
 
 %ifdef MODULE_HOTKEYS
 
@@ -65,6 +50,23 @@ endstruc
 FLG_HOTKEY_HD_FIRST			EQU		(1<<0)	; First try to boot from HDD, then FDD
 
 %endif ; MODULE_HOTKEYS
+
+
+; Pre-boot variables. These do not exist after successful boot to OS.
+; Segment is always 0000h, same as BDA segment
+struc BOOTVARS
+						resb	7C00h
+	.rgbAtaInfo:						; 7C00h, ATA Information for drive detection
+	.rgbBootSect		resb 	512		; 7C00h, Boot sector
+						resb	256		; Boot Menu stack
+	.rgbMnuStack:
+	.dwPostStack		resb	4		; POST stack pointer when entering INT 19h
+%ifdef MODULE_HOTKEYS
+	.hotkeyVars			resb	HOTKEYVARS_size	; Must be located just before DRVDETECTINFO structs
+%endif
+	.rgDrvDetectInfo:					; Array containing DRVDETECTINFO structs
+endstruc
+
 
 ; MAX_HARD_DISK_NAME_LENGTH must be defined ahead of the DRVDETECTINFO structure to avoid problems with NASM
 MAX_HARD_DISK_NAME_LENGTH	EQU		30		; Bytes reserved for drive name

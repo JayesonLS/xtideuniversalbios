@@ -85,11 +85,15 @@ Bit_SetToDXAXfromIndexInCL:
 	cmp		cl, 16
 	jb		SHORT Bit_SetToAXfromIndexInCL
 
+%ifdef USE_NEC_V
+	eSET1	dx, cl				; SET1 ignores bits 7...4 in CL
+%else
 	sub		cl, 16
 	xchg	ax, dx
 	call	Bit_SetToAXfromIndexInCL
 	xchg	dx, ax
 	add		cl, 16
+%endif
 	ret
 
 
@@ -105,6 +109,9 @@ Bit_SetToDXAXfromIndexInCL:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Bit_SetToAXfromIndexInCL:
+%ifdef USE_NEC_V
+	eSET1	ax, cl
+%else
 	push	dx
 
 	mov		dx, 1
@@ -112,5 +119,6 @@ Bit_SetToAXfromIndexInCL:
 	or		ax, dx
 
 	pop		dx
+%endif
 	ret
 

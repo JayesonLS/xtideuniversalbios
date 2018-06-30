@@ -188,11 +188,7 @@ EEPROM_LoadFromRomToRamComparisonBuffer:
 %ifdef CLD_NEEDED
 	cld
 %endif
-;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
-	mov		cx, [cs:bx]
-;%else
-;	mov		cx, [cs:bx+g_rgwEepromTypeToSizeInWords]
-;%endif
+	mov		cx, [cs:bx+g_rgwEepromTypeToSizeInWords]
 	rep movsw
 
 	pop		ds

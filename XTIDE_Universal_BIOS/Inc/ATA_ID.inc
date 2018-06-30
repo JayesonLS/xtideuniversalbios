@@ -55,13 +55,15 @@ PIO_4_MIN_ACTIVE_TIME_NS	EQU		70
 PIO_5_MIN_ACTIVE_TIME_NS	EQU		65
 PIO_6_MIN_ACTIVE_TIME_NS	EQU		55
 
-; PIO Minimum Recovery Times or Inactive Times (t2i) can be calculated
-; from Minimum Cycle Time (t0) - Minimum Active Time (t2) - Address Valid Time (t1).
-; I'm not sure about this calculation so correct me if I'm wrong!
-; Recovery time should be calculated at run time since Cycle Time t0 can be
-; read from ATA information (ATA2+) but most drives just report the
-; Min Cycle Times listed above.
+; PIO 0...2 Maximum Addr valid to IOCS16- released (t8)
+PIO_0_MAX_ADDR_VALID_TO_IOCS16_RELEASED		EQU		60
+PIO_1_MAX_ADDR_VALID_TO_IOCS16_RELEASED		EQU		45
+PIO_2_MAX_ADDR_VALID_TO_IOCS16_RELEASED		EQU		30
 
+; PIO DIOR-/DIOW- to address valid hold (t9)
+PIO_0_DIORW_TO_ADDR_VALID_HOLD				EQU		20
+PIO_1_DIORW_TO_ADDR_VALID_HOLD				EQU		15
+PIO_2_DIORW_TO_ADDR_VALID_HOLD				EQU		10
 
 
 ; ATA-1 Drive Information struct

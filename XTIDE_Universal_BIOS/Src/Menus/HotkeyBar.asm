@@ -74,6 +74,10 @@ HotkeyBar_DrawToTopOfScreen:
 	mov		ax, (ANGLE_QUOTE_RIGHT << 8) | DEFAULT_FLOPPY_DRIVE_LETTER
 	mov		cl, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFddLetter]
 	mov		di, g_szFDD
+
+	; Clear CH if floppy drive is selected for boot
+	mov		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
+	;and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
 	call	FormatDriveHotkeyString
 
 .SkipFloppyDriveHotkeys:
@@ -91,7 +95,9 @@ HotkeyBar_DrawToTopOfScreen:
 ;--------------------------------------------------------------------
 	call	BootVars_GetLetterForFirstHardDriveToAX
 	mov		ah, ANGLE_QUOTE_RIGHT
-	mov		cl, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bHddLetter]
+	mov		cx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bHddLetter]	; Letter to CL, flags to CH
+	;and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
+	xor		ch, FLG_HOTKEY_HD_FIRST		; Clear CH if HD is selected for boot, set otherwise
 	mov		di, g_szHDD
 	call	FormatDriveHotkeyString
 	; Fall to .PrintBootMenuHotkey
@@ -181,6 +187,7 @@ HotkeyBar_ClearRestOfTopRow:
 ;--------------------------------------------------------------------
 ; FormatDriveHotkeyString
 ;	Parameters:
+;		CH:			Zero if letter in CL is selected for boot
 ;		CL:			Drive letter hotkey from BOOTVARS
 ;		AL:			First character for drive key string
 ;		AH:			Second character for drive key string (ANGLE_QUOTE_RIGHT)
@@ -191,8 +198,18 @@ HotkeyBar_ClearRestOfTopRow:
 ;	Corrupts registers:
 ;		AX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
-;; No work to do before going into FormatFunctionHotkeyString
-FormatDriveHotkeyString  equ  GetNonSelectedHotkeyDescriptionAttributeToDX
+FormatDriveHotkeyString:
+	; Invalid scancodes are filtered on HotkeyBar_StoreHotkeyToBootvarsIfValidKeystrokeInAX
+	; so here we have either drive letter or function key pressed. If latter, draw
+	; drive letters as unselected
+	cmp		BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bScancode], FIRST_FUNCTION_KEY_SCANCODE
+	jae		SHORT GetNonSelectedHotkeyDescriptionAttributeToDX
+
+	; Drive selected to boot from?
+	test	ch, ch
+	jnz		SHORT GetNonSelectedHotkeyDescriptionAttributeToDX
+	jmp		SHORT GetSelectedHotkeyDescriptionAttributeToDX
+
 
 ;--------------------------------------------------------------------
 ; FormatFunctionHotkeyString
@@ -215,8 +232,9 @@ FormatFunctionHotkeyString:
 
 %ifdef MODULE_BOOT_MENU
 
+GetSelectedHotkeyDescriptionAttributeToDX:
 	mov		si, ATTRIBUTE_CHARS.cHurryTimeout		; Selected hotkey
-	je		SHORT GetDescriptionAttributeToDX		; From compare with bScancode above
+	je		SHORT GetDescriptionAttributeToDX		; From compare with bScancode above and from FormatDriveHotkeyString
 
 GetNonSelectedHotkeyDescriptionAttributeToDX:
 	mov		si, ATTRIBUTE_CHARS.cHighlightedItem	; Unselected hotkey
@@ -231,8 +249,9 @@ GetDescriptionAttributeToDX:
 
 %else ; if no MODULE_BOOT_MENU - No boot menu so use simpler attributes
 
+GetSelectedHotkeyDescriptionAttributeToDX:
 	mov		dx, (COLOR_ATTRIBUTE(COLOR_YELLOW, COLOR_CYAN) << 8) | MONO_REVERSE_BLINK
-	je		SHORT SelectAttributeFromDHorDLbasedOnVideoMode		; From compare with bScancode above
+	je		SHORT SelectAttributeFromDHorDLbasedOnVideoMode		; From compare with bScancode above and from FormatDriveHotkeyString
 
 GetNonSelectedHotkeyDescriptionAttributeToDX:
 	mov		dx, (COLOR_ATTRIBUTE(COLOR_BLACK, COLOR_CYAN) << 8) | MONO_REVERSE

@@ -345,12 +345,9 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 .GetSelectedEepromSizeInWordsToAX:
 	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromType]
-;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
-	mov		ax, [cs:bx]
-;%else
-;	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
-;%endif
+	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
 	ret
+
 
 ;--------------------------------------------------------------------
 ; .DisplayFlashingResultsFromFlashvarsInDSBX

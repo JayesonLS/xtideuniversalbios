@@ -45,6 +45,11 @@ struc STRING_DIALOG_IO
 	.fpReturnBuffer		resb	4
 endstruc
 
+
+; Progress bar dialog
+PROGRESS_COMPLETE_CHARACTER			EQU		BLOCK_FULL_FOREGROUND
+PROGRESS_INCOMPLETE_CHARACTER		EQU		BLOCK_MOSTLY_BACKGROUND
+
 struc PROGRESS_DIALOG_IO
 	.dialogInput					resb	DIALOG_INPUT_size
 									resb	2
@@ -66,6 +71,18 @@ struc DRIVE_DIALOG_IO
 	.bReturnDriveNumber	resb	1
 endstruc
 
+
+; File dialog
+FILENAME_BUFFER_SIZE				EQU		14	; 8+1+3+NULL+alignment
+MAX_FILE_DIALOG_INFO_LINES			EQU		3
+FLG_FILEDIALOG_DRIVES				EQU		(1<<0)	; Allow changing drive
+FLG_FILEDIALOG_DIRECTORY			EQU		(1<<1)	; Select directory instead of file
+FLG_FILEDIALOG_NEW					EQU		(1<<2)	; Allow creating new file or directory
+
+KEY_FILEDIALOG_CHANGE_DRIVE			EQU		3Ch		; F2
+KEY_FILEDIALOG_SELECT_DIRECTORY		EQU		3Dh		; F3
+KEY_FILEDIALOG_NEW_FILE_OR_DIR		EQU		3Eh		; F4
+
 struc FILE_DIALOG_IO
 	; DIALOG_INPUT adjusted for File Dialog
 	.fszTitle			resb	4
@@ -80,22 +97,6 @@ struc FILE_DIALOG_IO
 	.fpFileFilterString:			; Ptr to NULL terminated search string (may include path and wildcards)
 	.szFile				resb	FILENAME_BUFFER_SIZE
 endstruc
-
-
-; Progress bar dialog
-PROGRESS_COMPLETE_CHARACTER			EQU		BLOCK_FULL_FOREGROUND
-PROGRESS_INCOMPLETE_CHARACTER		EQU		BLOCK_MOSTLY_BACKGROUND
-
-; File dialog
-FILENAME_BUFFER_SIZE				EQU		14	; 8+1+3+NULL+alignment
-MAX_FILE_DIALOG_INFO_LINES			EQU		3
-FLG_FILEDIALOG_DRIVES				EQU		(1<<0)	; Allow changing drive
-FLG_FILEDIALOG_DIRECTORY			EQU		(1<<1)	; Select directory instead of file
-FLG_FILEDIALOG_NEW					EQU		(1<<2)	; Allow creating new file or directory
-
-KEY_FILEDIALOG_CHANGE_DRIVE			EQU		3Ch		; F2
-KEY_FILEDIALOG_SELECT_DIRECTORY		EQU		3Dh		; F3
-KEY_FILEDIALOG_NEW_FILE_OR_DIR		EQU		3Eh		; F4
 
 
 %endif ; DIALOG_INC

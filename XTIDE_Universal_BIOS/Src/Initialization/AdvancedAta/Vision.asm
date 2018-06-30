@@ -40,17 +40,12 @@ Vision_DetectAndReturnIDinAXandPortInDXifControllerPresent:
 	mov		dx, QD65XX_BASE_PORT
 	in		al, QD65XX_BASE_PORT + QD65XX_CONFIG_REGISTER_in
 
-%ifdef DANGEROUS_DETECTION
-	; Checking alternative base port is currently commented away
-	; since Intel PIIX4 south bridge mirrors Interrupt Controller registers
-	; from Axh to Bxh.
 	call	IsConfigRegisterWithIDinAL
 	je		SHORT VisionControllerDetected.Return
 
 	; Check QD65xx alternative base port
 	mov		dl, QD65XX_ALTERNATIVE_BASE_PORT
 	in		al, QD65XX_ALTERNATIVE_BASE_PORT + QD65XX_CONFIG_REGISTER_in
-%endif ; DANGEROUS_DETECTION
 	; Fall to IsConfigRegisterWithIDinAL
 
 ;--------------------------------------------------------------------
@@ -197,7 +192,9 @@ Vision_InitializeWithIDinAH:
 	xchg	bp, ax
 
 	; Calculate Recovery Time value for QD65xx IDE Timing Register
-	call	AtaID_GetRecoveryTimeToAXfromPioModeInBXandCycleTimeInCX
+	xchg	ax, cx
+	eMOVZX	cx, BYTE [cs:bx+.rgbToSubtractFromCycleTimeBasedOnPIOmode]
+	sub		ax, cx
 	mov		bx, bp						; Active Time value now in BL
 	mov		bp, QD65xx_MAX_RECOVERY_TIME_CLOCKS | (QD65xx_MIN_RECOVERY_TIME_CLOCKS << 8)
 	call	ConvertNanosecsFromAXwithLimitsInBPtoRegisterValue
@@ -207,6 +204,17 @@ Vision_InitializeWithIDinAH:
 	or		al, bl
 	out		dx, al
 	ret									; Return with CF cleared
+
+.rgbToSubtractFromCycleTimeBasedOnPIOmode:
+	; For PIO 0 to 2 this method (t0 - (t1+t8+t9)) seems to give closest (little less) values to the fixed preset
+	; values used by QDI6580 DOS driver v3.7
+	db		(PIO_0_MIN_ADDRESS_VALID_NS + PIO_0_MAX_ADDR_VALID_TO_IOCS16_RELEASED + PIO_0_DIORW_TO_ADDR_VALID_HOLD)
+	db		(PIO_1_MIN_ADDRESS_VALID_NS + PIO_1_MAX_ADDR_VALID_TO_IOCS16_RELEASED + PIO_1_DIORW_TO_ADDR_VALID_HOLD)
+	db		(PIO_2_MIN_ADDRESS_VALID_NS + PIO_2_MAX_ADDR_VALID_TO_IOCS16_RELEASED + PIO_2_DIORW_TO_ADDR_VALID_HOLD)
+	db		102		; QDI6580 DOS driver v3.7 uses fixed values for PIO 3...
+	db		61		; ...and PIO 4. No idea where these values come from.
+	db		(PIO_5_MIN_CYCLE_TIME_NS / 2) ; PIO 5 and 6 were not available when QD6850 was released. Use values...
+	db		(PIO_6_MIN_CYCLE_TIME_NS / 2) ; ...that resembles those used for PIO 4
 
 
 ;--------------------------------------------------------------------
@@ -225,9 +233,9 @@ ConvertNanosecsFromAXwithLimitsInBPtoRegisterValue:
 	push	cx
 
 	; Get VLB Cycle Time in nanosecs
-	mov		cl, VLB_33MHZ_CYCLE_TIME	; Assume 33 MHz or slower VLB bus
+	mov		cl, VLB_33MHZ_CYCLE_TIME	; Assume 33 MHz or slower VLB bus (30 ns)
 	test	BYTE [di+DPT_ADVANCED_ATA.wControllerID], FLG_QDCONFIG_ID3
-	eCMOVZ	cl, VLB_40MHZ_CYCLE_TIME
+	eCMOVZ	cl, VLB_40MHZ_CYCLE_TIME	; (25 ns)
 
 	; Convert value in AX to VLB ticks
 	div		cl							; AL = VLB ticks

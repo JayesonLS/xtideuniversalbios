@@ -44,10 +44,8 @@ ALIGN JUMP_ALIGN
 DosCritical_InstallNewHandlerFromCSDX:
 	push	ds
 
-	push	cs
-	pop		ds
-	mov		ax, (SET_INTERRUPT_VECTOR<<8) | DOS_CRITICAL_ERROR_HANDLER_24h
-	int		DOS_INTERRUPT_21h
+	mov		al, DOS_CRITICAL_ERROR_HANDLER_24h
+	call	HookInterruptVectorInALwithHandlerInCSDX
 
 	pop		ds
 	ret

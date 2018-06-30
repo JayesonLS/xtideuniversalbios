@@ -31,13 +31,25 @@ SECTION .text
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX, DX, SI, DI
+;		AX, BX, CX, DX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 DialogFile_GetFileNameWithIoInDSSI:
+	; We need to store default drive because user might change drive but
+	; then cancel the file selection. In that case the original default directory
+	; must be restored.
+	call	Drive_GetDefaultToAL
+	push	ax
+
 	mov		bx, FileEventHandler
 	mov		BYTE [si+FILE_DIALOG_IO.bUserCancellation], TRUE
-	jmp		Dialog_DisplayWithDialogInputInDSSIandHandlerInBX
+	call	Dialog_DisplayWithDialogInputInDSSIandHandlerInBX
+
+	; Now restore the default drive if user cancellation
+	pop		dx
+	cmp		BYTE [si+FILE_DIALOG_IO.bUserCancellation], TRUE
+	je		Drive_SetDefaultFromDL
+	ret
 
 
 ;--------------------------------------------------------------------

@@ -32,9 +32,27 @@ SECTION .text
 ;		CF:		Set if controller detected
 ;				Cleared if no controller
 ;	Corrupts registers:
-;		BX
+;		BX, CX
 ;--------------------------------------------------------------------
 AdvAtaInit_DetectControllerForIdeBaseInBX:
+	; Detect if system has PCI bus. If it does, we can skip VLB detection. This is
+	; good thing since detecting Vision QD6850 is dangerous since Intel PIIX4 south bridge
+	; mirrors Interrupt Controller registers from Axh to Bxh. This can lead to faulty
+	; detection of QD6850 that will eventually crash the system when ports are written.
+
+	; We should save the 32-bit registers but we don't since system BIOS has stored
+	; them already and we don't use the 32-bit registers ourselves anywhere at the moment.
+	push	bx
+	push	di
+	xor		edi, edi		; Some BIOSes require this to be set to zero
+	mov		ax, PCI_INSTALLATION_CHECK
+	int		BIOS_TIME_PCI_PNP_1Ah
+	pop		di
+	pop		bx
+	test	ah, ah
+	jz		SHORT .ThisSystemHasPCIbus
+
+	; Detect VLB controllers
 	call	Vision_DetectAndReturnIDinAXandPortInDXifControllerPresent
 	jnz		SHORT .NoVisionControllerFound
 
@@ -50,6 +68,7 @@ AdvAtaInit_DetectControllerForIdeBaseInBX:
 	ret
 
 .NoAdvancedControllerForPortBX:
+.ThisSystemHasPCIbus:
 	xor		ax, ax		; Clear ID in AX and CF
 	ret
 

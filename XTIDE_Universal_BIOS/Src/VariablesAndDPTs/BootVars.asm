@@ -34,13 +34,21 @@ BootVars_Initialize:
 	; Clear all DRVDETECTINFO structs to zero
 	mov		al, DRVDETECTINFO_size
 	mul		BYTE [cs:ROMVARS.bIdeCnt]
-	mov		di, BOOTVARS.rgDrvDetectInfo	; We must not initialize anything before this!
 	xchg	cx, ax
 %ifndef MODULE_HOTKEYS
+	mov		di, BOOTVARS.rgDrvDetectInfo	; We must not initialize anything before this!
 	jmp		Memory_ZeroESDIwithSizeInCX
 
 %else ; if MODULE_HOTKEYS
+	; Also zero HOTKEYVARS located above DRVDETECTINFO structs
+	mov		di, BOOTVARS.hotkeyVars
+	add		cx, BYTE HOTKEYVARS_size
 	call	Memory_ZeroESDIwithSizeInCX
+
+	; Store time when hotkeybar is displayed
+	; (it will be displayed after initialization is complete)
+	call	TimerTicks_ReadFromBdaToAX
+	mov		[es:BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed], ax
 
 	; Initialize HOTKEYVARS by storing default drives to boot from
 	call	BootVars_StoreDefaultDriveLettersToHotkeyVars

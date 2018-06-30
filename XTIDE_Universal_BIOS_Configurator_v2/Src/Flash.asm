@@ -291,7 +291,7 @@ ALIGN JUMP_ALIGN
 	inc		bx				; Increment destination offset
 	loop	.WriteActualDataByteAfterSdpCommand
 	sti						; Enable interrupts
-	; Fall to WaitUntilEepromPageWriteHasCompleted
+	; Fall to .WaitUntilEepromPageWriteHasCompleted
 
 
 ;--------------------------------------------------------------------
@@ -304,8 +304,7 @@ ALIGN JUMP_ALIGN
 ;	Corrupts registers:
 ;		AX, BX, DI, DS, ES
 ;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-WaitUntilEepromPageWriteHasCompleted:
+.WaitUntilEepromPageWriteHasCompleted:
 	push	ss
 	pop		ds
 	lea		bx, [bp+FLASHVARS.wTimeoutCounter]
@@ -323,6 +322,7 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN, ret
 .PageWriteCompleted:
 	ret
+
 
 ;--------------------------------------------------------------------
 ; DisplayFlashProgressWithPagesLeftInCXandFlashvarsInSSBP

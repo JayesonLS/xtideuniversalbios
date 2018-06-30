@@ -84,6 +84,13 @@ Main_Start:
 	int		DOS_INTERRUPT_21h
 	ret
 .DosVersionIsOK:
+	mov		[bDosVersionMajor], al					; bDosVersionMajor must be initialized by the application (library code depends on it)
+	cmp		al, 5
+	jb		SHORT .DoNotInstallInt2FhHandler
+	; Since we are installing our Int2Fh handler we must also hook interrupt 23h to ensure a clean exit on ctrl-c/ctrl-break
+	call	HookInterrupt23h
+	call	HookInterrupt2Fh
+.DoNotInstallInt2FhHandler:
 
 	mov		ax, SCREEN_BACKGROUND_CHARACTER_AND_ATTRIBUTE
 	call	InitializeScreenWithBackgroundCharAndAttrInAX
@@ -92,6 +99,8 @@ Main_Start:
 	call	MenuEvents_DisplayMenu
 	mov		ax, DOS_BACKGROUND_CHARACTER_AND_ATTRIBUTE
 	call	InitializeScreenWithBackgroundCharAndAttrInAX
+
+	call	UnhookInterrupt2Fh
 
 	; Exit to DOS
 	mov 	ax, TERMINATE_WITH_RETURN_CODE<<8		; Errorlevel 0 in AL
@@ -155,3 +164,6 @@ iend
 
 ; Section containing uninitialized data
 SECTION .bss
+
+bDosVersionMajor:	resb	1
+

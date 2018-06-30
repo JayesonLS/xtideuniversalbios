@@ -31,6 +31,32 @@
 %endif
 
 
+%ifdef NEED_XLATEVARS
+; Variables for translating drive numbers.
+	struc XLATEVARS
+	%ifdef MODULE_SERIAL_FLOPPY
+		.bFlopCreateCnt:
+		.bFlopCntAndFirst	resb	1	; Normally, packed starting floppy drive number (high order 7 bits)
+										; and number of drives (low order bit, max 2 drives supported).
+										; During initialization, until the end of DetectDrives_FromAllIDEControllers,
+										; this byte contains the raw number of floppy drives seen
+										; (using .bFlopCreateCnt)
+	%else
+							resb	1	; alignment
+	%endif
+
+	%ifdef MODULE_DRIVEXLATE
+		.bXlatedDrv			resb	1	; Drive number after translation
+		.wFDandHDswap:
+		.bFDSwap			resb	1	; Floppy Drive to swap to 00h and vice versa
+		.bHDSwap			resb	1	; Hard Drive to swap to 80h and vice versa
+	%else
+							resb	1	; alignment
+	%endif
+	endstruc
+%endif
+
+
 ; RAM Variables.
 ; Variables should be kept to minimum since they might be located
 ; at the top of interrupt vectors.
@@ -65,31 +91,6 @@ endstruc
 RAMVARS_RAM_SIGNATURE			EQU	"Xu"	; RAMVARS signature for .wSignature
 RAMVARS_DRV_DETECT_SIGNATURE	EQU	5A5Ah	; Signature when BIOS is in drive detection mode
 
-
-%ifdef NEED_XLATEVARS
-; Variables for translating drive numbers.
-	struc XLATEVARS
-	%ifdef MODULE_SERIAL_FLOPPY
-		.bFlopCreateCnt:
-		.bFlopCntAndFirst	resb	1	; Normally, packed starting floppy drive number (high order 7 bits)
-										; and number of drives (low order bit, max 2 drives supported).
-										; During initialization, until the end of DetectDrives_FromAllIDEControllers,
-										; this byte contains the raw number of floppy drives seen
-										; (using .bFlopCreateCnt)
-	%else
-							resb	1	; alignment
-	%endif
-
-	%ifdef MODULE_DRIVEXLATE
-		.bXlatedDrv			resb	1	; Drive number after translation
-		.wFDandHDswap:
-		.bFDSwap			resb	1	; Floppy Drive to swap to 00h and vice versa
-		.bHDSwap			resb	1	; Hard Drive to swap to 80h and vice versa
-	%else
-							resb	1	; alignment
-	%endif
-	endstruc
-%endif
 
 %ifdef MODULE_SERIAL_FLOPPY
   %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS

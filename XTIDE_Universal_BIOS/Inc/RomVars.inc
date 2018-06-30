@@ -21,73 +21,35 @@
 %ifndef ROMVARS_INC
 %define ROMVARS_INC
 
-; ROM Variables. Written to the ROM image before flashing.
-struc ROMVARS
-	.wRomSign			resb	2	; ROM Signature (AA55h)
-	.bRomSize			resb	1	; ROM size in 512 byte blocks
-	.rgbJump			resb	3	; First instruction to ROM init (jmp)
 
-	.rgbSign			resb	8	; Signature for XTIDE Configurator Program
-	.szTitle			resb	31	; BIOS title string
-	.szVersion			resb	25	; BIOS version string
-
-	.wFlags				resb	2	; Word for ROM flags
-	.wDisplayMode		resb	2	; Display mode for boot menu
-	.wBootTimeout		resb	2	; Boot Menu selection timeout in system timer ticks
-	.pColorTheme		resb	2	; Ptr to the color attribute struc used by the boot menu and hotkey bar
-	.bIdeCnt			resb	1	; Number of available IDE controllers
-	.bBootDrv			resb	1	; Default drive to boot from
-	.bMinFddCnt			resb	1	; Minimum number of Floppy Drives
-	.bStealSize			resb	1	; Number of 1kB blocks stolen from 640kB base RAM
-	.bIdleTimeout		resb	1	; Standby timer value
-
-	.ideVarsBegin:
-	.ideVars0			resb	IDEVARS_size
-	.ideVars1			resb	IDEVARS_size
-	.ideVars2			resb	IDEVARS_size
-	.ideVars3			resb	IDEVARS_size
-
-%ifdef MODULE_SERIAL
-	.ideVarsSerialAuto	resb	IDEVARS_size
-%endif
-
-	.ideVarsEnd:
+; Master/Slave drive specific parameters
+struc DRVPARAMS
+	.wFlags			resb	2	; Drive flags
+	.dwMaximumLBA:				; User specified maximum number of sectors
+	.wCylinders		resb	2	; User specified cylinders (1...16383)
+	.wHeadsAndSectors:
+	.bHeads			resb	1	; User specified Heads (1...16)
+	.bSect			resb	1	; User specified Sectors per track (1...63)
 endstruc
 
-%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
-	%if ROMVARS.ideVarsEnd & 0xff00 <> 0
-		%error ".ideVars structures must fit within the first 256 bytes of the ROM image"
-	%endif
-	%if (ROMVARS.ideVarsEnd - ROMVARS.ideVarsBegin) = 0
-		%error "there must be at least one .ideVars structure, it would be bizarre if this were not true, but it is assumed in the ah0h reset code."
-	%endif
-%endif
-
-NUMBER_OF_IDEVARS					EQU	((ROMVARS.ideVarsEnd - ROMVARS.ideVarsBegin) / IDEVARS_size)
-
-; Bit defines for ROMVARS.wFlags
-FLG_ROMVARS_FULLMODE				EQU	(1<<0)	; Full operating mode (steals base RAM, supports EBIOS etc.)
-FLG_ROMVARS_SERIAL_SCANDETECT 		EQU	(1<<3)	; Scan COM ports at the end of drive detection.  Can also be invoked
-												; by holding down the ALT key at the end of drive detection.
-												; (Conveniently, this is 8, a fact we exploit when testing the bit)
-
-; Here in case the configuration needs to know functionality is present. Note! Changing the order/location of these flags
-; also requires changes elsewhere as they are usually tested using byte-accesses for efficiency.
-FLG_ROMVARS_MODULE_POWER_MANAGEMENT		EQU	(1<<5)
-FLG_ROMVARS_MODULE_8BIT_IDE				EQU	(1<<6)
-FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED	EQU (1<<7)
-FLG_ROMVARS_MODULE_ADVANCED_ATA			EQU	(1<<8)
-FLG_ROMVARS_MODULE_BOOT_MENU			EQU	(1<<9)
-FLG_ROMVARS_MODULE_EBIOS				EQU	(1<<10)
-FLG_ROMVARS_MODULE_HOTKEYS				EQU	(1<<11)
-FLG_ROMVARS_MODULE_IRQ					EQU	(1<<12)
-FLG_ROMVARS_MODULE_SERIAL				EQU (1<<13)
-FLG_ROMVARS_MODULE_SERIAL_FLOPPY		EQU (1<<14)
-FLG_ROMVARS_MODULE_STRINGS_COMPRESSED	EQU (1<<15)
-
-
-; Boot Menu Display Modes (see Assembly Library Display.inc for standard modes)
-DEFAULT_TEXT_MODE		EQU	4
+; Bit defines for DRVPARAMS.wFlags - these flags are accessed as bytes so changes here might require changes elsewhere
+MASK_DRVPARAMS_WRITECACHE		EQU	(3<<0)	; Bits 0...1, Drive internal write cache settings (must start at bit 0)
+	DEFAULT_WRITE_CACHE				EQU	0	; Must be 0
+	DISABLE_WRITE_CACHE				EQU	1
+	ENABLE_WRITE_CACHE				EQU	2
+MASK_DRVPARAMS_TRANSLATEMODE	EQU	(3<<TRANSLATEMODE_FIELD_POSITION)	; Bits 2...3, Position shared with DPT
+	TRANSLATEMODE_FIELD_POSITION	EQU	2
+	TRANSLATEMODE_NORMAL			EQU	0	; Must be zero
+	TRANSLATEMODE_LARGE				EQU	1
+	TRANSLATEMODE_ASSISTED_LBA		EQU	2	; 28-bit or 48-bit LBA
+	TRANSLATEMODE_AUTO				EQU	3	; Only available in ROMVARS, not in DPTs
+FLG_DRVPARAMS_BLOCKMODE			EQU	(1<<4)	; Enable Block mode transfers
+FLG_DRVPARAMS_USERCHS			EQU	(1<<5)	; User specified P-CHS values
+	MAX_PCHS_CYLINDERS				EQU	16383
+	MAX_PCHS_HEADS					EQU	16
+	MAX_PCHS_SECTORS_PER_TRACK		EQU	63
+	MAX_PCHS_TOTAL_SECTOR_COUNT		EQU	(MAX_PCHS_CYLINDERS * MAX_PCHS_HEADS * MAX_PCHS_SECTORS_PER_TRACK)	; 16,514,064
+FLG_DRVPARAMS_USERLBA			EQU	(1<<6)	; User specified LBA value
 
 
 ; Controller specific variables
@@ -172,33 +134,80 @@ FIRST_XTCF_DEVICE						EQU	DEVICE_8BIT_XTCF_PIO8
 LAST_XTCF_DEVICE						EQU	DEVICE_8BIT_XTCF_DMA
 XTCF_DEVICE_OFFSET						EQU	FIRST_XTCF_DEVICE						; Used for XT-CF device <--> mode conversion
 
-; Master/Slave drive specific parameters
-struc DRVPARAMS
-	.wFlags			resb	2	; Drive flags
-	.dwMaximumLBA:				; User specified maximum number of sectors
-	.wCylinders		resb	2	; User specified cylinders (1...16383)
-	.wHeadsAndSectors:
-	.bHeads			resb	1	; User specified Heads (1...16)
-	.bSect			resb	1	; User specified Sectors per track (1...63)
+
+; ROM Variables. Written to the ROM image before flashing.
+struc ROMVARS
+	.wRomSign			resb	2	; ROM Signature (AA55h)
+	.bRomSize			resb	1	; ROM size in 512 byte blocks
+	.rgbJump			resb	3	; First instruction to ROM init (jmp)
+
+	.rgbSign			resb	8	; Signature for XTIDE Configurator Program
+	.szTitle			resb	31	; BIOS title string
+	.szVersion			resb	25	; BIOS version string
+
+	.wFlags				resb	2	; Word for ROM flags
+	.wDisplayMode		resb	2	; Display mode for boot menu
+	.wBootTimeout		resb	2	; Boot Menu selection timeout in system timer ticks
+	.pColorTheme		resb	2	; Ptr to the color attribute struc used by the boot menu and hotkey bar
+	.bIdeCnt			resb	1	; Number of available IDE controllers
+	.bBootDrv			resb	1	; Default drive to boot from
+	.bMinFddCnt			resb	1	; Minimum number of Floppy Drives
+	.bStealSize			resb	1	; Number of 1kB blocks stolen from 640kB base RAM
+	.bIdleTimeout		resb	1	; Standby timer value
+
+	.ideVarsBegin:
+	.ideVars0			resb	IDEVARS_size
+	.ideVars1			resb	IDEVARS_size
+	.ideVars2			resb	IDEVARS_size
+	.ideVars3			resb	IDEVARS_size
+
+%ifdef MODULE_SERIAL
+	.ideVarsSerialAuto	resb	IDEVARS_size
+%endif
+
+	.ideVarsEnd:
 endstruc
 
-; Bit defines for DRVPARAMS.wFlags - these flags are accessed as bytes so changes here might require changes elsewhere
-MASK_DRVPARAMS_WRITECACHE		EQU	(3<<0)	; Bits 0...1, Drive internal write cache settings (must start at bit 0)
-	DEFAULT_WRITE_CACHE				EQU	0	; Must be 0
-	DISABLE_WRITE_CACHE				EQU	1
-	ENABLE_WRITE_CACHE				EQU	2
-MASK_DRVPARAMS_TRANSLATEMODE	EQU	(3<<TRANSLATEMODE_FIELD_POSITION)	; Bits 2...3, Position shared with DPT
-	TRANSLATEMODE_FIELD_POSITION	EQU	2
-	TRANSLATEMODE_NORMAL			EQU	0	; Must be zero
-	TRANSLATEMODE_LARGE				EQU	1
-	TRANSLATEMODE_ASSISTED_LBA		EQU	2	; 28-bit or 48-bit LBA
-	TRANSLATEMODE_AUTO				EQU	3	; Only available in ROMVARS, not in DPTs
-FLG_DRVPARAMS_BLOCKMODE			EQU	(1<<4)	; Enable Block mode transfers
-FLG_DRVPARAMS_USERCHS			EQU	(1<<5)	; User specified P-CHS values
-	MAX_PCHS_CYLINDERS				EQU	16383
-	MAX_PCHS_HEADS					EQU	16
-	MAX_PCHS_SECTORS_PER_TRACK		EQU	63
-	MAX_PCHS_TOTAL_SECTOR_COUNT		EQU	(MAX_PCHS_CYLINDERS * MAX_PCHS_HEADS * MAX_PCHS_SECTORS_PER_TRACK)	; 16,514,064
-FLG_DRVPARAMS_USERLBA			EQU	(1<<6)	; User specified LBA value
+%ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
+	%if ROMVARS.ideVarsEnd & 0xff00 <> 0
+		%error ".ideVars structures must fit within the first 256 bytes of the ROM image"
+	%endif
+	%if (ROMVARS.ideVarsEnd - ROMVARS.ideVarsBegin) = 0
+		%error "there must be at least one .ideVars structure, it would be bizarre if this were not true, but it is assumed in the ah0h reset code."
+	%endif
+%endif
+
+NUMBER_OF_IDEVARS					EQU	((ROMVARS.ideVarsEnd - ROMVARS.ideVarsBegin) / IDEVARS_size)
+
+; Bit defines for ROMVARS.wFlags
+FLG_ROMVARS_FULLMODE					EQU	(1<<0)	; Full operating mode (steals base RAM, supports EBIOS etc.)
+FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES	EQU	(1<<1)	; Ignores drives configured in motherboard BIOS setup.
+													; For now it is a hack to get Windows 95 IDE drivers working
+													; but it will be needed later when XTUB supports dynamic drive overlay.
+													; Because of that this must be included into AT builds and cannot be a
+													; module (any AT or 386 must be installable to the hard drive so
+													; there won't be need for even more different builds).
+FLG_ROMVARS_SERIAL_SCANDETECT 			EQU	(1<<3)	; Scan COM ports at the end of drive detection.  Can also be invoked
+													; by holding down the ALT key at the end of drive detection.
+													; (Conveniently, this is 8, a fact we exploit when testing the bit)
+
+; Here in case the configuration needs to know functionality is present. Note! Changing the order/location of these flags
+; also requires changes elsewhere as they are usually tested using byte-accesses for efficiency.
+FLG_ROMVARS_MODULE_POWER_MANAGEMENT		EQU	(1<<5)
+FLG_ROMVARS_MODULE_8BIT_IDE				EQU	(1<<6)
+FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED	EQU (1<<7)
+FLG_ROMVARS_MODULE_ADVANCED_ATA			EQU	(1<<8)
+FLG_ROMVARS_MODULE_BOOT_MENU			EQU	(1<<9)
+FLG_ROMVARS_MODULE_EBIOS				EQU	(1<<10)
+FLG_ROMVARS_MODULE_HOTKEYS				EQU	(1<<11)
+FLG_ROMVARS_MODULE_IRQ					EQU	(1<<12)
+FLG_ROMVARS_MODULE_SERIAL				EQU (1<<13)
+FLG_ROMVARS_MODULE_SERIAL_FLOPPY		EQU (1<<14)
+FLG_ROMVARS_MODULE_STRINGS_COMPRESSED	EQU (1<<15)
+
+
+; Boot Menu Display Modes (see Assembly Library Display.inc for standard modes)
+DEFAULT_TEXT_MODE		EQU	4
+
 
 %endif ; ROMVARS_INC

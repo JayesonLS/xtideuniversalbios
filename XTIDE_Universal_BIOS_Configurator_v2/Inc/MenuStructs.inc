@@ -20,6 +20,22 @@
 %ifndef MENU_STRUCTS_INC
 %define MENU_STRUCTS_INC
 
+struc ITEM_VALUE
+	.wRomvarsValueOffset	resb	2	; ROMVARS offset to actual value to be configured
+	.szDialogTitle			resb	2	; Dialog title string
+
+	.szMultichoice			resb	2	; Multiple choices in one string
+	.rgwChoiceToValueLookup	resb	2	; Ptr to lookup table for translating selected choice to actual value
+	.rgszValueToStringLookup:			; Ptr to lookup table for translating value to string
+	.rgszChoiceToStringLookup:
+	.wMinValue				resb	2	; Minimum allowed integer value
+	.wMaxValue:
+	.wValueBitmask			resb	2	; Bitmask for item value flag or field
+	.fnValueReader			resb	2	; Called just after ROMVARS is read, providing a hook for further action
+	.fnValueWriter			resb	2	; Called just before ROMVARS is written, providing a hook for further action
+	.bFieldPosition			resb	1	; Bit field position
+endstruc
+
 struc MENUPAGE
 	.fnEnter			resb	2	; Function to initialize MENUPAGE
 	.fnBack				resb	2	; Function to initialize previous MENUPAGE
@@ -58,23 +74,6 @@ TYPE_MENUITEM_ACTION		EQU	(2<<1)	; Non-configurable item
 TYPE_MENUITEM_MULTICHOICE	EQU	(3<<1)	; Item with multiple predefined choices
 TYPE_MENUITEM_UNSIGNED		EQU	(4<<1)	; Menuitem with user inputted unsigned decimal value
 TYPE_MENUITEM_HEX			EQU	(5<<1)	; Menuitem with user inputted hexadecimal value
-
-
-struc ITEM_VALUE
-	.wRomvarsValueOffset	resb	2	; ROMVARS offset to actual value to be configured
-	.szDialogTitle			resb	2	; Dialog title string
-
-	.szMultichoice			resb	2	; Multiple choices in one string
-	.rgwChoiceToValueLookup	resb	2	; Ptr to lookup table for translating selected choice to actual value
-	.rgszValueToStringLookup:			; Ptr to lookup table for translating value to string
-	.rgszChoiceToStringLookup:
-	.wMinValue				resb	2	; Minimum allowed integer value
-	.wMaxValue:
-	.wValueBitmask			resb	2	; Bitmask for item value flag or field
-	.fnValueReader			resb	2	; Called just after ROMVARS is read, providing a hook for further action
-	.fnValueWriter			resb	2	; Called just before ROMVARS is written, providing a hook for further action
-	.bFieldPosition			resb	1	; Bit field position
-endstruc
 
 
 %endif ; MENU_STRUCTS_INC

@@ -123,4 +123,21 @@
 %endmacro
 
 
+;--------------------------------------------------------------------
+; Small delay between I/O port accessess if needed.
+;
+; IO_DELAY
+;	Parameters:
+;		Nothing
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		Nothing
+;--------------------------------------------------------------------
+%macro IO_DELAY 0
+	jmp		SHORT %%ClearPrefetchQueue
+%%ClearPrefetchQueue:
+%endmacro
+
+
 %endif ; MACROS_INC

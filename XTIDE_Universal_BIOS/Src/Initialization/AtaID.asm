@@ -210,34 +210,6 @@ AtaID_GetMaxPioModeToAXandMinCycleTimeToCX:
 
 
 ;--------------------------------------------------------------------
-; AtaID_GetRecoveryTimeToAXfromPioModeInBXandCycleTimeInCX
-;	Parameters:
-;		BX:		PIO Mode
-;		CX:		PIO Cycle Time in nanosecs
-;	Returns:
-;		AX:		Active Time in nanosecs
-;	Corrupts registers:
-;		BX, CX
-;--------------------------------------------------------------------
-AtaID_GetRecoveryTimeToAXfromPioModeInBXandCycleTimeInCX:
-	call	AtaID_GetActiveTimeToAXfromPioModeInBX
-	mov		bl, [cs:bx+.rgbPioModeToAddressValidTimeNs]
-	sub		cx, bx	; Cycle Time (t0) - Address Valid Time (t1)
-	sub		cx, ax	; - Active Time (t2)
-	xchg	ax, cx	; AX = Recovery Time (t2i)
-	ret
-
-.rgbPioModeToAddressValidTimeNs:
-	db		PIO_0_MIN_ADDRESS_VALID_NS
-	db		PIO_1_MIN_ADDRESS_VALID_NS
-	db		PIO_2_MIN_ADDRESS_VALID_NS
-	db		PIO_3_MIN_ADDRESS_VALID_NS
-	db		PIO_4_MIN_ADDRESS_VALID_NS
-	db		PIO_5_MIN_ADDRESS_VALID_NS
-	db		PIO_6_MIN_ADDRESS_VALID_NS
-
-
-;--------------------------------------------------------------------
 ; AtaID_GetActiveTimeToAXfromPioModeInBX
 ;	Parameters:
 ;		BX:		PIO Mode

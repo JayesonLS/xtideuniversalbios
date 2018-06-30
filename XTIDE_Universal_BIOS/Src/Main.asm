@@ -76,7 +76,11 @@ istruc ROMVARS
 ; AT Build default settings ;
 ;---------------------------;
 %ifdef USE_AT
+%ifdef USE_386
+	at	ROMVARS.wFlags,			dw	FLG_ROMVARS_FULLMODE | FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES | MASK_ROMVARS_INCLUDED_MODULES
+%else
 	at	ROMVARS.wFlags,			dw	FLG_ROMVARS_FULLMODE | MASK_ROMVARS_INCLUDED_MODULES
+%endif
 	at	ROMVARS.wDisplayMode,	dw	DEFAULT_TEXT_MODE
 %ifdef MODULE_BOOT_MENU
 	at	ROMVARS.wBootTimeout,	dw	BOOT_MENU_DEFAULT_TIMEOUT
@@ -187,6 +191,9 @@ iend
 	; Libraries, data, Initialization and drive detection
 
 	%include "AssemblyLibrary.asm"
+%ifdef MODULE_WIN95_CMOS_HACK
+	%include "CMOS.asm"				; This belongs in the Assembly Library
+%endif
 
 	; String compression tables need to come after the AssemblyLibrary (since they depend on addresses
 	; established in the assembly library), and are unnecessary if strings are not compressed.
