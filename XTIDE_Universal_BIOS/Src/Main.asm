@@ -279,6 +279,9 @@ iend
 %endif
 
 	; INT 13h Hard Disk BIOS functions
+%ifdef MODULE_MFM_COMPATIBILITY
+	%include "Int13hMFMcompatibility.asm"
+%endif
 	%include "Int13h.asm"			; For Int 13h, Disk functions
 	%include "AH0h_HReset.asm"
 	%include "AH1h_HStatus.asm"

@@ -114,7 +114,7 @@ DetectDrives_FromAllIDEControllers:
 		call	CMOS_ReadFromIndexInDLtoAL
 		test	al, al
 		jnz		SHORT .ContinueInitialization	; CMOS byte 12h is ready for Windows 95
-		call	CMOS_Verify10hTo2Dh
+		call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
 		jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
 	
 		; Now we can alter CMOS location 12h
@@ -122,11 +122,11 @@ DetectDrives_FromAllIDEControllers:
 		mov		al, 0F0h	; Drive 0 type 16...47 but Windows doesn't care as long as this is not zero
 		call	CMOS_WriteALtoIndexInDL
 		call	CMOS_StoreNewChecksumFor10hto2Dh
-	%endif
+.ClearBdaDriveCount:
+	%endif	; MODULE_WIN95_CMOS_HACK
 
 	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES
 	jz		SHORT .ContinueInitialization
-.ClearBdaDriveCount:
 	mov		BYTE [es:BDA.bHDCount], 0	; Set hard disk count to zero
 .ContinueInitialization:
 %endif

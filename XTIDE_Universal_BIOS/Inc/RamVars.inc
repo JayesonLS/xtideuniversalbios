@@ -69,6 +69,9 @@ struc RAMVARS
 	.rgbTopOfStack:						; 256 bytes of stack
 	.fpInt13hEntryStack		resb	4
 %endif
+%ifdef MODULE_MFM_COMPATIBILITY
+	.fpMFMint13h			resb	4
+%endif
 	.fpOldI13h				resb	4	; Far pointer to old INT 13h handler
 	.wDrvDetectSignature	resb	2	; Signature when BIOS is in drive detection mode
 	.wSignature				resb	2	; Sign for finding stolen 1...64 kiB

@@ -58,11 +58,22 @@ Interrupts_InitializeInterruptVectors:
 ;		AX, BX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
 .InitializeInt13hAnd40h:
+%ifdef MODULE_MFM_COMPATIBILITY
+	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4+2]; Load old INT 13h segment
+	mov		[RAMVARS.fpMFMint13h+2], ax			; Store old INT 13h segment
+	xchg	dx, ax
+	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4]	; Load old INT 13h offset
+	mov		[RAMVARS.fpMFMint13h], ax			; Store old INT 13h offset
+	
+	mov		[RAMVARS.fpOldI13h+2], cs
+	mov		WORD [RAMVARS.fpOldI13h], Int13hMFMcompatibilityHandler	
+%else
 	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4+2]; Load old INT 13h segment
 	mov		[RAMVARS.fpOldI13h+2], ax			; Store old INT 13h segment
 	xchg	dx, ax
 	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4]	; Load old INT 13h offset
 	mov		[RAMVARS.fpOldI13h], ax				; Store old INT 13h offset
+%endif
 
 	; Only store INT 13h handler to 40h if 40h is not already installed.
 	; At least AMI BIOS for 286 stores 40h handler by itself and calls

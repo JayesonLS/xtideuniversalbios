@@ -29,6 +29,8 @@
 # MODULE_VERY_LATE_INIT       Initialize on INT 13h if our INT 19h handler is not called           #
 # MODULE_POWER_MANAGEMENT     Power Management support                                             #
 # MODULE_WIN95_CMOS_HACK      Hack for Windows 95 compatibility                                    #
+# MODULE_MFM_COMPATIBILITY    Restores BDA drive count for MFM controllers that expect to be the   #
+#                             only hard drive controller on the system                             #
 #                                                                                                  #
 # Not modules but these affect the assembly:                                                       #
 # ELIMINATE_CGA_SNOW          Prevents CGA snowing at the cost of a few bytes                      #
@@ -120,7 +122,7 @@ DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN95_CMOS_HACK
 DEFINES_386_LARGE = $(DEFINES_AT_LARGE) USE_386 MODULE_ADVANCED_ATA MODULE_WIN95_CMOS_HACK
 
 DEFINES_ALL_FEATURES = MODULE_8BIT_IDE MODULE_8BIT_IDE_ADVANCED MODULE_ADVANCED_ATA MODULE_EBIOS MODULE_BOOT_MENU MODULE_HOTKEYS MODULE_IRQ MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_STRINGS_COMPRESSED MODULE_POWER_MANAGEMENT MODULE_COMPATIBLE_TABLES
-DEFINES_ALL_FEATURES += ELIMINATE_CGA_SNOW RELOCATE_INT13H_STACK RESERVE_DIAGNOSTIC_CYLINDER MODULE_WIN95_CMOS_HACK
+DEFINES_ALL_FEATURES += ELIMINATE_CGA_SNOW RELOCATE_INT13H_STACK RESERVE_DIAGNOSTIC_CYLINDER MODULE_WIN95_CMOS_HACK MODULE_MFM_COMPATIBILITY
 
 
 ###################

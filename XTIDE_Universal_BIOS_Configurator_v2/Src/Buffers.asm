@@ -187,11 +187,7 @@ Buffers_AppendZeroesIfNeeded:
 	push	es
 
 	eMOVZX	di, [cs:g_cfgVars+CFGVARS.bEepromType]
-;%if g_rgwEepromTypeToSizeInWords = 0	; *FIXME* It really is but NASM won't accept this.
-	mov		cx, [cs:di]
-;%else
-;	mov		cx, [cs:di+g_rgwEepromTypeToSizeInWords]
-;%endif
+	mov		cx, [cs:di+g_rgwEepromTypeToSizeInWords]
 	sub		cx, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]	; CX = WORDs to append
 	jbe		SHORT .NoNeedToAppendZeroes
 
