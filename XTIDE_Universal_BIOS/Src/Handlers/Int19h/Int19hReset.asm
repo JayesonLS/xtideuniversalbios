@@ -31,5 +31,26 @@ SECTION .text
 ;		Never returns (reboots computer)
 ;--------------------------------------------------------------------
 Int19hReset_Handler:
+	; Try to boot from drive A.
+	; This is needed if INT 19h is used to launch booter games while
+	; preserving interrupt vector table (for example to hook interrupt 10h)
+	xor		dx, dx		; Drive 00h
+	call	BootSector_LoadFirstSectorFromDriveDL
+	jc		SHORT .Reboot
+
+	xor		ax, ax
+	mov		ds, ax
+%ifdef USE_386
+	mov		fs, ax
+	mov		gs, ax
+%endif
+	cmp		WORD [bx+510], 0AA55h	; Valid boot sector?
+	jne		SHORT .Reboot
+	push	es						; Zero
+	push	bx
+	retf
+
+	; Do warm reset since boot from floppy drive failed
+.Reboot:
 	mov		ax, BOOT_FLAG_WARM				; Skip memory tests
 	jmp		Reboot_ComputerWithBootFlagInAX

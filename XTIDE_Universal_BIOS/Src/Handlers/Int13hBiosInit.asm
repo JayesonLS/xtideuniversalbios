@@ -21,8 +21,6 @@
 ; Section containing code
 SECTION .text
 
-TEMPORARY_VECTOR_FOR_SYSTEM_INT13h		EQU		32h	; Unused by BIOS
-
 
 ;--------------------------------------------------------------------
 ; Int 13h software interrupt handler.

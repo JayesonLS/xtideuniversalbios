@@ -34,7 +34,7 @@ SECTION .text
 ;--------------------------------------------------------------------
 BootSector_TryToLoadFromDriveDL_AndBoot:
 	call	DetectPrint_TryToBootFromDL
-	call	LoadFirstSectorFromDriveDL
+	call	BootSector_LoadFirstSectorFromDriveDL
 	jnc		SHORT .FirstSectorLoadedToESBX
 
 	; Do not display timeout error (80h) for floppy drives since
@@ -59,7 +59,7 @@ BootSector_TryToLoadFromDriveDL_AndBoot:
 	jne		SHORT .FirstHardDiskSectorNotBootable
 .AlwaysBootFromFloppyDriveForBooterGames:
 	stc		; Boot Sector loaded successfully
-	jmp		SHORT Int19_JumpToBootSectorOrRomBoot
+	jmp		SHORT Int19h_JumpToBootSectorOrRomBoot
 
 .FirstHardDiskSectorNotBootable:
 	mov		si, g_szBootSectorNotFound
@@ -70,7 +70,7 @@ BootSector_TryToLoadFromDriveDL_AndBoot:
 
 
 ;--------------------------------------------------------------------
-; LoadFirstSectorFromDriveDL
+; BootSector_LoadFirstSectorFromDriveDL
 ;	Parameters:
 ;		DL:		Drive to boot from (translated, 00h or 80h)
 ;	Returns:
@@ -81,7 +81,7 @@ BootSector_TryToLoadFromDriveDL_AndBoot:
 ;	Corrupts registers:
 ;		AL, CX, DH, DI
 ;--------------------------------------------------------------------
-LoadFirstSectorFromDriveDL:
+BootSector_LoadFirstSectorFromDriveDL:
 	LOAD_BDA_SEGMENT_TO	es, bx				; ES:BX now points to...
 	mov		bx, BOOTVARS.rgbBootSect		; ...boot sector location
 	mov		di, BOOT_READ_RETRY_TIMES		; Initialize retry counter

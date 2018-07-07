@@ -199,10 +199,10 @@ SelectDriveToBootFrom:		; Function starts here
 	call	DriveXlate_Reset					; Clean up any drive mappings before Rom Boot
 %endif
 	clc
-	;; fall through to Int19_JumpToBootSectorOrRomBoot
+	;; fall through to Int19h_JumpToBootSectorOrRomBoot
 
 ;--------------------------------------------------------------------
-; Int19_JumpToBootSectorOrRomBoot
+; Int19h_JumpToBootSectorOrRomBoot
 ;
 ; Switches back to the POST stack, clears the DS and ES registers,
 ; and either jumps to the MBR (Master Boot Record) that was just read,
@@ -212,19 +212,18 @@ SelectDriveToBootFrom:		; Function starts here
 ;		DL:		Drive to boot from (translated, 00h or 80h)
 ;		CF:		Set for Boot Sector Boot
 ;				Clear for ROM Boot
-;		ES:BX:	(if CF set) Ptr to boot sector
+;		ES:BX:	(if CF set) Ptr to boot sector (ES = zero)
 ;
 ;	Returns:
 ;		Never returns
 ;--------------------------------------------------------------------
-Int19_JumpToBootSectorOrRomBoot:
-	mov		cx, es		; Preserve MBR segment (can't push because of stack change)
-	mov		ax, 0		; NOTE: can't use XOR (LOAD_BDA_SEGMENT_TO) as it impacts CF
+Int19h_JumpToBootSectorOrRomBoot:
+	mov		ax, es		; Preserve MBR segment (can't push because of stack change)
+						; NOTE: can't use XOR (LOAD_BDA_SEGMENT_TO) as it impacts CF
 	SWITCH_BACK_TO_POST_STACK
 
 ; clear segment registers before boot sector or rom call
 	mov		ds, ax
-	mov		es, ax
 %ifdef USE_386
 	mov		fs, ax
 	mov		gs, ax
@@ -232,7 +231,7 @@ Int19_JumpToBootSectorOrRomBoot:
 	jnc		SHORT .romboot
 
 ; jump to boot sector
-	push	cx			; sgment address for MBR
+	push	ax			; sgment address for MBR
 	push	bx			; offset address for MBR
 	retf				; NOTE:	DL is set to the drive number
 

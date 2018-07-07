@@ -21,6 +21,13 @@
 %ifndef BOOTVARS_INC
 %define BOOTVARS_INC
 
+
+; Temporary locations for system interrupt handlers. Stored during ROM initialization
+; and needed when we do full initialization and drive detection on INT 19h
+TEMPORARY_VECTOR_FOR_SYSTEM_INT13h		EQU		32h	; Unused by BIOS (reserved for DOS)
+TEMPORARY_VECTOR_FOR_SYSTEM_INT19h		EQU		33h	; Unused by BIOS (reserved for DOS)
+
+
 ; Default drives
 DEFAULT_FLOPPY_DRIVE_LETTER				EQU	'A'
 DEFAULT_HARD_DRIVE_LETTER				EQU	'C'
