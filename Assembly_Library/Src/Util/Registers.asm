@@ -20,6 +20,11 @@
 ; Section containing code
 SECTION .text
 
+%ifdef EXCLUDE_FROM_XUB
+	%ifndef MODULE_EBIOS
+		%define EXCLUDE
+	%endif
+%endif
 ;--------------------------------------------------------------------
 ; Registers_ExchangeDSSIwithESDI
 ;	Parameters
@@ -29,6 +34,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
+%ifndef EXCLUDE
 ALIGN JUMP_ALIGN
 Registers_ExchangeDSSIwithESDI:
 	push	ds
@@ -37,6 +43,8 @@ Registers_ExchangeDSSIwithESDI:
 	pop		es
 	xchg	si, di
 	ret
+%endif
+%undef EXCLUDE
 
 
 ;--------------------------------------------------------------------
@@ -47,7 +55,7 @@ Registers_ExchangeDSSIwithESDI:
 ;	Parameters
 ;		Nothing
 ;	Returns:
-;		Copies farm pointer to different segment/pointer register pair
+;		Copies far pointer to different segment/pointer register pair
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------

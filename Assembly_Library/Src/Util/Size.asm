@@ -158,7 +158,7 @@ ALIGN UTIL_SIZE_JUMP_ALIGN
 %ifndef EXCLUDE
 ALIGN UTIL_SIZE_JUMP_ALIGN
 Size_ConvertSectorCountInBXDXAXtoKiB:	; unused entrypoint ok
-Size_DivideBXDXAXbyTwo:
+Size_DivideBXDXAXbyTwo:					; unused entrypoint ok
 	shr		bx, 1					; Divide sector count by 2...
 	rcr		dx, 1					; ...to get disk size in...
 	rcr		ax, 1					; ...kiB

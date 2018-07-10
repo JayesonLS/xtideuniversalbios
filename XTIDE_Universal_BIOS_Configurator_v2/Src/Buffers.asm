@@ -108,7 +108,7 @@ Buffers_IsXTbuildLoaded:
 
 
 ;--------------------------------------------------------------------
-; Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
+; Buffers_NewBiosWithSizeInDXCXandSourceInALhasBeenLoadedForConfiguration
 ;	Parameters:
 ;		AL:		EEPROM source (FLG_CFGVARS_FILELOADED or FLG_CFGVARS_ROMLOADED)
 ;		DX:CX:	EEPROM size in bytes
@@ -118,7 +118,7 @@ Buffers_IsXTbuildLoaded:
 ;		CX, DX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration:
+Buffers_NewBiosWithSizeInDXCXandSourceInALhasBeenLoadedForConfiguration:
 	and		BYTE [cs:g_cfgVars+CFGVARS.wFlags], ~(FLG_CFGVARS_FILELOADED | FLG_CFGVARS_ROMLOADED | FLG_CFGVARS_UNSAVED)
 	or		[cs:g_cfgVars+CFGVARS.wFlags], al
 	shr		dx, 1

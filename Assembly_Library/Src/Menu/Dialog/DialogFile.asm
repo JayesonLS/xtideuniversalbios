@@ -48,7 +48,10 @@ DialogFile_GetFileNameWithIoInDSSI:
 	; Now restore the default drive if user cancellation
 	pop		dx
 	cmp		BYTE [si+FILE_DIALOG_IO.bUserCancellation], TRUE
-	je		Drive_SetDefaultFromDL
+	jne		SHORT .UserDidNotCancel
+	jmp		Drive_SetDefaultFromDL
+
+.UserDidNotCancel:
 	ret
 
 

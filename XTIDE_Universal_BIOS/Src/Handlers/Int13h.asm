@@ -338,7 +338,7 @@ Int13h_ReturnFromHandlerWithoutStoringErrorCode:
 ALIGN JUMP_ALIGN
 Int13h_CallPreviousInt13hHandler:
 	pushf						; Simulate INT by pushing flags
-	call far [RAMVARS.fpOldI13h]
+	call	FAR [RAMVARS.fpOldI13h]
 	ret
 
 

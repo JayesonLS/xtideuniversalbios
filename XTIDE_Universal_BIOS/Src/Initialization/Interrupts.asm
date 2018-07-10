@@ -64,9 +64,9 @@ Interrupts_InitializeInterruptVectors:
 	xchg	dx, ax
 	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4]	; Load old INT 13h offset
 	mov		[RAMVARS.fpMFMint13h], ax			; Store old INT 13h offset
-	
+
 	mov		[RAMVARS.fpOldI13h+2], cs
-	mov		WORD [RAMVARS.fpOldI13h], Int13hMFMcompatibilityHandler	
+	mov		WORD [RAMVARS.fpOldI13h], Int13hMFMcompatibilityHandler
 %else
 	mov		ax, [es:BIOS_DISK_INTERRUPT_13h*4+2]; Load old INT 13h segment
 	mov		[RAMVARS.fpOldI13h+2], ax			; Store old INT 13h segment
@@ -251,9 +251,13 @@ Interrupts_UnmaskInterruptControllerForDriveInDSDI:
 	push	cx
 	xchg	cx, ax				; IRQ index to CL
 	in		al, dx				; Read Interrupt Mask Register
+%ifdef USE_NEC_V
+	eCLR1	al, cl				; Clear wanted bit
+%else
 	mov		ch, ~1				; Load bit mask to be rotated
 	rol		ch, cl				; Rotate mask to correct position for clearing
 	and		al, ch				; Clear wanted bit
+%endif
 	out		dx, al				; Write modified Interrupt Mask Register
 	pop		cx
 .Return:

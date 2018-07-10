@@ -37,23 +37,23 @@ struc ITEM_VALUE
 endstruc
 
 struc MENUPAGE
-	.fnEnter			resb	2	; Function to initialize MENUPAGE
-	.fnBack				resb	2	; Function to initialize previous MENUPAGE
-	.wMenuitems			resb	2	; Number of MENUITEM structs
-	.rgMenuitem:					; All MENUITEM structs in this MENUPAGE
+	.fnEnter				resb	2	; Function to initialize MENUPAGE
+	.fnBack					resb	2	; Function to initialize previous MENUPAGE
+	.wMenuitems				resb	2	; Number of MENUITEM structs
+	.rgMenuitem:						; All MENUITEM structs in this MENUPAGE
 endstruc
 
 struc MENUITEM
-	.fnActivate			resb	2	; Offset to item activation function
-	.fnFormatValue		resb	2	; Offset to item value formatting function
+	.fnActivate				resb	2	; Offset to item activation function
+	.fnFormatValue			resb	2	; Offset to item value formatting function
 
-	.szName				resb	2	; Offset to item name string
-	.szQuickInfo		resb	2	; Offset to item quick information string
-	.szHelp				resb	2	; Offset to item help string
+	.szName					resb	2	; Offset to item name string
+	.szQuickInfo			resb	2	; Offset to item quick information string
+	.szHelp					resb	2	; Offset to item help string
 
-	.bFlags				resb	1	; Item flags
-	.bType				resb	1	; Item type
-	.itemValue			resb	ITEM_VALUE_size		; ITEM_VALUE for automated item handling
+	.bFlags					resb	1	; Item flags
+	.bType					resb	1	; Item type
+	.itemValue				resb	ITEM_VALUE_size		; ITEM_VALUE for automated item handling
 endstruc
 
 ; Bit defines for MENUITEM.bFlags

@@ -193,8 +193,8 @@ Vision_InitializeWithIDinAH:
 
 	; Calculate Recovery Time value for QD65xx IDE Timing Register
 	xchg	ax, cx
-	eMOVZX	cx, BYTE [cs:bx+.rgbToSubtractFromCycleTimeBasedOnPIOmode]
-	sub		ax, cx
+	mov		bl, [cs:bx+.rgbToSubtractFromCycleTimeBasedOnPIOmode]
+	sub		ax, bx
 	mov		bx, bp						; Active Time value now in BL
 	mov		bp, QD65xx_MAX_RECOVERY_TIME_CLOCKS | (QD65xx_MIN_RECOVERY_TIME_CLOCKS << 8)
 	call	ConvertNanosecsFromAXwithLimitsInBPtoRegisterValue

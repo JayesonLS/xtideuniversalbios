@@ -36,9 +36,9 @@ SECTION .text
 ;--------------------------------------------------------------------
 AdvAtaInit_DetectControllerForIdeBaseInBX:
 	; Detect if system has PCI bus. If it does, we can skip VLB detection. This is
-	; good thing since detecting Vision QD6850 is dangerous since Intel PIIX4 south bridge
+	; good thing since detecting Vision QD6580 is dangerous since Intel PIIX4 south bridge
 	; mirrors Interrupt Controller registers from Axh to Bxh. This can lead to faulty
-	; detection of QD6850 that will eventually crash the system when ports are written.
+	; detection of QD6580 that will eventually crash the system when ports are written.
 
 	; We should save the 32-bit registers but we don't since system BIOS has stored
 	; them already and we don't use the 32-bit registers ourselves anywhere at the moment.

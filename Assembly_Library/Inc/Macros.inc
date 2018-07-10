@@ -124,7 +124,7 @@
 
 
 ;--------------------------------------------------------------------
-; Small delay between I/O port accessess if needed.
+; Small delay between I/O port accesses if needed.
 ;
 ; IO_DELAY
 ;	Parameters:

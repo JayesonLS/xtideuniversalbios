@@ -113,6 +113,7 @@ Idepack_TranslateOldInt13hAddressAndIssueCommandFromAH:
 	mov		[bp+IDEPACK.bLbaLow], bl
 	mov		[bp+IDEPACK.wLbaMiddleAndHigh], cx
 	pop		bx
+	; Fall to GetDeviceControlByteToIdepackAndStartTransfer
 
 GetDeviceControlByteToIdepackAndStartTransfer:
 	call	AccessDPT_GetDeviceControlByteToAL

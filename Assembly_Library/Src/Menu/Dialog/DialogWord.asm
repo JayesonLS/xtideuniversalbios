@@ -29,7 +29,7 @@ SECTION .text
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX, DX, SI, DI
+;		AX, BX, CX, DX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 DialogWord_GetWordWithIoInDSSI:
@@ -92,7 +92,7 @@ iend
 ;	Returns:
 ;		Nothing (User input stored to WORD_DIALOG_IO)
 ;	Corrupts registers:
-;		AX, BX, CX, DX, SI, DI
+;		AX, BX, CX, DX, SI, DI, DS
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 GetWordFromUser:

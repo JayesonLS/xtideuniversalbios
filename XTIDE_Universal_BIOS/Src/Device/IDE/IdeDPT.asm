@@ -31,7 +31,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX, BX, CX, DX
 ;--------------------------------------------------------------------
-IdeDPT_Finalize:
+IdeDPT_Finalize:	; Unused entrypoint OK
 
 %ifdef MODULE_POWER_MANAGEMENT
 ;--------------------------------------------------------------------

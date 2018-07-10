@@ -228,7 +228,7 @@ Int19h_JumpToBootSectorOrRomBoot:
 	mov		fs, ax
 	mov		gs, ax
 %endif
-	jnc		SHORT .romboot
+	jnc		SHORT .RomBoot
 
 ; jump to boot sector
 	push	ax			; sgment address for MBR
@@ -236,5 +236,5 @@ Int19h_JumpToBootSectorOrRomBoot:
 	retf				; NOTE:	DL is set to the drive number
 
 ; Boot by calling INT 18h (ROM Basic of ROM DOS)
-.romboot:
+.RomBoot:
 	int		BIOS_BOOT_FAILURE_INTERRUPT_18h	; Never returns

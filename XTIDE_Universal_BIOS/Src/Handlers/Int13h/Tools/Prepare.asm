@@ -131,14 +131,18 @@ ALIGN JUMP_ALIGN
 	jnz		SHORT CannotAlignPointerProperly
 	ret		; Continue with transfer
 
+%ifdef MODULE_EBIOS
 InvalidDAP:
-InvalidNumberOfSectorsRequested:
 Prepare_ReturnFromInt13hWithInvalidFunctionError:
+%endif
+InvalidNumberOfSectorsRequested:
 	mov		ah, RET_HD_INVALID
 	SKIP2B	f
 CannotAlignPointerProperly:
 	mov		ah, RET_HD_BOUNDARY
+%ifdef MODULE_EBIOS
 ZeroSectorsRequestedSoNoErrors:
+%endif
 	jmp		Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAH
 
 
@@ -160,10 +164,10 @@ g_rgbWriteCommandLookup:
 	db		COMMAND_WRITE_MULTIPLE_EXT
 %endif
 
+%ifdef MODULE_EBIOS
 g_rgbVerifyCommandLookup:
 	db		COMMAND_VERIFY_SECTORS
 	db		COMMAND_VERIFY_SECTORS_EXT
 	db		COMMAND_VERIFY_SECTORS
-%ifdef MODULE_EBIOS
 	db		COMMAND_VERIFY_SECTORS_EXT
 %endif

@@ -295,7 +295,7 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
-; WaitUntilEepromPageWriteHasCompleted
+; .WaitUntilEepromPageWriteHasCompleted
 ;	Parameters:
 ;		SS:BP:	Ptr to FLASHVARS
 ;	Returns:

@@ -1,7 +1,7 @@
 ; Project name	:	XTIDE Universal BIOS
 ; Description	:	Int 13h handler that is used by MODULE_MFM_COMPATIBILITY.
-;					It is placed between XTUB Int 13h hander and system INT 13h hander
-;					to hide XTUB from MFM controllers whose BIOS assumes they handler
+;					It is placed between XUB Int 13h handler and system INT 13h handler
+;					to hide XUB from MFM controllers whose BIOS assumes they handle
 ;					all hard drives on the system.
 
 ;
@@ -27,7 +27,7 @@ SECTION .text
 ;--------------------------------------------------------------------
 ; Int 13h software interrupt handler for MFM compatibility.
 ;
-; Some MDM controllers require that BDA drive count is what they have set.
+; Some MFM controllers require that BDA drive count is what they have set.
 ; The purpose for this handler is to restore BDA drive count to what MFM controller
 ; expects and then call MFM controller INT 13h.
 ;
@@ -63,7 +63,7 @@ Int13hMFMcompatibilityHandler:
 	pop		es
 
 	pushf	; Push flags to simulate INT
-	call far [bp-6]
+	call	FAR [bp-6]
 
 	; Now we can restore BDA drive count
 	push	ds

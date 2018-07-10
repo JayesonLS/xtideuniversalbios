@@ -18,6 +18,13 @@
 ;%define USE_386				; Define to use 386 instructions
 ;%define USE_AT					; Define for AT class machine
 
+%ifdef USE_NEC_V				; This will run on NEC V20/V30 processors only
+	%define USE_186				; Define to use 18x/V20/V30 instructions
+	%ifdef USE_UNDOC_INTEL OR USE_286 OR USE_386
+		%fatal "Conflicting processor define used together with USE_NEC_V!"
+	%endif
+%endif
+
 %ifdef USE_386
 	%define USE_286				; Define to use 286 instructions
 %endif
@@ -86,6 +93,11 @@ BITS 16							; Set 16 bit code generation
 		%endrep
 	%endif
 %endmacro
+
+
+%ifdef USE_NEC_V
+	%include "NEC_V.inc"
+%endif
 
 
 ;--------------------------------------------------------------------

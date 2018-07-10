@@ -28,7 +28,7 @@ SECTION .text
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX, DX, SI, DI
+;		AX, BX, CX, DX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 DialogDrive_GetDriveWithIoInDSSI:

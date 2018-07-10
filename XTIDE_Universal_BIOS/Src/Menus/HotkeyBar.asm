@@ -77,7 +77,7 @@ HotkeyBar_DrawToTopOfScreen:
 
 	; Clear CH if floppy drive is selected for boot
 	mov		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
-	;and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
+;	and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
 	call	FormatDriveHotkeyString
 
 .SkipFloppyDriveHotkeys:
@@ -95,8 +95,8 @@ HotkeyBar_DrawToTopOfScreen:
 ;--------------------------------------------------------------------
 	call	BootVars_GetLetterForFirstHardDriveToAX
 	mov		ah, ANGLE_QUOTE_RIGHT
-	mov		cx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bHddLetter]	; Letter to CL, flags to CH
-	;and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
+	mov		cx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wHddLetterAndFlags]	; Letter to CL, flags to CH
+;	and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
 	xor		ch, FLG_HOTKEY_HD_FIRST		; Clear CH if HD is selected for boot, set otherwise
 	mov		di, g_szHDD
 	call	FormatDriveHotkeyString
@@ -233,11 +233,11 @@ FormatFunctionHotkeyString:
 %ifdef MODULE_BOOT_MENU
 
 GetSelectedHotkeyDescriptionAttributeToDX:
-	mov		si, ATTRIBUTE_CHARS.cHurryTimeout		; Selected hotkey
+	mov		si, ATTRIBUTE_CHARS.cHighlightedItem	; Selected hotkey
 	je		SHORT GetDescriptionAttributeToDX		; From compare with bScancode above and from FormatDriveHotkeyString
 
 GetNonSelectedHotkeyDescriptionAttributeToDX:
-	mov		si, ATTRIBUTE_CHARS.cHighlightedItem	; Unselected hotkey
+	mov		si, ATTRIBUTE_CHARS.cItem				; Unselected hotkey
 
 	; Display Library should not be called like this
 GetDescriptionAttributeToDX:

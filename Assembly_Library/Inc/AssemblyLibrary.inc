@@ -8,12 +8,11 @@
 %include "Macros.inc"
 %include "BiosData.inc"
 %include "BiosFunctions.inc"
-%include "CMOS.inc"
 %include "CgaSnow.inc"
+%include "CMOS.inc"
 %include "Debug.inc"
 %include "Delay.inc"
 %include "DosFunctions.inc"
-%include "CMOS.inc"
 %include "File.inc"
 %include "Math.inc"
 %include "Registers.inc"
@@ -26,7 +25,7 @@
 	%include "MenuEvents.inc"
 	%define INCLUDE_KEYBOARD_LIBRARY
 	%define INCLUDE_TIME_LIBRARY
-	
+
 	%ifdef INCLUDE_MENU_DIALOGS
 		%include "Dialog.inc"
 		%define INCLUDE_MENU_LIBRARY

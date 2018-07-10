@@ -30,7 +30,7 @@ SECTION .text
 ;	Corrupts registers:
 ;		AL, BX, CX, DX
 ;--------------------------------------------------------------------
-IdeCommand_ResetMasterAndSlaveController:
+IdeCommand_ResetMasterAndSlaveController:	; Unused entrypoint OK
 	; HSR0: Set_SRST
 ; Used to be:
 ;	call	AccessDPT_GetDeviceControlByteToAL
@@ -80,7 +80,7 @@ IdeCommand_ResetMasterAndSlaveController:
 ;	Corrupts registers:
 ;		AL, BX, CX, DX, SI, DI, ES
 ;--------------------------------------------------------------------
-IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH:
+IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH:		; Unused entrypoint OK
 	; Create fake DPT to be able to use Device.asm functions
 	call	FindDPT_ForNewDriveToDSDI
 	eMOVZX	ax, bh
@@ -144,7 +144,7 @@ IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH:
 ;		AL, BX, (CX), DX, (ES:SI for data transfer commands)
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
-IdeCommand_OutputWithParameters:
+IdeCommand_OutputWithParameters:	; Unused entrypoint OK
 	push	bx						; Store status register bits to poll
 
 	; Select Master or Slave drive and output head number or LBA28 top bits

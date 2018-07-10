@@ -257,7 +257,6 @@ LoadBiosFromFile:
 	add		si, BYTE FILE_DIALOG_IO.szFile
 	call	BiosFile_LoadFileFromDSSItoRamBuffer
 	call	LoadColorTheme
-	; *FIXME* Will load themes even from unrecognized versions of the BIOS which isn't really a problem but still 'unexpected behaviour' and therefore a bug.
 	call	MainMenu_EnterMenuOrModifyItemVisibility
 .CancelFileLoading:
 	add		sp, BYTE FILE_DIALOG_IO_size
@@ -269,8 +268,8 @@ ALIGN JUMP_ALIGN
 LoadXtideUniversalBiosFromRom:
 	call	Buffers_SaveChangesIfFileLoaded
 	call	EEPROM_LoadXtideUniversalBiosFromRomToRamBufferAndReturnSizeInDXCX
-	mov		ax, FLG_CFGVARS_ROMLOADED
-	call	Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
+	mov		al, FLG_CFGVARS_ROMLOADED
+	call	Buffers_NewBiosWithSizeInDXCXandSourceInALhasBeenLoadedForConfiguration
 	mov		dx, g_szDlgMainLoadROM
 	call	Dialogs_DisplayNotificationFromCSDX
 	call	LoadColorTheme
@@ -296,12 +295,16 @@ LoadOldSettingsFromEeprom:
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, DI, ES
+;		AX, BX, CX, SI, DI, ES
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 LoadColorTheme:
 	call	Buffers_GetFileBufferToESDI
+	call	Buffers_IsXtideUniversalBiosSignatureInESDI
+	jnz		SHORT .Return
 .FromROM:
 	mov		ax, [es:ROMVARS.pColorTheme]
 	jmp		ReadColorTheme
+.Return:
+	ret
 

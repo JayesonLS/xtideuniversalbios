@@ -98,10 +98,10 @@ DetectDrives_FromAllIDEControllers:
 ; Here we might want to replace BIOS configured drives with the ones we detected.
 ; Primary reason is to support dynamic overlay feature in the future. Second reason
 ; is a hack to get Windows 95 load proper IDE drivers.
-; 
+;
 ; The Windows hack has two parts. First part is to try to alter CMOS address 12h as that
 ; is what Windows 95 driver reads to detect IDE drives. Altering is not possible on all
-; systems since CMOS has a checksum but it's location is not standardized. We will first
+; systems since CMOS has a checksum but its location is not standardized. We will first
 ; try to detect valid checksum. If it succeeds, then it is safe to assume this system
 ; has compatible CMOS and we can alter it.
 ; If verify fails, we do the more dirty hack to zero BDA drive count. Then Windows 95 works
@@ -116,7 +116,7 @@ DetectDrives_FromAllIDEControllers:
 		jnz		SHORT .ContinueInitialization	; CMOS byte 12h is ready for Windows 95
 		call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
 		jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
-	
+
 		; Now we can alter CMOS location 12h
 		mov		dl, HARD_DISK_TYPES
 		mov		al, 0F0h	; Drive 0 type 16...47 but Windows doesn't care as long as this is not zero

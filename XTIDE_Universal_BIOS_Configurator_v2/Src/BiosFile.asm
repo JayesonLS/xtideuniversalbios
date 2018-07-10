@@ -39,8 +39,8 @@ BiosFile_LoadFileFromDSSItoRamBuffer:
 	call	.LoadFileWithNameInDSSIhandleInBXandSizeInDXCXtoRamBuffer
 	jc		SHORT .DisplayErrorMessage
 
-	mov		ax, FLG_CFGVARS_FILELOADED
-	call	Buffers_NewBiosWithSizeInDXCXandSourceInAXhasBeenLoadedForConfiguration
+	mov		al, FLG_CFGVARS_FILELOADED
+	call	Buffers_NewBiosWithSizeInDXCXandSourceInALhasBeenLoadedForConfiguration
 	call	FileIO_CloseUsingHandleFromBX
 	call	DisplayFileLoadedSuccessfully
 	pop		ds
