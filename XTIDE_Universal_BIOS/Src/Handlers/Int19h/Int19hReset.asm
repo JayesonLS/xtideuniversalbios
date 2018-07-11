@@ -37,18 +37,8 @@ Int19hReset_Handler:
 	xor		dx, dx		; Drive 00h
 	call	BootSector_LoadFirstSectorFromDriveDL
 	jc		SHORT .Reboot
-
-	xor		ax, ax
-	mov		ds, ax
-%ifdef USE_386
-	mov		fs, ax
-	mov		gs, ax
-%endif
 	cmp		WORD [bx+510], 0AA55h	; Valid boot sector?
-	jne		SHORT .Reboot
-	push	es						; Zero
-	push	bx
-	retf
+	je		SHORT Int19h_JumpToBootSectorInESBXOrRomBootWithoutStackChange
 
 	; Do warm reset since boot from floppy drive failed
 .Reboot:

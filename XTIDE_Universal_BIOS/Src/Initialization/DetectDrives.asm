@@ -117,9 +117,12 @@ DetectDrives_FromAllIDEControllers:
 		call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
 		jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
 
-		; Now we can alter CMOS location 12h
+		; Now we can alter CMOS location 12h. Important! We set type for drive 1
+		; (primary slave) and not for drive 0! Award BIOS locks if we set drive 0 type to Fh.
+		; We cannot set it to less either since that will fully set predefined hard drive type to the BIOS.
+		; Windows 95 only cares that the CMOS location 12h is non-zero.
 		mov		dl, HARD_DISK_TYPES
-		mov		al, 0F0h	; Drive 0 type 16...47 but Windows doesn't care as long as this is not zero
+		mov		al, 0Fh	; Drive 1 type 16...47 (defined elsewhere in the CMOS)
 		call	CMOS_WriteALtoIndexInDL
 		call	CMOS_StoreNewChecksumFor10hto2Dh
 .ClearBdaDriveCount:

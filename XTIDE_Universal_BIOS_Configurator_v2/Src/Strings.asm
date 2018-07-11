@@ -425,6 +425,7 @@ g_szItemBootDispMode:	db	"Display Mode",NULL
 g_szItemColorTheme:		db	"Color Theme",NULL
 g_szItemBootFloppyDrvs:	db	"Number of Floppy Drives",NULL
 g_szItemSerialDetect:	db	"Scan for Serial Drives",NULL
+g_szItemClearBdaDriveCount:	db  "Remove other hard drives",NULL
 
 g_szDlgBootTimeout:		db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
 g_szDlgBootDrive:		db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
@@ -432,6 +433,7 @@ g_szDlgBootDispMode:	db	"Select display mode.",NULL
 g_szDlgColorTheme:		db	"Select color theme.",NULL
 g_szDlgBootFloppyDrvs:	db	"Select number of Floppy Drives in system.",NULL
 g_szDlgSerialDetect:	db	"Scan for serial drives?",NULL
+g_szDlgClearBdaDriveCount:	db  "Remove existing INT 13h hard drives during drive detection?",NULL
 
 g_szNfoBootTimeout:		db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
 g_szNfoBootDrive:		db	"Default boot drive.",NULL
@@ -440,6 +442,7 @@ g_szNfoColorTheme:		db	"Color theme used by the boot menu and the hotkey bar.",N
 g_szNfoBootFloppyDrvs:	db	"Number of Floppy Drives in system.",NULL
 g_szNfoSerialDetect:	db	"Scans all standard COM ports for serial drives."
 						db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
+g_szNfoClearBdaDriveCount:	db  "Can be used to remove duplicate hard drives.",NULL
 
 g_szHelpBootTimeout:	db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
 						db	" When timer goes to zero, currently selected drive will be booted automatically."
@@ -459,6 +462,8 @@ g_szHelpSerialDetect:	db	"Set to Yes, at the end of normal drive detection, COM 
 						db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
 						db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
 						db	" no scan will take place (to avoid finding the same drive twice).",NULL
+g_szHelpClearBdaDriveCount:	db  "Set to NO for normal operation. Set to YES to get Windows 95 drivers to work when "
+							db  "MODULE_WIN95_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup).",NULL
 
 g_szMultichoiceBootDispMode:	db	"Default",LF
 								db	"40x25 Black & White",LF

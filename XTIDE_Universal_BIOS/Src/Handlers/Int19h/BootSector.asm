@@ -58,8 +58,8 @@ BootSector_TryToLoadFromDriveDL_AndBoot:
 	cmp		WORD [es:bx+510], 0AA55h		; Valid boot sector?
 	jne		SHORT .FirstHardDiskSectorNotBootable
 .AlwaysBootFromFloppyDriveForBooterGames:
-	stc		; Boot Sector loaded successfully
-	jmp		SHORT Int19h_JumpToBootSectorOrRomBoot
+	clc		; Boot Sector loaded successfully
+	jmp		SHORT Int19h_JumpToBootSectorInESBXOrRomBoot
 
 .FirstHardDiskSectorNotBootable:
 	mov		si, g_szBootSectorNotFound
