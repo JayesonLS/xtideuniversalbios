@@ -52,6 +52,12 @@
 	%include "Vision.inc"			; For QDI Vision QD65xx VLB IDE Controllers
 %endif
 
+%ifdef MODULE_WIN95_CMOS_HACK
+	%ifndef USE_386
+		%error "MODULE_WIN95_CMOS_HACK requires USE_386!"
+	%endif
+%endif
+
 %ifdef MODULE_COMPATIBLE_TABLES
 	%include "CompatibleDPT.inc"
 %endif

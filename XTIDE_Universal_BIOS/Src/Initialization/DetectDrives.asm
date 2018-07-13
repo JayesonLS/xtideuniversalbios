@@ -112,17 +112,38 @@ DetectDrives_FromAllIDEControllers:
 	%ifdef MODULE_WIN95_CMOS_HACK
 		mov		dl, HARD_DISK_TYPES
 		call	CMOS_ReadFromIndexInDLtoAL
-		test	al, al
-		jnz		SHORT .ContinueInitialization	; CMOS byte 12h is ready for Windows 95
+		test	al, 0F0h
+		jnz		SHORT .ClearBdaDriveCount		; CMOS byte 12h is ready for Windows 95
 		call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
 		jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
 
-		; Now we can alter CMOS location 12h. Important! We set type for drive 1
-		; (primary slave) and not for drive 0! Award BIOS locks if we set drive 0 type to Fh.
-		; We cannot set it to less either since that will fully set predefined hard drive type to the BIOS.
-		; Windows 95 only cares that the CMOS location 12h is non-zero.
+		; Now we can alter CMOS location 12h. Award BIOS locks if we set drive 0 type to Fh
+		; (but accept changes to drive type 1). Windows 95 requires that the drive 0 type is
+		; non zero and ignores drive 1 type. So if we only set drive 1, then Award BIOS
+		; won't give problems but Windows 95 stays in MS-DOS compatibility mode.
+		;
+		; For Award BIOSes we could set the Drive 0 type to 1 and then clear the BDA drive count.
+		; So essentially we could automatically do what user needs to do manually to get Windows 95
+		; working on Award BIOSes. However, I think that should be left to do manually since
+		; there may be SCSI drives on the system or FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES could
+		; be intentionally cleared and forcing the dummy drive might cause only trouble.
+
+		; Try to detect Award BIOS (Seems to work on a tested 128k BIOS so hopefully
+		; there will be no need to scan E000h segment)
+		mov		cx, 65536 - 4
+		mov		eax, 'Awar'		; Four characters should be enough
+		mov		di, 0F000h		; Scan 64k starting from segment F000h
+		mov		fs, di			; No need to preserve FS since we set it to zero soon when we boot
+		xor		di, di
+	.ScanNextCharacters:
+		cmp		[fs:di], eax
+		je		SHORT .ClearBdaDriveCount	; Award detected, cannot modify CMOS
+		inc		di				; Increment offset by one character (not four)
+		loop	.ScanNextCharacters
+
+		; Now it should be safe to write
 		mov		dl, HARD_DISK_TYPES
-		mov		al, 0Fh	; Drive 1 type 16...47 (defined elsewhere in the CMOS)
+		mov		al, 0F0h	; Drive 0 type 16...47 (supposed to be defined elsewhere in the CMOS)
 		call	CMOS_WriteALtoIndexInDL
 		call	CMOS_StoreNewChecksumFor10hto2Dh
 .ClearBdaDriveCount:
