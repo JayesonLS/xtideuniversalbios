@@ -44,34 +44,7 @@ BootVars_Initialize:
 	mov		di, BOOTVARS.hotkeyVars
 	add		cx, BYTE HOTKEYVARS_size
 	call	Memory_ZeroESDIwithSizeInCX
-
-	; Store time when hotkeybar is displayed
-	; (it will be displayed after initialization is complete)
-	call	TimerTicks_ReadFromBdaToAX
-	mov		[es:BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed], ax
-
-	; Initialize HOTKEYVARS by storing default drives to boot from
-	call	BootVars_StoreDefaultDriveLettersToHotkeyVars
-	mov		dl, [cs:ROMVARS.bBootDrv]
-	jmp		HotkeyBar_StoreHotkeyToBootvarsForDriveNumberInDL
-
-
-;--------------------------------------------------------------------
-; BootVars_StoreDefaultDriveLettersToHotkeyVars
-;	Parameters:
-;		ES:		BDA Segment
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		Nothing
-;--------------------------------------------------------------------
-BootVars_StoreDefaultDriveLettersToHotkeyVars:
-	call	BootVars_GetLetterForFirstHardDriveToAX
-	mov		ah, DEFAULT_FLOPPY_DRIVE_LETTER
-	xchg	al, ah
-	mov		[es:BOOTVARS.hotkeyVars+HOTKEYVARS.wFddAndHddLetters], ax
-	ret
-
+	jmp		HotkeyBar_InitializeVariables
 %endif ; MODULE_HOTKEYS
 
 

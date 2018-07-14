@@ -168,7 +168,7 @@ EventItemHighlightedFromCX:
 	; Drive number translations and hotkeys must be reset to defaults so highlighted
 	; selections are correctly displayed on Hotkey Bar and on Boot Menu
 %ifdef MODULE_HOTKEYS
-	call	BootVars_StoreDefaultDriveLettersToHotkeyVars
+	call	HotkeyBar_StoreDefaultDriveLettersToHotkeyVars
 %endif
 	call	DriveXlate_Reset
 

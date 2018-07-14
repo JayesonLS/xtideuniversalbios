@@ -94,13 +94,21 @@ Int19h_BootLoaderHandler:
 %ifdef MODULE_HOTKEYS
 	; Last hard drive might have scrolled Hotkey Bar out of screen.
 	; We want to display it during wait.
-	call	HotkeyBar_UpdateDuringDriveDetection
+	;call	HotkeyBar_UpdateDuringDriveDetection
 
 .WaitUntilTimeToCloseHotkeyBar:
 	call	TimerTicks_ReadFromBdaToAX
 	sub		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed]
 	cmp		ax, MIN_TIME_TO_DISPLAY_HOTKEY_BAR
 	jb		SHORT .WaitUntilTimeToCloseHotkeyBar
+
+	; Restore system timer tick handler since hotkeys are no longer needed
+	cli
+	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
+	mov		[es:SYSTEM_TIMER_TICK*4], ax
+	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2]
+	mov		[es:SYSTEM_TIMER_TICK*4+2], ax
+	sti
 %endif
 	; Fall to .ResetAllDrives
 
@@ -145,7 +153,6 @@ Int19h_BootLoaderHandler:
 
 SelectDriveToBootFrom:		; Function starts here
 %ifdef MODULE_HOTKEYS
-	call	HotkeyBar_UpdateDuringDriveDetection
 	mov		al, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bScancode]
 	cmp		al, ROM_BOOT_HOTKEY_SCANCODE
 	je		SHORT .RomBoot						; CF clear so ROM boot

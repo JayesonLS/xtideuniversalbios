@@ -223,10 +223,6 @@ DetectDrives_FromAllIDEControllers:
 ;--------------------------------------------------------------------
 StartDetectionWithDriveSelectByteInBHandStringInCX:
 	call	DetectPrint_StartDetectWithMasterOrSlaveStringInCXandIdeVarsInCSBP
-
-%ifdef MODULE_HOTKEYS
-	call	HotkeyBar_UpdateDuringDriveDetection
-%endif
 	; Fall to .ReadAtaInfoFromHardDisk
 
 

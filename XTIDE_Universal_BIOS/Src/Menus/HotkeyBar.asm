@@ -20,6 +20,71 @@
 ; Section containing code
 SECTION .text
 
+
+;--------------------------------------------------------------------
+; Handler for INT 1Ch System Timer Tick.
+; Reads key presses and draws hotkey bar.
+;
+; HotkeyBar_TimerTickHandler
+;	Parameters:
+;		DS:		RAMVARS segment
+;		ES:		BDA segment (zero)
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, CX, DX, SI, DI
+;--------------------------------------------------------------------
+HotkeyBar_TimerTickHandler:
+	push	es
+	push	ds
+%ifdef USE_186
+	ePUSHA
+%else
+	push	di
+	push	si
+	push	dx
+	push	cx
+	push	ax
+%endif
+	sti			; Enable interrupts (is this really necessary? Do we lose key inputs if we keep interrupts disabled?)
+				; There would be no need for FLG_HOTKEY_UPDATING if we can keep interrupts disabled during whole update.
+
+	LOAD_BDA_SEGMENT_TO es, ax
+	call	RamVars_GetSegmentToDS
+
+	; Call previous handler
+	pushf
+	call far [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
+
+	; Do not start updating if update is already in progress (do we need this on AT systems?)
+	test	BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], FLG_HOTKEY_UPDATING
+	jnz		SHORT .ReturnFromHandler
+
+	; Update Hotkeybar (process key input and draw)
+%ifndef USE_AT	; Ease XT systems a bit by updating every other timer tick
+	call	TimerTicks_ReadFromBdaToAX
+	shr		ax, 1
+	jnc		SHORT .ReturnFromHandler
+%endif
+	or		BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], FLG_HOTKEY_UPDATING
+	call	UpdateDuringDriveDetection
+	and		BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], ~FLG_HOTKEY_UPDATING
+
+.ReturnFromHandler:
+%ifdef USE_186
+	ePOPA
+%else
+	pop		ax
+	pop		cx
+	pop		dx
+	pop		si
+	pop		di
+%endif
+	pop		ds
+	pop		es
+	iret
+
+
 ;--------------------------------------------------------------------
 ; Scans key presses and draws any hotkey changes.
 ;
@@ -32,8 +97,15 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
-HotkeyBar_UpdateDuringDriveDetection:
+UpdateDuringDriveDetection:
 	call	ScanHotkeysFromKeyBufferAndStoreToBootvars
+
+	; If ESC pressed, abort detection by forcing timeout
+	cmp		al, ESC_SCANCODE
+	jne		SHORT .ContinueDrawing
+	mov		BYTE [RAMVARS.bTimeoutTicksLeft], 0
+.ContinueDrawing:
+	
 	; Fall to HotkeyBar_DrawToTopOfScreen
 
 
@@ -77,7 +149,7 @@ HotkeyBar_DrawToTopOfScreen:
 
 	; Clear CH if floppy drive is selected for boot
 	mov		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
-;	and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
+	and		ch, FLG_HOTKEY_HD_FIRST
 	call	FormatDriveHotkeyString
 
 .SkipFloppyDriveHotkeys:
@@ -96,7 +168,7 @@ HotkeyBar_DrawToTopOfScreen:
 	call	BootVars_GetLetterForFirstHardDriveToAX
 	mov		ah, ANGLE_QUOTE_RIGHT
 	mov		cx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wHddLetterAndFlags]	; Letter to CL, flags to CH
-;	and		ch, FLG_HOTKEY_HD_FIRST		; Needed if more flags are added
+	and		ch, FLG_HOTKEY_HD_FIRST
 	xor		ch, FLG_HOTKEY_HD_FIRST		; Clear CH if HD is selected for boot, set otherwise
 	mov		di, g_szHDD
 	call	FormatDriveHotkeyString
@@ -328,6 +400,60 @@ MoveCursorToScreenTopLeftCorner:
 ;--------------------------------------------------------------------
 HotkeyBar_RestoreCursorCoordinatesFromAX:
 	JMP_DISPLAY_LIBRARY SetCursorCoordinatesFromAX
+
+
+;--------------------------------------------------------------------
+; HotkeyBar_StoreDefaultDriveLettersToHotkeyVars
+;	Parameters:
+;		ES:		BDA Segment
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX
+;--------------------------------------------------------------------
+HotkeyBar_StoreDefaultDriveLettersToHotkeyVars:
+	call	BootVars_GetLetterForFirstHardDriveToAX
+	mov		ah, DEFAULT_FLOPPY_DRIVE_LETTER
+	xchg	al, ah
+	mov		[es:BOOTVARS.hotkeyVars+HOTKEYVARS.wFddAndHddLetters], ax
+	ret
+
+
+;--------------------------------------------------------------------
+; HotkeyBar_InitializeVariables
+;	Parameters:
+;		DS:		RAMVARS Segment
+;		ES:		BDA Segment
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, CX, DX, DI
+;--------------------------------------------------------------------
+HotkeyBar_InitializeVariables:
+	push	ds
+	push	es
+	pop		ds
+
+	; Store system 1Ch Timer Tick handler and install our hotkeybar handler
+	mov		ax, [SYSTEM_TIMER_TICK*4]
+	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler], ax
+	mov		ax, [SYSTEM_TIMER_TICK*4+2]
+	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2], ax
+	mov		al, SYSTEM_TIMER_TICK
+	mov		si, HotkeyBar_TimerTickHandler
+	call	Interrupts_InstallHandlerToVectorInALFromCSSI
+
+	; Store time when hotkeybar is displayed
+	; (it will be displayed after initialization is complete)
+	call	TimerTicks_ReadFromBdaToAX
+	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed], ax
+
+	pop		ds
+
+	; Initialize HOTKEYVARS by storing default drives to boot from
+	call	HotkeyBar_StoreDefaultDriveLettersToHotkeyVars
+	mov		dl, [cs:ROMVARS.bBootDrv]
+	; Fall to HotkeyBar_StoreHotkeyToBootvarsForDriveNumberInDL
 
 
 ;--------------------------------------------------------------------

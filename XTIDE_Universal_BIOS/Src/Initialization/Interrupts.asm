@@ -183,8 +183,10 @@ Interrupts_InstallHandlerToVectorInALFromCSSI:
 	mov		bl, 4					; Shift for DWORD offset, MUL smaller than other alternatives
 	mul		bl
 	xchg	ax, bx
+	cli
 	mov		[es:bx], si				; Store offset
 	mov		[es:bx+2], cs			; Store segment
+	sti
 .Interrupts_Return:
 	ret
 
