@@ -46,8 +46,9 @@ HotkeyBar_TimerTickHandler:
 	push	cx
 	push	ax
 %endif
-	sti			; Enable interrupts (is this really necessary? Do we lose key inputs if we keep interrupts disabled?)
-				; There would be no need for FLG_HOTKEY_UPDATING if we can keep interrupts disabled during whole update.
+
+	;!!! Keep interrupts disabled so there won't be another
+	; timer tick call before we are ready
 
 	LOAD_BDA_SEGMENT_TO es, ax
 	call	RamVars_GetSegmentToDS
@@ -56,19 +57,10 @@ HotkeyBar_TimerTickHandler:
 	pushf
 	call far [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
 
-	; Do not start updating if update is already in progress (do we need this on AT systems?)
-	test	BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], FLG_HOTKEY_UPDATING
+	; Update Hotkeybar (process key input and draw) every fourth tick
+	test	BYTE [es:BDA.dwTimerTicks], 11b
 	jnz		SHORT .ReturnFromHandler
-
-	; Update Hotkeybar (process key input and draw)
-%ifndef USE_AT	; Ease XT systems a bit by updating every other timer tick
-	call	TimerTicks_ReadFromBdaToAX
-	shr		ax, 1
-	jnc		SHORT .ReturnFromHandler
-%endif
-	or		BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], FLG_HOTKEY_UPDATING
 	call	UpdateDuringDriveDetection
-	and		BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], ~FLG_HOTKEY_UPDATING
 
 .ReturnFromHandler:
 %ifdef USE_186
@@ -149,7 +141,7 @@ HotkeyBar_DrawToTopOfScreen:
 
 	; Clear CH if floppy drive is selected for boot
 	mov		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
-	and		ch, FLG_HOTKEY_HD_FIRST
+	;and		ch, FLG_HOTKEY_HD_FIRST; Not needed until more flags added
 	call	FormatDriveHotkeyString
 
 .SkipFloppyDriveHotkeys:
@@ -168,7 +160,7 @@ HotkeyBar_DrawToTopOfScreen:
 	call	BootVars_GetLetterForFirstHardDriveToAX
 	mov		ah, ANGLE_QUOTE_RIGHT
 	mov		cx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wHddLetterAndFlags]	; Letter to CL, flags to CH
-	and		ch, FLG_HOTKEY_HD_FIRST
+	;and		ch, FLG_HOTKEY_HD_FIRST	; Not needed until more flags added
 	xor		ch, FLG_HOTKEY_HD_FIRST		; Clear CH if HD is selected for boot, set otherwise
 	mov		di, g_szHDD
 	call	FormatDriveHotkeyString
@@ -572,8 +564,23 @@ NoHotkeyToProcess:
 ;--------------------------------------------------------------------
 HotkeyBar_GetBootDriveNumbersToDX:
 	mov		dx, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wFddAndHddLetters]
+
+	; HotkeyBar_GetBootDriveNumbersToDX is called when all drives are detected and
+	; drive letters are known.
+	; Replace unavailable hard drive letter with first hard drive.
+	; If we have boot menu, it will be displayed instead.
+%ifndef MODULE_BOOT_MENU
+	call	BootVars_GetLetterForFirstHardDriveToAX
+	mov		ah, al
+	add		al, [es:BDA.bHDCount]	; AL now contains first unavailable HD letter
+	cmp		dh, al					; Unavailable drive?
+	jb		SHORT .ValidHardDriveLetterInDH
+	mov		dh, ah					; Replace unavailable drive with first drive
+.ValidHardDriveLetterInDH:
+%endif
+
 	test	BYTE [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags], FLG_HOTKEY_HD_FIRST
-	jnz		.noflip
+	jnz		SHORT .noflip
 	xchg	dl, dh
 .noflip:
 	call	DriveXlate_ConvertDriveLetterInDLtoDriveNumber

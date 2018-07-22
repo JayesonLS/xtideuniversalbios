@@ -57,7 +57,6 @@ endstruc
 
 ; Bit defines for HOTKEYVARS.bFlags
 FLG_HOTKEY_HD_FIRST			EQU		(1<<0)	; First try to boot from HDD, then FDD
-FLG_HOTKEY_UPDATING			EQU		(1<<1)	; Hotkeybar update in progress
 
 %endif ; MODULE_HOTKEYS
 
