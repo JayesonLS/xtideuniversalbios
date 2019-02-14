@@ -91,12 +91,12 @@ g_szNfoMainLoadStngs:	db	"Load old XTIDE Universal BIOS settings from EEPROM.",N
 g_szNfoMainConfigure:	db	"Configure XTIDE Universal BIOS settings.",NULL
 g_szNfoMainFlash:		db	"Flash loaded BIOS image to EEPROM.",NULL
 g_szNfoMainSave:		db	"Save BIOS changes back to original file from which it was loaded.",NULL
-g_szNfoMainLicense:		db	"XTIDE Universal BIOS and XTIDECFG Copyright (C) 2009-2010 by Tomi Tilli, 2011-2018 by XTIDE Universal BIOS Team."
+g_szNfoMainLicense:		db	"XTIDE Universal BIOS and XTIDECFG Copyright (C) 2009-2010 by Tomi Tilli, 2011-2019 by XTIDE Universal BIOS Team."
 						db	" Released under GNU GPL v2, with ABSOLUTELY NO WARRANTY. Press ENTER for more details...",NULL
 g_szNfoMainHomePage:	db	"Visit http://xtideuniversalbios.org (home page) and http://vcfed.org/forum (support)",NULL
 
 g_szHelpMainLicense:	db	"XTIDE Universal BIOS and XTIDECFG Configuration program are Copyright 2009-2010 by Tomi Tilli,"
-						db	" 2011-2018 by XTIDE Universal BIOS Team. Released under GNU GPL v2. This software comes with ABSOLUTELY NO WARRANTY."
+						db	" 2011-2019 by XTIDE Universal BIOS Team. Released under GNU GPL v2. This software comes with ABSOLUTELY NO WARRANTY."
 						db	" This is free software, and you are welcome to redistribute it under certain conditions."
 						db	" See the LICENSE.TXT file that was included with this distribution,"
 						db	" visit http://www.gnu.org/licenses/ gpl-2.0.html, or visit http://xtideuniversalbios.org.",NULL
@@ -279,6 +279,7 @@ g_szMultichoiceCfgDevice:	db	"16-bit ISA/VLB/PCI IDE",LF
 							db	"16-bit ISA IDE in 8-bit mode",LF
 							db	"XTIDE rev 1",LF
 							db	"XTIDE rev 2 or modded rev 1",LF
+							db	"XTIDE rev 2 (Olivetti M24)",LF
 							db	"XT-CF PIO8",LF
 							db	"XT-CF PIO8 (BIU offload)",LF
 							db	"XT-CF PIO16 (BIU offload)",LF
@@ -292,6 +293,7 @@ g_szValueCfgDevice32b:						db	"32-bit",NULL
 g_szValueCfgDevice8b:						db	"8-bit",NULL
 g_szValueCfgDeviceRev1:						db	"XTIDE r1",NULL
 g_szValueCfgDeviceRev2:						db	"XTIDE r2",NULL
+g_szValueCfgDeviceRev2Olivetti:				db	"XTIDE r2",NULL
 g_szValueCfgDeviceXTCFPio8:					db	"XTCF PIO",NULL
 g_szValueCfgDeviceXTCFPio8WithBIUOffload:	db	"BIU 8",NULL
 g_szValueCfgDeviceXTCFPio16WithBIUOffload:	db	"BIU 16",NULL
@@ -380,8 +382,8 @@ g_szNfoDrvUserLBA:		db	"Limit drive capacity to fix compatibility problems with 
 g_szNfoDrvLbaSectors:	db	"Millions of sectors (1024*1024). 1M sectors = 512 MiB. Recommended limits are 64 for Windows 95, 128 for Windows 98 and 256 for Windows ME (and 98 with updated fdisk).",NULL
 
 g_szHelpDrvBlockMode:	db	"Block Mode will speed up transfers since multiple sectors can be transferred before waiting next data request."
-						db	" Normally Block Mode should always be kept enabled but there is at"
-						db	" least one drive with buggy Block Mode implementation.",NULL
+						db	" Normally Block Mode should always be kept enabled but there is at least one"
+						db	" drive with buggy Block Mode implementation (Quantum ProDrive LPS 340A).",NULL
 
 g_szHelpDrvWriteCache:	db	"Modern Hard Drives have a large amount of internal write cache."
 						db	" The cache will speed up writes since the drive can free the bus right after data has been written to cache."
@@ -419,51 +421,51 @@ g_szValueDrvWrCaEn:		db	"Enabled",NULL
 
 
 ; Strings for boot settings menu
-g_szItemBootTimeout:	db	"Selection timeout",NULL
-g_szItemBootDrive:		db	"Default boot drive",NULL
-g_szItemBootDispMode:	db	"Display Mode",NULL
-g_szItemColorTheme:		db	"Color Theme",NULL
-g_szItemBootFloppyDrvs:	db	"Number of Floppy Drives",NULL
-g_szItemSerialDetect:	db	"Scan for Serial Drives",NULL
-g_szItemClearBdaDriveCount:	db  "Remove other hard drives",NULL
+g_szItemBootTimeout:		db	"Selection timeout",NULL
+g_szItemBootDrive:			db	"Default boot drive",NULL
+g_szItemBootDispMode:		db	"Display Mode",NULL
+g_szItemColorTheme:			db	"Color Theme",NULL
+g_szItemBootFloppyDrvs:		db	"Number of Floppy Drives",NULL
+g_szItemSerialDetect:		db	"Scan for Serial Drives",NULL
+g_szItemClearBdaDriveCount:	db	"Remove other hard drives",NULL
 
-g_szDlgBootTimeout:		db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
-g_szDlgBootDrive:		db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
-g_szDlgBootDispMode:	db	"Select display mode.",NULL
-g_szDlgColorTheme:		db	"Select color theme.",NULL
-g_szDlgBootFloppyDrvs:	db	"Select number of Floppy Drives in system.",NULL
-g_szDlgSerialDetect:	db	"Scan for serial drives?",NULL
-g_szDlgClearBdaDriveCount:	db  "Remove existing INT 13h hard drives during drive detection?",NULL
+g_szDlgBootTimeout:			db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
+g_szDlgBootDrive:			db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
+g_szDlgBootDispMode:		db	"Select display mode.",NULL
+g_szDlgColorTheme:			db	"Select color theme.",NULL
+g_szDlgBootFloppyDrvs:		db	"Select number of Floppy Drives in system.",NULL
+g_szDlgSerialDetect:		db	"Scan for serial drives?",NULL
+g_szDlgClearBdaDriveCount:	db	"Remove existing INT 13h hard drives during drive detection?",NULL
 
-g_szNfoBootTimeout:		db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
-g_szNfoBootDrive:		db	"Default boot drive.",NULL
-g_szNfoDispMode:		db	"Display mode to set when booting.",NULL
-g_szNfoColorTheme:		db	"Color theme used by the boot menu and the hotkey bar.",NULL
-g_szNfoBootFloppyDrvs:	db	"Number of Floppy Drives in system.",NULL
-g_szNfoSerialDetect:	db	"Scans all standard COM ports for serial drives."
-						db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
-g_szNfoClearBdaDriveCount:	db  "Can be used to remove duplicate hard drives.",NULL
+g_szNfoBootTimeout:			db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
+g_szNfoBootDrive:			db	"Default boot drive.",NULL
+g_szNfoDispMode:			db	"Display mode to set when booting.",NULL
+g_szNfoColorTheme:			db	"Color theme used by the boot menu and the hotkey bar.",NULL
+g_szNfoBootFloppyDrvs:		db	"Number of Floppy Drives in system.",NULL
+g_szNfoSerialDetect:		db	"Scans all standard COM ports for serial drives."
+							db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
+g_szNfoClearBdaDriveCount:	db	"Can be used to remove duplicate hard drives.",NULL
 
-g_szHelpBootTimeout:	db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
-						db	" When timer goes to zero, currently selected drive will be booted automatically."
-						db	" Timeout can be disabled by setting this to 0.",NULL
-g_szHelpBootDrive:		db	"Drive to be set selected by default when Boot Menu is displayed.",NULL
-g_szHelpColorTheme:		db	"Pick a theme from a list of several pre-defined themes to customize the colors used by the boot menu and, if"
-						db	" available, the hotkey bar. Selecting a theme or loading a BIOS, or its settings, from file or from ROM will"
-						db	" make XTIDECFG apply the theme to itself for easy preview. The ability to preview themes requires that"
-						db	" XTIDECFG is running in a display mode that can display colors. In other words, you may configure the"
-						db	" BIOS on a machine with a monochrome graphics adapter and not be able to preview the theme but the BIOS will"
-						db	" still use the selected theme when installed in a machine with a color graphics adapter.",NULL
-g_szHelpBootFloppyDrvs:	db	"Detecting the correct number of floppy drives might fail when using a floppy controller with its own BIOS."
-						db	" A minimum number of floppy drives can be specified to force non-detected drives to appear on boot menu.",NULL
-g_szHelpSerialDetect:	db	"Set to Yes, at the end of normal drive detection, COM ports 1-7 (in reverse order) will be scanned for a connection"
-						db	" to a serial drive server. This option provides flexibility with the COM port and baud rate to be used,"
-						db	" it need not be configured ahead of time, but at the expense of a slower boot process."
-						db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
-						db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
-						db	" no scan will take place (to avoid finding the same drive twice).",NULL
-g_szHelpClearBdaDriveCount:	db  "Set to NO for normal operation. Set to YES to get Windows 95 drivers to work when "
-							db  "MODULE_WIN95_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup).",NULL
+g_szHelpBootTimeout:		db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
+							db	" When timer goes to zero, currently selected drive will be booted automatically."
+							db	" Timeout can be disabled by setting this to 0.",NULL
+g_szHelpBootDrive:			db	"Drive to be set selected by default when Boot Menu is displayed.",NULL
+g_szHelpColorTheme:			db	"Pick a theme from a list of several pre-defined themes to customize the colors used by the boot menu and, if"
+							db	" available, the hotkey bar. Selecting a theme or loading a BIOS, or its settings, from file or from ROM will"
+							db	" make XTIDECFG apply the theme to itself for easy preview. The ability to preview themes requires that"
+							db	" XTIDECFG is running in a display mode that can display colors. In other words, you may configure the"
+							db	" BIOS on a machine with a monochrome graphics adapter and not be able to preview the theme but the BIOS will"
+							db	" still use the selected theme when installed in a machine with a color graphics adapter.",NULL
+g_szHelpBootFloppyDrvs:		db	"Detecting the correct number of floppy drives might fail when using a floppy controller with its own BIOS."
+							db	" A minimum number of floppy drives can be specified to force non-detected drives to appear on boot menu.",NULL
+g_szHelpSerialDetect:		db	"Set to Yes, at the end of normal drive detection, COM ports 1-7 (in reverse order) will be scanned for a connection"
+							db	" to a serial drive server. This option provides flexibility with the COM port and baud rate to be used,"
+							db	" it need not be configured ahead of time, but at the expense of a slower boot process."
+							db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
+							db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
+							db	" no scan will take place (to avoid finding the same drive twice).",NULL
+g_szHelpClearBdaDriveCount:	db	"Set to NO for normal operation. Set to YES to get Windows 95 drivers to work when"
+							db	" MODULE_WIN95_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup).",NULL
 
 g_szMultichoiceBootDispMode:	db	"Default",LF
 								db	"40x25 Black & White",LF

@@ -130,13 +130,13 @@ CMOS_StoreNewChecksumFor10hto2Dh:
 ;--------------------------------------------------------------------
 GetSumOfBytes10hto2DhtoCX:
 	xor		cx, cx			; Sum
-	mov		dx, 10h			; First index
+	mov		dl, 10h			; First index
+	xor		ah, ah
 
 .AddNextByte:
 	call	CMOS_ReadFromIndexInDLtoAL
-	xor		ah, ah
 	add		cx, ax
 	inc		dx
 	cmp		dl, 2Dh			; Last index
-	jbe		.AddNextByte
+	jbe		SHORT .AddNextByte
 	ret

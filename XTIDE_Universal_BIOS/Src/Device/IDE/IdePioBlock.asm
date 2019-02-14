@@ -54,6 +54,29 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
+; IdePioBlock_ReadFromXtideRev2_Olivetti
+;	Parameters:
+;		CX:		Block size in 512 byte sectors
+;		DX:		IDE Data port address
+;		ES:DI:	Normalized ptr to buffer to receive data
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, CX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+IdePioBlock_ReadFromXtideRev2_Olivetti:
+	UNROLL_SECTORS_IN_CX_TO_OWORDS
+ALIGN JUMP_ALIGN
+.InswLoop:
+	%rep 8	; WORDs
+		XTIDE_MOD_OLIVETTI_INSW
+	%endrep
+	loop	.InswLoop
+	ret
+
+
+;--------------------------------------------------------------------
 ; 8-bit PIO from a single data port.
 ;
 ; IdePioBlock_ReadFrom8bitDataPort

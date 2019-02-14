@@ -105,9 +105,9 @@ Int19h_BootLoaderHandler:
 	; Restore system timer tick handler since hotkeys are no longer needed
 	cli
 	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
-	mov		[es:SYSTEM_TIMER_TICK*4], ax
+	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4], ax
 	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2]
-	mov		[es:SYSTEM_TIMER_TICK*4+2], ax
+	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4+2], ax
 	sti
 %endif
 	; Fall to .ResetAllDrives
@@ -213,7 +213,7 @@ SelectDriveToBootFrom:		; Function starts here
 ;
 ; Switches back to the POST stack, clears the DS and ES registers,
 ; and either jumps to the MBR (Master Boot Record) that was just read,
-; or calls the ROM's boot routine on interrupt 18.
+; or calls the ROM's boot routine on interrupt 18h.
 ;
 ;	Parameters:
 ;		DL:		Drive to boot from (translated, 00h or 80h)

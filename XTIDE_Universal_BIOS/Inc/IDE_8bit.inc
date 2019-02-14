@@ -30,7 +30,7 @@
 ;		DX:		XTIDE Data Low Register address
 ;		ES:DI:	Ptr to destination buffer
 ;	Returns:
-;		ES:DI:	Incremented/decremented for next word
+;		DI:		Incremented/Decremented for next word
 ;	Corrupts registers:
 ;		AL, FLAGS
 ;--------------------------------------------------------------------
@@ -60,7 +60,7 @@
 ;		DX:		XTIDE Data Low Register address
 ;		DS:SI:	Ptr to source buffer
 ;	Returns:
-;		SI:		Incremented/decremented for next word
+;		SI:		Incremented/Decremented for next word
 ;	Corrupts registers:
 ;		AX, FLAGS
 ;--------------------------------------------------------------------
@@ -91,7 +91,7 @@
 ;		DX:		XTIDE Data Low Register address
 ;		DS:SI:	Ptr to source buffer
 ;	Returns:
-;		SI:		Incremented/decremented for next word
+;		SI:		Incremented/Decremented for next word
 ;	Corrupts registers:
 ;		AX, FLAGS
 ;--------------------------------------------------------------------
@@ -110,6 +110,35 @@
 	dec		dx					; XTIDE Data High Reg to Data Low Reg
 	mov		al, ah				; Copy low byte to AL
 	out		dx, al				; Output low byte
+%endif
+%endmacro
+
+
+;--------------------------------------------------------------------
+; Emulates INSW for modified XTIDE for use on Olivetti M24 and derivatives.
+;
+; XTIDE_MOD_OLIVETTI_INSW
+;	Parameters:
+;		DX:		XTIDE Data Low Register address
+;		ES:DI:	Ptr to destination buffer
+;	Returns:
+;		DI:		Incremented/Decremented for next word
+;	Corrupts registers:
+;		AL, FLAGS
+;--------------------------------------------------------------------
+%macro XTIDE_MOD_OLIVETTI_INSW 0
+%ifdef USE_186	; INS instruction available
+	insb						; Load low byte from port DX to [ES:DI]
+	inc		dx					; IDE Data Reg to XTIDE Data High Reg
+	insb						; Load high byte from port DX to [ES:DI]
+	dec		dx					; Restore to IDE Data Register
+%else	; If 8088/8086
+	in		al, dx				; Load low byte from port
+	inc		dx					; IDE Data Reg to XTIDE Data High Reg
+	stosb						; Store byte to [ES:DI]
+	in		al, dx				; Load high byte from port
+	dec		dx					; Restore to IDE Data Register
+	stosb						; Store byte to [ES:DI]
 %endif
 %endmacro
 

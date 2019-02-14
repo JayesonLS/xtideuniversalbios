@@ -252,57 +252,61 @@ g_szAddressingModes_Displacement equ (g_szLARGE - g_szAddressingModes)
 
 
 g_szDeviceTypeValues:
-g_szDeviceTypeValues_16bit:			; db	" 16",NULL
-                           			; db	 20h,  31h,  36h,  00h    ; uncompressed
-                           			  db	 20h,  2bh,  0fh          ; compressed
+g_szDeviceTypeValues_16bit:				; db	" 16",NULL
+                           				; db	 20h,  31h,  36h,  00h    ; uncompressed
+                           				  db	 20h,  2bh,  0fh          ; compressed
 
 %ifdef MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
-g_szDeviceTypeValues_32bit:			; db	" 32",NULL
-                           			; db	 20h,  33h,  32h,  00h    ; uncompressed
-                           			  db	 20h,  2dh,  0ch          ; compressed
+g_szDeviceTypeValues_32bit:				; db	" 32",NULL
+                           				; db	 20h,  33h,  32h,  00h    ; uncompressed
+                           				  db	 20h,  2dh,  0ch          ; compressed
 
 %ifdef MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
-g_szDeviceTypeValues_8bit:			; db	"  8",NULL
-                          			; db	 20h,  20h,  38h,  00h    ; uncompressed
-                          			  db	 20h,  20h,  10h          ; compressed
+g_szDeviceTypeValues_8bit:				; db	"  8",NULL
+                          				; db	 20h,  20h,  38h,  00h    ; uncompressed
+                          				  db	 20h,  20h,  10h          ; compressed
 
-g_szDeviceTypeValues_XTIDEr1:		; db	"D8 ",NULL	; Dual 8-bit
-                             		; db	 44h,  38h,  20h,  00h    ; uncompressed
-                             		  db	 4ah,  30h,  00h          ; compressed
+g_szDeviceTypeValues_XTIDEr1:			; db	"D8 ",NULL	; Dual 8-bit
+                             			; db	 44h,  38h,  20h,  00h    ; uncompressed
+                             			  db	 4ah,  30h,  00h          ; compressed
 
-g_szDeviceTypeValues_XTIDEr2:		; db	"X8 ",NULL	; A0<->A3 swapped 8-bit
-                             		; db	 58h,  38h,  20h,  00h    ; uncompressed
-                             		  db	 5eh,  30h,  00h          ; compressed
+g_szDeviceTypeValues_XTIDEr2:			; db	"X8 ",NULL	; A0<->A3 swapped 8-bit
+                             			; db	 58h,  38h,  20h,  00h    ; uncompressed
+                             			  db	 5eh,  30h,  00h          ; compressed
+
+g_szDeviceTypeValues_XTIDEr2_Olivetti:	; db	"X8O",NULL	; Same as above but in Olivetti M24 and derivatives
+                                      	; db	 58h,  38h,  4fh,  00h    ; uncompressed
+                                      	  db	 5eh,  30h,  95h          ; compressed
 
 %ifdef MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
-g_szDeviceTypeValues_XTCFpio8:		; db	"T8 ",NULL	; True 8-bit
-                              		; db	 54h,  38h,  20h,  00h    ; uncompressed
-                              		  db	 5ah,  30h,  00h          ; compressed
+g_szDeviceTypeValues_XTCFpio8:			; db	"T8 ",NULL	; True 8-bit
+                              			; db	 54h,  38h,  20h,  00h    ; uncompressed
+                              			  db	 5ah,  30h,  00h          ; compressed
 
-g_szDeviceTypeValues_XTCFpio8BIU:	; db	"T8B",NULL
-                                 	; db	 54h,  38h,  42h,  00h    ; uncompressed
-                                 	  db	 5ah,  30h,  88h          ; compressed
+g_szDeviceTypeValues_XTCFpio8BIU:		; db	"T8B",NULL
+                                 		; db	 54h,  38h,  42h,  00h    ; uncompressed
+                                 		  db	 5ah,  30h,  88h          ; compressed
 
-g_szDeviceTypeValues_XTCFpio16BIU:	; db	"16B",NULL
-                                  	; db	 31h,  36h,  42h,  00h    ; uncompressed
-                                  	  db	 2bh,  2fh,  88h          ; compressed
+g_szDeviceTypeValues_XTCFpio16BIU:		; db	"16B",NULL
+                                  		; db	 31h,  36h,  42h,  00h    ; uncompressed
+                                  		  db	 2bh,  2fh,  88h          ; compressed
 
-g_szDeviceTypeValues_XTCFdma:		; db	"8MA",NULL	; DMA 8-bit
-                             		; db	 38h,  4dh,  41h,  00h    ; uncompressed
-                             		  db	 30h,  53h,  87h          ; compressed
+g_szDeviceTypeValues_XTCFdma:			; db	"8MA",NULL	; DMA 8-bit
+                             			; db	 38h,  4dh,  41h,  00h    ; uncompressed
+                             			  db	 30h,  53h,  87h          ; compressed
 
-g_szDeviceTypeValues_JrIde:			; db	"M8 ",NULL	; Memory Mapped 8-bit
-                           			; db	 4dh,  38h,  20h,  00h    ; uncompressed
-                           			  db	 53h,  30h,  00h          ; compressed
+g_szDeviceTypeValues_JrIde:				; db	"M8 ",NULL	; Memory Mapped 8-bit
+                           				; db	 4dh,  38h,  20h,  00h    ; uncompressed
+                           				  db	 53h,  30h,  00h          ; compressed
 
-g_szDeviceTypeValues_ADP50L:		; db	"M8 ",NULL	; Memory Mapped 8-bit
-                            		; db	 4dh,  38h,  20h,  00h    ; uncompressed
-                            		  db	 53h,  30h,  00h          ; compressed
+g_szDeviceTypeValues_ADP50L:			; db	"M8 ",NULL	; Memory Mapped 8-bit
+                            			; db	 4dh,  38h,  20h,  00h    ; uncompressed
+                            			  db	 53h,  30h,  00h          ; compressed
 
 %ifdef MODULE_SERIAL
-g_szDeviceTypeValues_Serial:		; db	"SER",NULL
-                            		; db	 53h,  45h,  52h,  00h    ; uncompressed
-                            		  db	 59h,  4bh,  98h          ; compressed
+g_szDeviceTypeValues_Serial:			; db	"SER",NULL
+                            			; db	 53h,  45h,  52h,  00h    ; uncompressed
+                            			  db	 59h,  4bh,  98h          ; compressed
 
 %endif ; MODULE_SERIAL
 %endif ; MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
@@ -336,32 +340,35 @@ g_szDeviceTypeValues_Displacement equ 3		; 3 compressed, 4 uncompressed
 %if g_szDeviceTypeValues_XTIDEr2 <> g_szDeviceTypeValues_XTIDEr1 + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 5"
 %endif
+%if g_szDeviceTypeValues_XTIDEr2_Olivetti <> g_szDeviceTypeValues_XTIDEr2 + g_szDeviceTypeValues_Displacement
+%error "g_szDeviceTypeValues Displacement Incorrect 6"
+%endif
 
 %ifdef MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 
-%if g_szDeviceTypeValues_XTCFpio8 <> g_szDeviceTypeValues_XTIDEr2 + g_szDeviceTypeValues_Displacement
-%error "g_szDeviceTypeValues Displacement Incorrect 6"
-%endif
-%if g_szDeviceTypeValues_XTCFpio8BIU <> g_szDeviceTypeValues_XTCFpio8 + g_szDeviceTypeValues_Displacement
+%if g_szDeviceTypeValues_XTCFpio8 <> g_szDeviceTypeValues_XTIDEr2_Olivetti + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 7"
 %endif
-%if g_szDeviceTypeValues_XTCFpio16BIU <> g_szDeviceTypeValues_XTCFpio8BIU + g_szDeviceTypeValues_Displacement
+%if g_szDeviceTypeValues_XTCFpio8BIU <> g_szDeviceTypeValues_XTCFpio8 + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 8"
 %endif
-%if g_szDeviceTypeValues_XTCFdma <> g_szDeviceTypeValues_XTCFpio16BIU + g_szDeviceTypeValues_Displacement
+%if g_szDeviceTypeValues_XTCFpio16BIU <> g_szDeviceTypeValues_XTCFpio8BIU + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 9"
 %endif
-%if g_szDeviceTypeValues_JrIde <> g_szDeviceTypeValues_XTCFdma + g_szDeviceTypeValues_Displacement
+%if g_szDeviceTypeValues_XTCFdma <> g_szDeviceTypeValues_XTCFpio16BIU + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 10"
 %endif
-%if g_szDeviceTypeValues_ADP50L <> g_szDeviceTypeValues_JrIde + g_szDeviceTypeValues_Displacement
+%if g_szDeviceTypeValues_JrIde <> g_szDeviceTypeValues_XTCFdma + g_szDeviceTypeValues_Displacement
 %error "g_szDeviceTypeValues Displacement Incorrect 11"
+%endif
+%if g_szDeviceTypeValues_ADP50L <> g_szDeviceTypeValues_JrIde + g_szDeviceTypeValues_Displacement
+%error "g_szDeviceTypeValues Displacement Incorrect 12"
 %endif
 
 %ifdef MODULE_SERIAL
 
 %if g_szDeviceTypeValues_Serial <> g_szDeviceTypeValues_ADP50L + g_szDeviceTypeValues_Displacement
-%error "g_szDeviceTypeValues Displacement Incorrect 12"
+%error "g_szDeviceTypeValues Displacement Incorrect 13"
 %endif
 
 %endif ; MODULE_SERIAL
@@ -593,38 +600,38 @@ StringsCompressed_TranslatesAndFormats:
 %endif
 
 ;; translated usage stats
-;; 34:3
+;; 54:2
+;; 172:2
+;; 171:2
+;; 47:2
+;; 53:2
+;; 175:1
+;; 56:9
+;; 45:2
+;; 50:2
+;; 200:1
+;; 33:1
+;; 51:3
 ;; 179:8
 ;; 46:3
-;; 44:1
-;; 200:1
 ;; 48:2
-;; 175:1
-;; 171:2
-;; 51:3
-;; 50:2
-;; 33:1
-;; 53:2
-;; 45:2
-;; 47:2
-;; 172:2
-;; 56:8
-;; 32:34
-;; 181:1
-;; 54:2
+;; 34:3
 ;; 49:2
+;; 181:1
+;; 44:1
+;; 32:34
 ;; total translated: 20
 
 ;; format usage stats
-;; 5-x:1
+;; 5-u:2
+;; z:2
+;; nl:12
+;; x:5
+;; A:4
 ;; 2-u:1
 ;; s:14
-;; nl:12
-;; A:4
-;; 5-u:2
-;; x:5
 ;; 2-I:1
-;; z:2
+;; 5-x:1
 ;; u:6
 ;; c:13
 ;; total format: 11
@@ -651,7 +658,7 @@ StringsCompressed_TranslatesAndFormats:
 ;; 76,L:4
 ;; 77,M:7
 ;; 78,N:2
-;; 79,O:2
+;; 79,O:3
 ;; 80,P:1
 ;; 81,Q:1
 ;; 82,R:7
@@ -660,7 +667,7 @@ StringsCompressed_TranslatesAndFormats:
 ;; 85,U:2
 ;; 86,V:
 ;; 87,W:
-;; 88,X:1
+;; 88,X:2
 ;; 89,Y:
 ;; 90,Z:
 ;; 91,[:2

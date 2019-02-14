@@ -32,19 +32,18 @@ SECTION .text
 ;		AX
 ;--------------------------------------------------------------------
 SerialDPT_Finalize:
-		mov		ax, [es:si+SerialServer_ATA_wPortAndBaud]
-		mov		[di+DPT_SERIAL.wSerialPortAndBaud], ax
+	mov		ax, [es:si+SerialServer_ATA_wPortAndBaud]
+	mov		[di+DPT_SERIAL.wSerialPortAndBaud], ax
 
 ;
 ; Note that this section is not under %ifdef MODULE_SERIAL_FLOPPY.  It is important to
 ; distinguish floppy disks presented by the server and not treat them as hard disks, even
 ; if the floppy support is disabled.
 ;
-		mov		al, [es:si+SerialServer_ATA_wDriveFlags]
-		eSHL_IM	al, 1
-		mov		byte [di+DPT.bFlagsHigh], al
-
-		ret
+	mov		al, [es:si+SerialServer_ATA_wDriveFlags]
+	eSHL_IM	al, 1
+	mov		BYTE [di+DPT.bFlagsHigh], al
+	ret
 
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 	%ifdef MODULE_SERIAL_FLOPPY

@@ -1,5 +1,6 @@
 ; Project name	:	Assembly Library
 ; Description	:	Serial Server Support, Scan for Server
+
 ;
 ; This functionality is broken out from SerialServer as it may only be needed during
 ; initialization to find a server, and then could be discarded, (for example the case
@@ -42,38 +43,38 @@ SECTION .text
 ;		AL, BX, CX, DX, DI
 ;--------------------------------------------------------------------
 SerialServerScan_ScanForServer:
-		mov		cx, 1			; one sector, not scanning (default)
+	mov		cx, 1			; one sector, not scanning (default)
 
-		test	dx, dx
-		jnz		SHORT SerialServerScan_CheckForServer_PortAndBaudInDX
+	test	dx, dx
+	jnz		SHORT SerialServerScan_CheckForServer_PortAndBaudInDX
 
-		mov		di, .scanPortAddresses-1
-		mov		ch, 1			;  tell server that we are scanning
+	mov		di, .scanPortAddresses-1
+	mov		ch, 1			;  tell server that we are scanning
 
 .nextPort:
-		inc		di				; load next port address
-		mov		dh, 40h			; Clear DH and make sure CF is set if error
-		mov		dl, [cs:di]
-		eSHL_IM	dx, 2			; shift from one byte to two
-		jz		SHORT .error
+	inc		di				; load next port address
+	mov		dh, 40h			; Clear DH and make sure CF is set if error
+	mov		dl, [cs:di]
+	eSHL_IM	dx, 2			; shift from one byte to two
+	jz		SHORT .error
 
 ;
 ; Test for COM port presence, write to and read from registers
 ;
-		push	dx
-		add		dl, Serial_UART_lineControl
-		mov		al, 9Ah
-		out		dx, al
-		in		al, dx
-		pop		dx
-		cmp		al, 9Ah
-		jne		SHORT .nextPort
+	push	dx
+	add		dl, Serial_UART_lineControl
+	mov		al, 9Ah
+	out		dx, al
+	in		al, dx
+	pop		dx
+	cmp		al, 9Ah
+	jne		SHORT .nextPort
 
-		mov		al, 0Ch
-		out		dx, al
-		in		al, dx
-		cmp		al, 0Ch
-		jne		SHORT .nextPort
+	mov		al, 0Ch
+	out		dx, al
+	in		al, dx
+	cmp		al, 0Ch
+	jne		SHORT .nextPort
 
 ;
 ; Begin baud rate scan on this port...
@@ -87,31 +88,32 @@ SerialServerScan_ScanForServer:
 ;
 ; Note: hardware baud multipliers (2x, 4x, 8x) will impact the final baud rate and are not known at this level
 ;
-		mov		dh, 30h * 2		; multiply by 2 since we are about to divide by 2
-		mov		dl, [cs:di]		; restore single byte port address for scan
+	mov		dh, 30h * 2		; multiply by 2 since we are about to divide by 2
+	mov		dl, [cs:di]		; restore single byte port address for scan
 
 .nextBaud:
-		shr		dh, 1
-		jz		SHORT .nextPort
-		cmp		dh, 6			; skip from 6 to 4, to move from the top of the 9600 baud range
-		jne		SHORT .testBaud	; to the bottom of the 115200 baud range
-		mov		dh, 4
+	shr		dh, 1
+	jz		SHORT .nextPort
+	cmp		dh, 6			; skip from 6 to 4, to move from the top of the 9600 baud range
+	jne		SHORT .testBaud	; to the bottom of the 115200 baud range
+	mov		dh, 4
 
 .testBaud:
-		call	SerialServerScan_CheckForServer_PortAndBaudInDX
-		jc		SHORT .nextBaud
+	call	SerialServerScan_CheckForServer_PortAndBaudInDX
+	jc		SHORT .nextBaud
 
 .error:
-		ret
+	ret
 
-.scanPortAddresses: db	SERIAL_COM7_IOADDRESS >> 2
-					db	SERIAL_COM6_IOADDRESS >> 2
-					db	SERIAL_COM5_IOADDRESS >> 2
-					db	SERIAL_COM4_IOADDRESS >> 2
-					db	SERIAL_COM3_IOADDRESS >> 2
-					db	SERIAL_COM2_IOADDRESS >> 2
-					db	SERIAL_COM1_IOADDRESS >> 2
-					db	0
+.scanPortAddresses:
+	db	SERIAL_COM7_IOADDRESS >> 2
+	db	SERIAL_COM6_IOADDRESS >> 2
+	db	SERIAL_COM5_IOADDRESS >> 2
+	db	SERIAL_COM4_IOADDRESS >> 2
+	db	SERIAL_COM3_IOADDRESS >> 2
+	db	SERIAL_COM2_IOADDRESS >> 2
+	db	SERIAL_COM1_IOADDRESS >> 2
+	db	0
 
 
 ;--------------------------------------------------------------------
@@ -132,20 +134,20 @@ SerialServerScan_ScanForServer:
 ;		AL, BX
 ;--------------------------------------------------------------------
 SerialServerScan_CheckForServer_PortAndBaudInDX:
-		push	bp				; setup fake SerialServer_Command
-		push	dx				; send port baud and rate, returned in inquire packet
-								; (and possibly returned in the drive identification string)
-		push	cx				; send number of sectors, and if it is on a scan or not
-		mov		bl, SerialServer_Command_Inquire		; protocol command onto stack with bh
-		push	bx
+	push	bp				; setup fake SerialServer_Command
+	push	dx				; send port baud and rate, returned in inquire packet
+							; (and possibly returned in the drive identification string)
+	push	cx				; send number of sectors, and if it is on a scan or not
+	mov		bl, SerialServer_Command_Inquire		; protocol command onto stack with bh
+	push	bx
 
-		mov		bp, sp
-		call	SerialServer_SendReceive
+	mov		bp, sp
+	call	SerialServer_SendReceive
 
-		pop		bx
-		pop		cx
-		pop		dx
-		pop		bp
+	pop		bx
+	pop		cx
+	pop		dx
+	pop		bp
 
-		ret
+	ret
 

@@ -192,6 +192,7 @@ g_rgwChoiceToValueLookupForDevice:
 	dw	DEVICE_8BIT_ATA
 	dw	DEVICE_8BIT_XTIDE_REV1
 	dw	DEVICE_8BIT_XTIDE_REV2
+	dw	DEVICE_8BIT_XTIDE_REV2_OLIVETTI
 	dw	DEVICE_8BIT_XTCF_PIO8
 	dw	DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
 	dw	DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
@@ -205,6 +206,7 @@ g_rgszValueToStringLookupForDevice:
 	dw	g_szValueCfgDevice8b
 	dw	g_szValueCfgDeviceRev1
 	dw	g_szValueCfgDeviceRev2
+	dw	g_szValueCfgDeviceRev2Olivetti
 	dw	g_szValueCfgDeviceXTCFPio8
 	dw	g_szValueCfgDeviceXTCFPio8WithBIUOffload
 	dw	g_szValueCfgDeviceXTCFPio16WithBIUOffload
@@ -630,7 +632,7 @@ IdeControllerMenu_WriteDevice:
 
 	; We know MODULE_8BIT_IDE is included
 	lahf	; Save the PF
-	cmp		al, DEVICE_8BIT_XTIDE_REV2
+	cmp		al, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
 	jbe		SHORT .ChangingToXTIDEorXTCF
 	sahf	; Restore the PF
 	jpo		SHORT .SupportForDeviceNotAvailable	; Jump if no MODULE_8BIT_IDE_ADVANCED

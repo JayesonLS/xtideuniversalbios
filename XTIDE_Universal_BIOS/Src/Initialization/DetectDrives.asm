@@ -97,7 +97,7 @@ DetectDrives_FromAllIDEControllers:
 
 ; Here we might want to replace BIOS configured drives with the ones we detected.
 ; Primary reason is to support dynamic overlay feature in the future. Second reason
-; is a hack to get Windows 95 load proper IDE drivers.
+; is a hack to get Windows 95 to load its built-in protected mode IDE driver.
 ;
 ; The Windows hack has two parts. First part is to try to alter CMOS address 12h as that
 ; is what Windows 95 driver reads to detect IDE drives. Altering is not possible on all
@@ -108,58 +108,57 @@ DetectDrives_FromAllIDEControllers:
 ; as long as user has configured at least one drive in the BIOS setup.
 
 %ifdef USE_AT	; FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES is for AT builds only
+%ifdef MODULE_WIN95_CMOS_HACK
+	mov		dl, HARD_DISK_TYPES
+	call	CMOS_ReadFromIndexInDLtoAL
+	test	al, 0F0h
+	jnz		SHORT .ClearBdaDriveCount		; CMOS byte 12h is ready for Windows 95
+	call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
+	jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
 
-	%ifdef MODULE_WIN95_CMOS_HACK
-		mov		dl, HARD_DISK_TYPES
-		call	CMOS_ReadFromIndexInDLtoAL
-		test	al, 0F0h
-		jnz		SHORT .ClearBdaDriveCount		; CMOS byte 12h is ready for Windows 95
-		call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
-		jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
+	; Now we can alter CMOS location 12h. Award BIOS locks if we set drive 0 type to Fh
+	; (but accept changes to drive type 1). Windows 95 requires that the drive 0 type is
+	; non zero and ignores drive 1 type. So if we only set drive 1, then Award BIOS
+	; won't give problems but Windows 95 stays in MS-DOS compatibility mode.
+	;
+	; For Award BIOSes we could set the Drive 0 type to 1 and then clear the BDA drive count.
+	; So essentially we could automatically do what user needs to do manually to get Windows 95
+	; working on Award BIOSes. However, I think that should be left to do manually since
+	; there may be SCSI drives on the system or FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES could
+	; be intentionally cleared and forcing the dummy drive might cause only trouble.
 
-		; Now we can alter CMOS location 12h. Award BIOS locks if we set drive 0 type to Fh
-		; (but accept changes to drive type 1). Windows 95 requires that the drive 0 type is
-		; non zero and ignores drive 1 type. So if we only set drive 1, then Award BIOS
-		; won't give problems but Windows 95 stays in MS-DOS compatibility mode.
-		;
-		; For Award BIOSes we could set the Drive 0 type to 1 and then clear the BDA drive count.
-		; So essentially we could automatically do what user needs to do manually to get Windows 95
-		; working on Award BIOSes. However, I think that should be left to do manually since
-		; there may be SCSI drives on the system or FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES could
-		; be intentionally cleared and forcing the dummy drive might cause only trouble.
+	; Try to detect Award BIOS (Seems to work on a tested 128k BIOS so hopefully
+	; there will be no need to scan E000h segment)
+	mov		cx, 65536 - 4
+	mov		eax, 'Awar'						; Four characters should be enough
+	mov		di, 0F000h						; Scan 64k starting from segment F000h
+	mov		fs, di							; No need to preserve FS since we set it to zero soon when we boot
+	xor		di, di
+.ScanNextCharacters:
+	cmp		[fs:di], eax
+	je		SHORT .ClearBdaDriveCount		; Award detected, cannot modify CMOS
+	inc		di								; Increment offset by one character (not four)
+	loop	.ScanNextCharacters
 
-		; Try to detect Award BIOS (Seems to work on a tested 128k BIOS so hopefully
-		; there will be no need to scan E000h segment)
-		mov		cx, 65536 - 4
-		mov		eax, 'Awar'		; Four characters should be enough
-		mov		di, 0F000h		; Scan 64k starting from segment F000h
-		mov		fs, di			; No need to preserve FS since we set it to zero soon when we boot
-		xor		di, di
-	.ScanNextCharacters:
-		cmp		[fs:di], eax
-		je		SHORT .ClearBdaDriveCount	; Award detected, cannot modify CMOS
-		inc		di				; Increment offset by one character (not four)
-		loop	.ScanNextCharacters
-
-		; Now it should be safe to write
-		mov		dl, HARD_DISK_TYPES
-		mov		al, 0F0h	; Drive 0 type 16...47 (supposed to be defined elsewhere in the CMOS)
-		call	CMOS_WriteALtoIndexInDL
-		call	CMOS_StoreNewChecksumFor10hto2Dh
+	; Now it should be safe to write
+	mov		dl, HARD_DISK_TYPES
+	mov		al, 0F0h						; Drive 0 type 16...47 (supposed to be defined elsewhere in the CMOS)
+	call	CMOS_WriteALtoIndexInDL
+	call	CMOS_StoreNewChecksumFor10hto2Dh
 .ClearBdaDriveCount:
-	%endif	; MODULE_WIN95_CMOS_HACK
+%endif ; MODULE_WIN95_CMOS_HACK
 
 	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES
 	jz		SHORT .ContinueInitialization
-	mov		BYTE [es:BDA.bHDCount], 0	; Set hard disk count to zero
+	mov		BYTE [es:BDA.bHDCount], 0		; Set hard disk count to zero
 .ContinueInitialization:
-%endif
+%endif ; USE_AT
 
-	mov		cx, [RAMVARS.wDrvCntAndFlopCnt]		; Our count of hard disks
+	mov		cx, [RAMVARS.wDrvCntAndFlopCnt]	; Our count of hard disks
 	mov		al, [es:BDA.bHDCount]
-	add		[es:BDA.bHDCount], cl		; Add our drives to the system count
-	or		al, 80h						; Or in hard disk flag
-	mov		[RAMVARS.bFirstDrv], al		; Store first drive number
+	add		[es:BDA.bHDCount], cl			; Add our drives to the system count
+	or		al, 80h							; Or in hard disk flag
+	mov		[RAMVARS.bFirstDrv], al			; Store first drive number
 
 .AddFloppies:
 %ifdef MODULE_SERIAL_FLOPPY
@@ -169,7 +168,7 @@ DetectDrives_FromAllIDEControllers:
 ;
 	dec		ch
 	mov		al, ch
-	js		.NoFloppies						; if no drives are present, we store 0ffh
+	js		SHORT .NoFloppies				; If no drives are present, we store 0FFh
 
 	call	FloppyDrive_GetCountFromBIOS_or_BDA
 
@@ -241,7 +240,7 @@ StartDetectionWithDriveSelectByteInBHandStringInCX:
 ;		AX, BL, CX, DX, SI, DI
 ;--------------------------------------------------------------------
 .ReadAtaInfoFromHardDisk:
-	mov		si, BOOTVARS.rgbAtaInfo		; ES:SI now points to ATA info location
+	mov		si, BOOTVARS.rgbAtaInfo			; ES:SI now points to ATA info location
 	push	es
 	push	si
 	push	dx
@@ -254,8 +253,8 @@ StartDetectionWithDriveSelectByteInBHandStringInCX:
 	jnc		SHORT CreateBiosTablesForHardDisk
 	; Fall to .ReadAtapiInfoFromDrive
 
-.ReadAtapiInfoFromDrive:				; Not yet implemented
-	;call	ReadAtapiInfoFromDrive		; Assume CD-ROM
+.ReadAtapiInfoFromDrive:					; Not yet implemented
+	;call	ReadAtapiInfoFromDrive			; Assume CD-ROM
 	;jnc	SHORT _CreateBiosTablesForCDROM
 
 	;jmp	short DetectDrives_DriveNotFound

@@ -327,40 +327,42 @@ IdeTransfer_NormalizePointerInESSI:
 ; Lookup tables to get transfer function based on bus type
 ALIGN WORD_ALIGN
 g_rgfnPioRead:
-		dw		IdePioBlock_ReadFrom16bitDataPort	; 0, DEVICE_16BIT_ATA
+		dw		IdePioBlock_ReadFrom16bitDataPort		; 0, DEVICE_16BIT_ATA
 %ifdef MODULE_ADVANCED_ATA
-		dw		IdePioBlock_ReadFrom32bitDataPort	; 1, DEVICE_32BIT_ATA
+		dw		IdePioBlock_ReadFrom32bitDataPort		; 1, DEVICE_32BIT_ATA
 %elifdef MODULE_8BIT_IDE
 		dw		NULL
 %endif ; MODULE_ADVANCED_ATA
 %ifdef MODULE_8BIT_IDE
-		dw		IdePioBlock_ReadFrom8bitDataPort	; 2, DEVICE_8BIT_ATA
-		dw		IdePioBlock_ReadFromXtideRev1		; 3, DEVICE_8BIT_XTIDE_REV1
-		dw		IdePioBlock_ReadFrom16bitDataPort	; 4, DEVICE_8BIT_XTIDE_REV2
+		dw		IdePioBlock_ReadFrom8bitDataPort		; 2, DEVICE_8BIT_ATA
+		dw		IdePioBlock_ReadFromXtideRev1			; 3, DEVICE_8BIT_XTIDE_REV1
+		dw		IdePioBlock_ReadFrom16bitDataPort		; 4, DEVICE_8BIT_XTIDE_REV2
+		dw		IdePioBlock_ReadFromXtideRev2_Olivetti	; 5, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
 %ifdef MODULE_8BIT_IDE_ADVANCED
-		dw		IdePioBlock_ReadFrom8bitDataPort	; 5, DEVICE_8BIT_XTCF_PIO8
-		dw		IdePioBlock_ReadFrom16bitDataPort	; 6, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
-		dw		IdePioBlock_ReadFrom16bitDataPort	; 7, DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
-		dw		IdeDmaBlock_ReadFromXTCF			; 8, DEVICE_8BIT_XTCF_DMA
+		dw		IdePioBlock_ReadFrom8bitDataPort		; 6, DEVICE_8BIT_XTCF_PIO8
+		dw		IdePioBlock_ReadFrom16bitDataPort		; 7, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
+		dw		IdePioBlock_ReadFrom16bitDataPort		; 8, DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
+		dw		IdeDmaBlock_ReadFromXTCF				; 9, DEVICE_8BIT_XTCF_DMA
 %endif ; MODULE_8BIT_IDE_ADVANCED
 %endif ; MODULE_8BIT_IDE
 
 
 g_rgfnPioWrite:
-		dw		IdePioBlock_WriteTo16bitDataPort	; 0, DEVICE_16BIT_ATA
+		dw		IdePioBlock_WriteTo16bitDataPort		; 0, DEVICE_16BIT_ATA
 %ifdef MODULE_ADVANCED_ATA
-		dw		IdePioBlock_WriteTo32bitDataPort	; 1, DEVICE_32BIT_ATA
+		dw		IdePioBlock_WriteTo32bitDataPort		; 1, DEVICE_32BIT_ATA
 %elifdef MODULE_8BIT_IDE
 		dw		NULL
 %endif ; MODULE_ADVANCED_ATA
 %ifdef MODULE_8BIT_IDE
-		dw		IdePioBlock_WriteTo8bitDataPort		; 2, DEVICE_8BIT_ATA
-		dw		IdePioBlock_WriteToXtideRev1		; 3, DEVICE_8BIT_XTIDE_REV1
-		dw		IdePioBlock_WriteToXtideRev2		; 4, DEVICE_8BIT_XTIDE_REV2
+		dw		IdePioBlock_WriteTo8bitDataPort			; 2, DEVICE_8BIT_ATA
+		dw		IdePioBlock_WriteToXtideRev1			; 3, DEVICE_8BIT_XTIDE_REV1
+		dw		IdePioBlock_WriteToXtideRev2			; 4, DEVICE_8BIT_XTIDE_REV2
+		dw		IdePioBlock_WriteToXtideRev2			; 5, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
 %ifdef MODULE_8BIT_IDE_ADVANCED
-		dw		IdePioBlock_WriteTo8bitDataPort		; 5, DEVICE_8BIT_XTCF_PIO8
-		dw		IdePioBlock_WriteTo16bitDataPort	; 6, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
-		dw		IdePioBlock_WriteTo16bitDataPort	; 7, DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
-		dw		IdeDmaBlock_WriteToXTCF				; 8, DEVICE_8BIT_XTCF_DMA
+		dw		IdePioBlock_WriteTo8bitDataPort			; 6, DEVICE_8BIT_XTCF_PIO8
+		dw		IdePioBlock_WriteTo16bitDataPort		; 7, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
+		dw		IdePioBlock_WriteTo16bitDataPort		; 8, DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD
+		dw		IdeDmaBlock_WriteToXTCF					; 9, DEVICE_8BIT_XTCF_DMA
 %endif ; MODULE_8BIT_IDE_ADVANCED
 %endif ; MODULE_8BIT_IDE

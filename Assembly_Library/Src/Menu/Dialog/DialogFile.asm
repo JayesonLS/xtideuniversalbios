@@ -745,15 +745,18 @@ ALIGN JUMP_ALIGN
 	mov		dx, sp
 	mov		ax, FIND_FIRST_MATCHING_FILE<<8
 	int		DOS_INTERRUPT_21h
+	; Returns ERR_DOS_NO_MORE_FILES only when the root directory is the current directory (at least under Windows XP).
+	cmp		al, ERR_DOS_PATH_NOT_FOUND
 	pop		ax
 	pop		ds
 
 	pop		dx									; Restore the previous current drive from stack
 
 	xchg	ah, [cs:bLastCriticalError]			; Zero bLastCriticalError and fetch error code to AH
+	je		SHORT .DriveIsNotReady				; A removable drive with no media (or possibly a drive that has not been formatted?)
 	cmp		ah, ERR_DOS_DRIVE_NOT_READY
 	jne		SHORT .DriveIsReady
-
+.DriveIsNotReady:
 	mov		bx, g_szDlgDriveNotReady
 	call	Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX
 	jz		SHORT .RetryDrive

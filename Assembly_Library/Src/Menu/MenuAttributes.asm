@@ -67,8 +67,8 @@ MenuAttribute_GetToAXfromTypeInSI:
 	mov		al, [VIDEO_BDA.bMode]		; Load BIOS display mode (0, 1, 2, 3 or 7)
 	cmp		al, 7
 	je		SHORT .LoadMonoAttribute
-	test	al, 1						; Even modes (0 and 2) are B/W
-	jnz		SHORT .LoadColorAttribute
+	shr		al, 1						; Even modes (0 and 2) are B/W
+	jc		SHORT .LoadColorAttribute
 
 .LoadBlackAndWhiteAttribute:
 	add		si, .rgcBlackAndWhiteAttributes

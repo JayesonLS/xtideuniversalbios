@@ -42,46 +42,41 @@ SECTION .text
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 SerialCommand_OutputWithParameters:
+	mov		ah, SerialServer_Command_Read
+	mov		al, [bp+IDEPACK.bCommand]
 
-		mov		ah,SerialServer_Command_Read
-
-		mov		al,[bp+IDEPACK.bCommand]
-
-		cmp		al,20h			; Read Sectors IDE command
-		jz		.readOrWrite
-		inc		ah				; now SerialServer_Protocol_Write
-		cmp		al,30h			; Write Sectors IDE command
-		jz		.readOrWrite
+	cmp		al, 20h							; Read Sectors IDE command
+	je		SHORT .readOrWrite
+	inc		ah								; now SerialServer_Protocol_Write
+	cmp		al, 30h							; Write Sectors IDE command
+	je		SHORT .readOrWrite
 
 ;  all other commands return success
 ;  including function 0ech which should return drive information, this is handled with the identify functions
 ;
-		xor		ah,ah			;  also clears carry
-		ret
+	xor		ah, ah							;  also clears carry
+	ret
 
 .readOrWrite:
-		mov		[bp+IDEPACK.bFeatures],ah		; store protocol command
+	mov		[bp+IDEPACK.bFeatures], ah		; store protocol command
 %ifdef USE_AT
-		mov		dh, [bp+IDEPACK.bSectorCount]
+	mov		dh, [bp+IDEPACK.bSectorCount]
 %endif
-		call	IdeTransfer_NormalizePointerInESSI
+	call	IdeTransfer_NormalizePointerInESSI
 %ifdef USE_AT
-		jnc		SHORT .PointerNormalizationWasSuccessful
-		xor		cx, cx			; Nothing transferred
-		stc
-		ret
+	jnc		SHORT .PointerNormalizationWasSuccessful
+	xor		cx, cx							; Nothing transferred
+	stc
+	ret
 .PointerNormalizationWasSuccessful:
 %endif
 
-		mov		dx, [di+DPT_SERIAL.wSerialPortAndBaud]
-
+	mov		dx, [di+DPT_SERIAL.wSerialPortAndBaud]
 ; fall through to SerialCommand_FallThroughToSerialServer_SendReceive
 
 ALIGN JUMP_ALIGN
 SerialCommand_FallThroughToSerialServer_SendReceive:
-
 ; fall through to SerialServer_SendReceive
-
 %include "SerialServer.asm"
 
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
@@ -92,8 +87,8 @@ SerialCommand_FallThroughToSerialServer_SendReceive:
 
 ALIGN JUMP_ALIGN
 SerialCommand_ReturnError:
-		stc
-		ret
+	stc
+	ret
 
 ;--------------------------------------------------------------------
 ; SerialCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH
@@ -154,49 +149,45 @@ SerialCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH:
 ;     Instead of performing the full COM port scan for the slave, use the port/baud value stored during the
 ;     master scan.
 ;
-		mov		dx,[cs:bp+IDEVARS.wSerialPortAndBaud]
-		xor		ax,ax
+	mov		dx, [cs:bp+IDEVARS.wSerialPortAndBaud]
+	xor		ax, ax
 
-		push	si
-		call	FindDPT_ToDSDIforSerialDevice
-		pop		si
+	push	si
+	call	FindDPT_ToDSDIforSerialDevice
+	pop		si
 %ifdef MODULE_SERIAL_FLOPPY
-		jnc		.founddpt
+	jnc		SHORT .founddpt
 ;
 ; If not found above with FindDPT_ToDSDIforSerialDevice, DI will point to the DPT after the last hard disk DPT
 ; So, if there was a previously found floppy disk, DI will point to that DPT and we use that value for the slave.
 ;
-		cmp		byte [RAMVARS.xlateVars+XLATEVARS.bFlopCntAndFirst], 0
-		jz		.notfounddpt
+	cmp		BYTE [RAMVARS.xlateVars+XLATEVARS.bFlopCntAndFirst], 0
+	je		SHORT .notfounddpt
 .founddpt:
 %else
-		jc		.notfounddpt
+	jc		SHORT .notfounddpt
 %endif
-		mov		ax, [di+DPT_SERIAL.wSerialPortAndBaud]
+	mov		ax, [di+DPT_SERIAL.wSerialPortAndBaud]
 .notfounddpt:
+	test	bh, FLG_DRVNHEAD_DRV
+	jz		SHORT .master
 
-		test	bh, FLG_DRVNHEAD_DRV
-		jz		.master
-
-		test	ax,ax			; Take care of the case that is different between master and slave.
-		jz		SerialCommand_ReturnError
+	test	ax, ax							; Take care of the case that is different between master and slave.
+	jz		SHORT SerialCommand_ReturnError
 
 ; fall-through
 .master:
-		test	dx,dx
-		jnz		.identifyDeviceInDX
+	test	dx, dx
+	jnz		SHORT .identifyDeviceInDX
 
-		xchg	dx, ax			;  move ax to dx (move previously found serial drive to dx, could be zero)
+	xchg	dx, ax							;  move ax to dx (move previously found serial drive to dx, could be zero)
 
 .identifyDeviceInDX:
-
 ; fall through to SerialCommand_FallThroughToSerialServerScan_ScanForServer
 
 ALIGN JUMP_ALIGN
 SerialCommand_FallThroughToSerialServerScan_ScanForServer:
-
 ; fall through to SerialServerScan_ScanForServer
-
 %include "SerialServerScan.asm"
 
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
@@ -204,5 +195,4 @@ SerialCommand_FallThroughToSerialServerScan_ScanForServer:
 		%error "SerialServerScan_ScanForServer must be the first routine at the top of SerialServerScan.asm in the Assembly_Library"
 	%endif
 %endif
-
 

@@ -32,8 +32,9 @@ SECTION .text
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, CX, DX, SI, DI
+;		Nothing
 ;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
 HotkeyBar_TimerTickHandler:
 	push	es
 	push	ds
@@ -55,7 +56,7 @@ HotkeyBar_TimerTickHandler:
 
 	; Call previous handler
 	pushf
-	call far [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
+	call	FAR [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
 
 	; Update Hotkeybar (process key input and draw) every fourth tick
 	test	BYTE [es:BDA.dwTimerTicks], 11b
@@ -97,7 +98,6 @@ UpdateDuringDriveDetection:
 	jne		SHORT .ContinueDrawing
 	mov		BYTE [RAMVARS.bTimeoutTicksLeft], 0
 .ContinueDrawing:
-	
 	; Fall to HotkeyBar_DrawToTopOfScreen
 
 
@@ -140,8 +140,12 @@ HotkeyBar_DrawToTopOfScreen:
 	mov		di, g_szFDD
 
 	; Clear CH if floppy drive is selected for boot
+%if 0 ; Not needed until more flags added
+	mov		ch, FLG_HOTKEY_HD_FIRST
+	and		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
+%else
 	mov		ch, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.bFlags]
-	;and		ch, FLG_HOTKEY_HD_FIRST; Not needed until more flags added
+%endif
 	call	FormatDriveHotkeyString
 
 .SkipFloppyDriveHotkeys:
@@ -427,11 +431,11 @@ HotkeyBar_InitializeVariables:
 	pop		ds
 
 	; Store system 1Ch Timer Tick handler and install our hotkeybar handler
-	mov		ax, [SYSTEM_TIMER_TICK*4]
+	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler], ax
-	mov		ax, [SYSTEM_TIMER_TICK*4+2]
+	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4+2]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2], ax
-	mov		al, SYSTEM_TIMER_TICK
+	mov		al, BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch
 	mov		si, HotkeyBar_TimerTickHandler
 	call	Interrupts_InstallHandlerToVectorInALFromCSSI
 

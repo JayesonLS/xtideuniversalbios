@@ -3,7 +3,7 @@
 ;					information on Boot Menu.
 ;
 ; Included by BootMenuPrint.asm, this routine is to be inserted into
-; BootMenuPrint_HardDiskRefreshInformation.
+; BootMenuPrint_RefreshInformation.
 ;
 
 ;
@@ -25,34 +25,31 @@
 ; Section containing code
 SECTION .text
 
-;;; fall-into from BootMenuPrint_HardDiskRefreshInformation.
+;;; fall-into from BootMenuPrint_RefreshInformation.
 
 ;--------------------------------------------------------------------
 ; Prints Hard Disk configuration for drive handled by our BIOS.
 ; Cursor is set to configuration header string position.
 ;
-; BootMenuPrintCfg_ForOurDrive
+; .BootMenuPrintCfg_ForOurDrive
 ;	Parameters:
 ;		DS:DI:		Pointer to DPT
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, BX, CX, DX
+;		AX, BX, DX
 ;--------------------------------------------------------------------
 .BootMenuPrintCfg_ForOurDrive:
-	eMOVZX	ax, [di+DPT.bIdevarsOffset]
-	xchg	bx, ax						; CS:BX now points to IDEVARS
 	; Fall to .PushAddressingMode
 
 ;--------------------------------------------------------------------
 ; .PushAddressingMode
 ;	Parameters:
 ;		DS:DI:	Ptr to DPT
-;		CS:BX:	Ptr to IDEVARS
 ;	Returns:
 ;		Nothing (falls to next push below)
 ;	Corrupts registers:
-;		AX, CX, DX
+;		AX, BX, DX
 ;--------------------------------------------------------------------
 .PushAddressingMode:
 	mov		al, [di+DPT.bFlagsLow]
@@ -65,8 +62,8 @@ SECTION .text
 %ifdef USE_186
 	imul	ax, g_szAddressingModes_Displacement << (8-TRANSLATEMODE_FIELD_POSITION)
 %else
-	mov		cx, g_szAddressingModes_Displacement << (8-TRANSLATEMODE_FIELD_POSITION)
-	mul		cx
+	mov		bx, g_szAddressingModes_Displacement << (8-TRANSLATEMODE_FIELD_POSITION)
+	mul		bx
 %endif
 	xchg	al, ah		; AL = always zero after above multiplication
 	add		ax, g_szAddressingModes
@@ -77,7 +74,6 @@ SECTION .text
 ; .PushBlockMode
 ;	Parameters:
 ;		DS:DI:	Ptr to DPT
-;		CS:BX:	Ptr to IDEVARS
 ;	Returns:
 ;		Nothing (falls to next push below)
 ;	Corrupts registers:
@@ -96,13 +92,13 @@ SECTION .text
 ; .PushDeviceType
 ;	Parameters:
 ;		DS:DI:	Ptr to DPT
-;		CS:BX:	Ptr to IDEVARS
 ;	Returns:
 ;		Nothing (falls to next push below)
 ;	Corrupts registers:
-;		AX
+;		AX, BX
 ;--------------------------------------------------------------------
 .PushDeviceType:
+	call	AccessDPT_GetIdevarsToCSBX
 %ifndef MODULE_SERIAL
 	mov		al, g_szDeviceTypeValues_Displacement
 	mul		BYTE [di+DPT_ATA.bDevice]
@@ -154,10 +150,10 @@ SECTION .text
 ;	Returns:
 ;		Nothing (falls to next push below)
 ;	Corrupts registers:
-;		AX, BX, DX, ES
+;		AL
 ;--------------------------------------------------------------------
 .PushResetStatus:
 	mov		al, [di+DPT.bInitError]
 	push	ax
 
-;;; fall-out to BootMenuPrint_HardDiskRefreshInformation.
+;;; fall-out to BootMenuPrint_RefreshInformation.

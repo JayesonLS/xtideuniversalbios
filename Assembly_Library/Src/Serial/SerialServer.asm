@@ -37,32 +37,31 @@ SECTION .text
 ;		AL, BX, CX, DX
 ;--------------------------------------------------------------------
 SerialServer_SendReceive:
-
-		push	si
-		push	di
-		push	bp
+	push	si
+	push	di
+	push	bp
 
 ;
 ; Unpack I/O port and baud from DPT
 ;		Port to DX for the remainder of the routine (+/- different register offsets)
 ;		Baud in CH until UART initialization is complete
 ;
-		mov		ch,dh
-		xor		dh,dh
-		eSHL_IM	dx, 2			; shift from one byte to two
+	mov		ch, dh
+	xor		dh, dh
+	eSHL_IM	dx, 2						; shift from one byte to two
 
-		mov		al,[bp+SerialServer_Command.bSectorCount]
-		mov		ah,[bp+SerialServer_Command.bCommand]
+	mov		al, [bp+SerialServer_Command.bSectorCount]
+	mov		ah, [bp+SerialServer_Command.bCommand]
 
 ;
 ; Command byte and sector count live at the top of the stack, pop/push are used to access
 ;
-		push	ax				; save sector count for return value
-		push	ax				; working copy on the top of the stack
+	push	ax							; save sector count for return value
+	push	ax							; working copy on the top of the stack
 
-%ifndef EXCLUDE_FROM_XUB		; DF already cleared in Int13h.asm
+%ifndef EXCLUDE_FROM_XUB				; DF already cleared in Int13h.asm
 %ifdef CLD_NEEDED
-		cld
+	cld
 %endif
 %endif
 
@@ -73,47 +72,46 @@ SerialServer_SendReceive:
 ; We do this each time since DOS (at boot) or another program may have
 ; decided to reprogram the UART
 ;
-		mov		bl,dl			; setup BL with proper values for read/write loops (BH comes later)
+	mov		bl, dl						; setup BL with proper values for read/write loops (BH comes later)
+	mov		al, 83h
+	add		dl, Serial_UART_lineControl	; Clears CF
+	out		dx, al
 
-		mov		al,83h
-		add		dl, Serial_UART_lineControl	; Clears CF
-		out		dx,al
-
-		mov		al,ch
-		mov		dl,bl			; divisor low
-		out		dx,al
+	mov		al, ch
+	mov		dl, bl						; divisor low
+	out		dx, al
 
 %ifdef USE_UNDOC_INTEL
-		salc	; Clear AL using CF
+	salc								; Clear AL using CF
 %else
-		xor		al, al
+	xor		al, al
 %endif
-		inc		dx				; divisor high
-		push	dx
-		out		dx,al
+	inc		dx							; divisor high
+	push	dx
+	out		dx, al
 
-		mov		al,047h
-		inc		dx				; fifo
-		out		dx,al
+	mov		al, 47h
+	inc		dx							; fifo
+	out		dx, al
 
-		mov		al,03h
-		inc		dx				; linecontrol
-		out		dx,al
+	mov		al, 03h
+	inc		dx							; linecontrol
+	out		dx, al
 
-		mov		al,0bh
-		inc		dx				; modemcontrol
-		out		dx,al
+	mov		al, 0Bh
+	inc		dx							; modemcontrol
+	out		dx, al
 
-		inc		dx				; linestatus (no output now, just setting up BH for later use)
-		mov		bh,dl
+	inc		dx							; linestatus (no output now, just setting up BH for later use)
+	mov		bh, dl
 
-		pop		dx				; base, interrupts disabled
+	pop		dx							; base, interrupts disabled
 %ifdef USE_UNDOC_INTEL
-		salc	; Clear AL using CF
+	salc								; Clear AL using CF
 %else
-		xor		al, al
+	xor		al, al
 %endif
-		out		dx,al
+	out		dx, al
 
 ;----------------------------------------------------------------------
 ;
@@ -121,53 +119,53 @@ SerialServer_SendReceive:
 ;
 ; Sends first six bytes of IDEREGS_AND_INTPACK as the command
 ;
-		push	es				; save off real buffer location
-		push	si
+	push	es							; save off real buffer location
+	push	si
 
-		mov		si,bp			; point to IDEREGS for command dispatch;
-		push	ss
-		pop		es
+	mov		si, bp						; point to IDEREGS for command dispatch;
+	push	ss
+	pop		es
 
-		mov		di,0ffffh		; initialize checksum for write
-		mov		bp,di
+	mov		di, 0FFFFh					; initialize checksum for write
+	mov		bp, di
 
-		mov		cx,4			; writing 3 words (plus 1)
+	mov		cx, 4						; writing 3 words (plus 1)
 
-		cli						; interrupts off...
+	cli									; interrupts off...
 
-		call	SerialServer_WriteProtocol.entry
+	call	SerialServer_WriteProtocol.entry
 
-		pop		di				; restore real buffer location (note change from SI to DI)
-								; Buffer is primarily referenced through ES:DI throughout, since
-								; we need to store (read sector) faster than we read (write sector)
-		pop		es
+	pop		di							; restore real buffer location (note change from SI to DI)
+										; Buffer is primarily referenced through ES:DI throughout, since
+										; we need to store (read sector) faster than we read (write sector)
+	pop		es
 
-		pop		ax				; load command byte (done before call to .nextSector on subsequent iterations)
-		push	ax
+	pop		ax							; load command byte (done before call to .nextSector on subsequent iterations)
+	push	ax
 
 %ifndef SERIALSERVER_NO_ZERO_SECTOR_COUNTS
-		test	al,al			; if no sectors to be transferred, wait for the ACK checksum on the command
-		jz		.zeroSectors
+	test	al, al						; if no sectors to be transferred, wait for the ACK checksum on the command
+	jz		SHORT .zeroSectors
 %endif
 
 ;
 ; Top of the read/write loop, one iteration per sector
 ;
 .nextSector:
-		mov		si,0ffffh		; initialize checksum for read or write
-		mov		bp,si
+	mov		si, 0FFFFh					; initialize checksum for read or write
+	mov		bp, si
 
-		mov		cx,0101h		; writing 256 words (plus 1)
+	mov		cx, 0101h					; writing 256 words (plus 1)
 
-		sahf					; command byte, are we doing a write?
-		jnc		.readEntry
+	sahf								; command byte, are we doing a write?
+	jnc		SHORT .readEntry
 
-		xchg	si,di			; swap pointer and checksum, will be re-swap'ed in WriteProtocol
-		call	SerialServer_WriteProtocol.entry
+	xchg	si, di						; swap pointer and checksum, will be re-swap'ed in WriteProtocol
+	call	SerialServer_WriteProtocol.entry
 
 .zeroSectors:
-		inc		cx				; CX = 1 now (0 out of WriteProtocol)
-		jmp		.readEntry
+	inc		cx							; CX = 1 now (0 out of WriteProtocol)
+	jmp		SHORT .readEntry
 
 ;----------------------------------------------------------------------
 ;
@@ -176,15 +174,15 @@ SerialServer_SendReceive:
 ; To save code space, we use the contents of DL to decide which byte in the word to return for reading.
 ;
 .readTimeout:
-		push	ax				; not only does this push preserve AX (which we need), but it also
-								; means the stack has the same number of bytes on it as when we are
-								; sending a packet, important for error cleanup and exit
-		mov		ah,1
-		call	SerialServer_WaitAndPoll_Read
-		pop		ax
-		test	dl,1
-		jz		.readByte1Ready
-		jmp		.readByte2Ready
+	push	ax							; not only does this push preserve AX (which we need), but it also
+										; means the stack has the same number of bytes on it as when we are
+										; sending a packet, important for error cleanup and exit
+	mov		ah, 1
+	call	SerialServer_WaitAndPoll_Read
+	pop		ax
+	test	dl, 1
+	jz		SHORT .readByte1Ready
+	jmp		SHORT .readByte2Ready
 
 ;----------------------------------------------------------------------------
 ;
@@ -196,28 +194,27 @@ SerialServer_SendReceive:
 ; a full 512 byte block.
 ;
 .readLoop:
-		stosw					; store word in caller's data buffer
+	stosw								; store word in caller's data buffer
 
-		add		bp, ax			; update Fletcher's checksum
-		adc		bp, 0
-		add		si, bp
-		adc		si, 0
+	add		bp, ax						; update Fletcher's checksum
+	adc		bp, 0
+	add		si, bp
+	adc		si, 0
 
 .readEntry:
-		mov		dl,bh
-		in		al,dx
-		shr		al,1			; data ready (byte 1)?
-		mov		dl,bl			; get ready to read data
-		jnc		.readTimeout	; nope not ready, update timeouts
+	mov		dl, bh
+	in		al, dx
+	shr		al, 1						; data ready (byte 1)?
+	mov		dl, bl						; get ready to read data
+	jnc		SHORT .readTimeout			; nope not ready, update timeouts
 
 ;
 ; Entry point after initial timeout.  We enter here so that the checksum word
 ; is not stored (and is left in AX after the loop is complete).
 ;
 .readByte1Ready:
-		in		al, dx			; read data byte 1
-
-		mov		ah, al			; store byte in ah for now
+	in		al, dx						; read data byte 1
+	mov		ah, al						; store byte in ah for now
 
 ;
 ; note the placement of this reset of dl to bh, and that it is
@@ -226,42 +223,38 @@ SerialServer_SendReceive:
 ; to know which byte to return to (.read_byte1_ready or
 ; .read_byte2_ready)
 ;
-		mov		dl,bh
+	mov		dl, bh
 
-		in		al,dx
-		shr		al,1			; data ready (byte 2)?
-		jnc		.readTimeout
+	in		al, dx
+	shr		al, 1						; data ready (byte 2)?
+	jnc		SHORT .readTimeout
 .readByte2Ready:
-		mov		dl,bl
-		in		al, dx			; read data byte 2
-
-		xchg	al, ah			; ah was holding byte 1, reverse byte order
-
-		loop	.readLoop
-
-		sti						; interrupts back on ASAP, between packets
+	mov		dl, bl
+	in		al, dx						; read data byte 2
+	xchg	al, ah						; ah was holding byte 1, reverse byte order
+	loop	.readLoop
+	sti									; interrupts back on ASAP, between packets
 
 ;
 ; Compare checksums
 ;
-		xchg	ax,bp
-		xor		ah,al
-		mov		cx,si
-		xor		cl,ch
-		mov		al,cl
-		cmp		ax,bp
-		jnz		SerialServer_OutputWithParameters_Error
+	xchg	ax, bp
+	xor		ah, al
+	mov		cx, si
+	xor		cl, ch
+	mov		al, cl
+	cmp		ax, bp
+	jne		SHORT SerialServer_OutputWithParameters_Error
 
-		pop		ax				; sector count and command byte
-		dec		al				; decrement sector count
-		push	ax				; save
-		jz		SerialServer_OutputWithParameters_ReturnCodeInAL
+	pop		ax							; sector count and command byte
+	dec		al							; decrement sector count
+	push	ax							; save
+	jz		SHORT SerialServer_OutputWithParameters_ReturnCodeInAL
 
-		cli						; interrupts back off for ACK byte to host
-								; (host could start sending data immediately)
-		out		dx,al			; ACK with next sector number
-
-		jmp		short .nextSector
+	cli									; interrupts back off for ACK byte to host
+										; (host could start sending data immediately)
+	out		dx, al						; ACK with next sector number
+	jmp		SHORT .nextSector
 
 ;---------------------------------------------------------------------------
 ;
@@ -273,7 +266,7 @@ SerialServer_SendReceive:
 ;
 ALIGN JUMP_ALIGN
 SerialServer_OutputWithParameters_ErrorAndPop4Words:
-		add		sp,8
+	add		sp, 8
 ;;; fall-through
 
 ALIGN JUMP_ALIGN
@@ -286,39 +279,39 @@ SerialServer_OutputWithParameters_Error:
 ; In theory the initialization of the UART registers above should have
 ; taken care of this, but I have seen cases where this is not true.
 ;
-		xor		cx,cx			; timeout this clearing routine, in case the UART isn't there
+	xor		cx, cx						; timeout this clearing routine, in case the UART isn't there
 .clearBuffer:
-		mov		dl,bh
-		in		al,dx
-		mov		dl,bl
-		test	al,08fh
-		jz		.clearBufferComplete
-		test	al,1
-		in		al,dx
-		loopnz	.clearBuffer	; note ZF from test above
+	mov		dl, bh
+	in		al, dx
+	mov		dl, bl
+	test	al, 8Fh
+	jz		SHORT .clearBufferComplete
+	test	al, 1
+	in		al, dx
+	loopnz	.clearBuffer				; note ZF from test above
 
 .clearBufferComplete:
-		mov		al, 1			; error return code
+	mov		al, 1						; error return code
 
 ALIGN JUMP_ALIGN
 SerialServer_OutputWithParameters_ReturnCodeInAL:
 %if 0
-		sti						; all paths here will already have interrupts turned back on
+	sti									; all paths here will already have interrupts turned back on
 %endif
-		mov		ah, al			; for success, AL will already be zero
+	mov		ah, al						; for success, AL will already be zero
 
-		pop		bx				; recover "ax" (command and count) from stack
-		pop		cx				; recover saved sector count
-		xor		ch, ch
-		sub		cl, bl			; subtract off the number of sectors that remained
+	pop		bx							; recover "ax" (command and count) from stack
+	pop		cx							; recover saved sector count
+	xor		ch, ch
+	sub		cl, bl						; subtract off the number of sectors that remained
 
-		pop		bp
-		pop		di
-		pop		si
+	pop		bp
+	pop		di
+	pop		si
 
-		sahf					; error return code to CF
+	sahf								; error return code to CF
+	ret
 
-		ret
 
 ;--------------------------------------------------------------------
 ; SerialServer_WriteProtocol
@@ -344,57 +337,56 @@ SerialServer_OutputWithParameters_ReturnCodeInAL:
 ALIGN JUMP_ALIGN
 SerialServer_WriteProtocol:
 .writeLoop:
-		es lodsw				; fetch next word
+	es lodsw							; fetch next word
 
-		out		dx,al			; output first byte
+	out		dx, al						; output first byte
 
-		add		bp,ax			; update checksum
-		adc		bp,0
-		add		di,bp
-		adc		di,0
+	add		bp, ax						; update checksum
+	adc		bp, 0
+	add		di, bp
+	adc		di, 0
 
-		mov		dl,bh			; transmit buffer empty?
-		in		al,dx
-		test	al,20h
-		jz		.writeTimeout2	; nope, use our polling routine
+	mov		dl, bh						; transmit buffer empty?
+	in		al, dx
+	test	al, 20h
+	jz		SHORT .writeTimeout2		; nope, use our polling routine
 
 .writeByte2Ready:
-		mov		dl,bl
-		mov		al,ah			; output second byte
-		out		dx,al
+	mov		dl, bl
+	mov		al, ah						; output second byte
+	out		dx, al
 
 .entry:
-		mov		dl,bh			; transmit buffer empty?
-		in		al,dx
-		test	al,20h
-		mov		dl,bl
-		jz		.writeTimeout1	; nope, use our polling routine
+	mov		dl, bh						; transmit buffer empty?
+	in		al, dx
+	test	al, 20h
+	mov		dl, bl
+	jz		SHORT .writeTimeout1		; nope, use our polling routine
 
 .writeByte1Ready:
-		loop	.writeLoop
+	loop	.writeLoop
 
-		mov		ax,di			; fold Fletcher's checksum and output
-		xor		al,ah
-		out		dx,al			; byte 1
+	mov		ax, di						; fold Fletcher's checksum and output
+	xor		al, ah
+	out		dx, al						; byte 1
 
-		call	SerialServer_WaitAndPoll_Write
+	call	SerialServer_WaitAndPoll_Write
 
-		mov		ax,bp
-		xor		al,ah
-		out		dx,al			; byte 2
+	mov		ax, bp
+	xor		al, ah
+	out		dx, al						; byte 2
 
-		xchg	si,di			; preserve checksum word in si, move pointer back to di
-
-		ret
+	xchg	si, di						; preserve checksum word in si, move pointer back to di
+	ret
 
 .writeTimeout2:
-		mov		dl,ah			; need to preserve AH, but don't need DL (will be reset upon return)
-		call	SerialServer_WaitAndPoll_Write
-		mov		ah,dl
-		jmp		.writeByte2Ready
+	mov		dl, ah						; need to preserve AH, but don't need DL (will be reset upon return)
+	call	SerialServer_WaitAndPoll_Write
+	mov		ah, dl
+	jmp		SHORT .writeByte2Ready
 
 .writeTimeout1:
-		ePUSH_T	ax, .writeByte1Ready	; return address for ret at end of SC_writeTimeout2
+	ePUSH_T	ax, .writeByte1Ready		; return address for ret at end of SC_writeTimeout2
 ;;; fall-through
 
 ;--------------------------------------------------------------------
@@ -417,63 +409,62 @@ SerialServer_WaitAndPoll_SoftDelayTicks   EQU   20
 
 ALIGN JUMP_ALIGN
 SerialServer_WaitAndPoll_Write:
-		mov		ah,20h
+	mov		ah, 20h
 ;;; fall-through
 
 ALIGN JUMP_ALIGN
 SerialServer_WaitAndPoll_Read:
-		push	cx
-		push	dx
+	push	cx
+	push	dx
 
 ;
 ; We first poll in a tight loop, interrupts off, for the next character to come in/be sent
 ;
-		xor		cx,cx
+	xor		cx, cx
 .readTimeoutLoop:
-		mov		dl,bh
-		in		al,dx
-		test	al,ah
-		jnz		.readTimeoutComplete
-		loop	.readTimeoutLoop
+	mov		dl, bh
+	in		al, dx
+	test	al, ah
+	jnz		SHORT .readTimeoutComplete
+	loop	.readTimeoutLoop
 
 ;
 ; If that loop completes, then we assume there is a long delay involved, turn interrupts back on
 ; and wait for a given number of timer ticks to pass.
 ;
-		sti
+	sti
 %ifndef SERIALSERVER_TIMER_LOCATION
-		mov		cl,SerialServer_WaitAndPoll_SoftDelayTicks
-		call	Timer_InitializeTimeoutWithTicksInCL
+	mov		cl, SerialServer_WaitAndPoll_SoftDelayTicks
+	call	Timer_InitializeTimeoutWithTicksInCL
 %else
-		push	ax
-		push	bx
-		mov		ax,SerialServer_WaitAndPoll_SoftDelayTicks
-		mov		bx,SERIALSERVER_TIMER_LOCATION
-		call	TimerTicks_InitializeTimeoutFromAX
-		pop		bx
-		pop		ax
+	push	ax
+	push	bx
+	mov		ax, SerialServer_WaitAndPoll_SoftDelayTicks
+	mov		bx, SERIALSERVER_TIMER_LOCATION
+	call	TimerTicks_InitializeTimeoutFromAX
+	pop		bx
+	pop		ax
 %endif
 
 .WaitAndPoll:
 %ifndef SERIALSERVER_TIMER_LOCATION
-		call	Timer_SetCFifTimeout
+	call	Timer_SetCFifTimeout
 %else
-		push	ax
-		push	bx
-		mov		bx,SERIALSERVER_TIMER_LOCATION
-		call	TimerTicks_GetTimeoutTicksLeftToAXfromDSBX
-		pop		bx
-		pop		ax
+	push	ax
+	push	bx
+	mov		bx, SERIALSERVER_TIMER_LOCATION
+	call	TimerTicks_GetTimeoutTicksLeftToAXfromDSBX
+	pop		bx
+	pop		ax
 %endif
-		jc		SerialServer_OutputWithParameters_ErrorAndPop4Words
-		in		al,dx
-		test	al,ah
-		jz		.WaitAndPoll
-		cli
+	jc		SerialServer_OutputWithParameters_ErrorAndPop4Words
+	in		al, dx
+	test	al, ah
+	jz		SHORT .WaitAndPoll
+	cli
 
 .readTimeoutComplete:
-		pop		dx
-		pop		cx
-		ret
-
+	pop		dx
+	pop		cx
+	ret
 

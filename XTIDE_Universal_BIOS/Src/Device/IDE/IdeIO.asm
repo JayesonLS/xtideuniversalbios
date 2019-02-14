@@ -58,7 +58,8 @@ IdeIO_InputToALfromIdeRegisterInDL:
 	mov		bx, dx	; ...and BX for A0<->A3 swap and for memory mapped I/O
 
 %ifdef MODULE_8BIT_IDE_ADVANCED
-	je		SHORT .ReverseA0andA3fromRegisterIndexInDX
+	cmp		al, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
+	jbe		SHORT .ReverseA0andA3fromRegisterIndexInDX
 
 	eSHL_IM	dx, 1	; ADP50L and XT-CF
 	cmp		al, DEVICE_8BIT_JRIDE_ISA
@@ -98,13 +99,13 @@ IdeIO_InputToALfromIdeRegisterInDL:
 ;--------------------------------------------------------------------
 IdeIO_OutputALtoIdeControlBlockRegisterInDL:
 	xor		dh, dh	; IDE Register index now in DX
-
 	mov		bl, [di+DPT_ATA.bDevice]
 	cmp		bl, DEVICE_8BIT_XTIDE_REV2
 	jb		SHORT .OutputALtoControlBlockRegisterInDX	; Standard IDE controllers and XTIDE rev 1
 
 %ifdef MODULE_8BIT_IDE_ADVANCED
-	je		SHORT .ReverseA0andA3fromRegisterIndexInDX
+	cmp		bl, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
+	jbe		SHORT .ReverseA0andA3fromRegisterIndexInDX
 
 	; At this point remaining controllers (JRIDE, XTCF and ADP50L) all have a control
 	; block offset of 8 or (8<<1) so we add 8 here and do the SHL 1 later if needed.
@@ -153,13 +154,13 @@ IdeIO_OutputALtoIdeControlBlockRegisterInDL:
 ALIGN JUMP_ALIGN
 IdeIO_OutputALtoIdeRegisterInDL:
 	xor		dh, dh	; IDE Register index now in DX
-
 	mov		bl, [di+DPT_ATA.bDevice]
 	cmp		bl, DEVICE_8BIT_XTIDE_REV2
 	jb		SHORT OutputALtoRegisterInDX	; Standard IDE controllers and XTIDE rev 1
 
 %ifdef MODULE_8BIT_IDE_ADVANCED
-	je		SHORT .ReverseA0andA3fromRegisterIndexInDX
+	cmp		bl, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
+	jbe		SHORT .ReverseA0andA3fromRegisterIndexInDX
 
 	cmp		bl, DEVICE_8BIT_JRIDE_ISA
 	jb		SHORT .ShlRegisterIndexInDXandOutputAL	; All XT-CF modes

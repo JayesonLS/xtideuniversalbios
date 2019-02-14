@@ -99,8 +99,8 @@ ReadFromSectorAccessWindow:
 	call	WaitUntilReadyToTransferNextBlock
 	jc		SHORT ReturnWithMemoryIOtransferErrorInAH
 
-	mov		cx, [bp+MEMPIOVARS.wSectorsInBlock]	; Clears CH
-	cmp		[bp+MEMPIOVARS.bSectorsLeft], cl
+	mov		dx, [bp+MEMPIOVARS.wSectorsInBlock]	; Clears DH
+	cmp		[bp+MEMPIOVARS.bSectorsLeft], dl
 	jbe		SHORT .ReadLastBlockFromDrive
 
 ALIGN JUMP_ALIGN
@@ -118,16 +118,16 @@ ALIGN JUMP_ALIGN
 	; since we have one full block left to transfer. After it has been
 	; transferred, there will be a wait for next block but DRQ is never
 	; set since all is transferred! Then we get timeout error.
-	mov		cx, [bp+MEMPIOVARS.wSectorsInBlock]
-	sub		[bp+MEMPIOVARS.bSectorsLeft], cl
-	add		[bp+MEMPIOVARS.bSectorsDone], cl
-	cmp		[bp+MEMPIOVARS.bSectorsLeft], cl
+	mov		dx, [bp+MEMPIOVARS.wSectorsInBlock]
+	sub		[bp+MEMPIOVARS.bSectorsLeft], dl
+	add		[bp+MEMPIOVARS.bSectorsDone], dl
+	cmp		[bp+MEMPIOVARS.bSectorsLeft], dl
 	ja		SHORT .ReadNextBlockFromDrive
 
 ALIGN JUMP_ALIGN
 .ReadLastBlockFromDrive:
-	mov		cl, [bp+MEMPIOVARS.bSectorsLeft]
-	push	cx
+	mov		dl, [bp+MEMPIOVARS.bSectorsLeft]
+	push	dx
 	call	ReadSingleBlockFromSectorAccessWindowInDSSItoESDI
 
 	; Check for errors in last block
@@ -180,8 +180,8 @@ WriteToSectorAccessWindow:
 	call	WaitUntilReadyToTransferNextBlock
 	jc		SHORT ReturnWithMemoryIOtransferErrorInAH
 
-	mov		cx, [bp+MEMPIOVARS.wSectorsInBlock]
-	cmp		[bp+MEMPIOVARS.bSectorsLeft], cl
+	mov		dx, [bp+MEMPIOVARS.wSectorsInBlock]
+	cmp		[bp+MEMPIOVARS.bSectorsLeft], dl
 	jbe		SHORT .WriteLastBlockToDrive
 
 ALIGN JUMP_ALIGN
@@ -191,23 +191,23 @@ ALIGN JUMP_ALIGN
 	jc		SHORT ReturnWithMemoryIOtransferErrorInAH
 
 	; Increment number of successfully written WORDs
-	mov		cx, [bp+MEMPIOVARS.wSectorsInBlock]
-	sub		[bp+MEMPIOVARS.bSectorsLeft], cl
-	add		[bp+MEMPIOVARS.bSectorsDone], cl
-	cmp		[bp+MEMPIOVARS.bSectorsLeft], cl
+	mov		dx, [bp+MEMPIOVARS.wSectorsInBlock]
+	sub		[bp+MEMPIOVARS.bSectorsLeft], dl
+	add		[bp+MEMPIOVARS.bSectorsDone], dl
+	cmp		[bp+MEMPIOVARS.bSectorsLeft], dl
 	ja		SHORT .WriteNextBlockToDrive
 
 ALIGN JUMP_ALIGN
 .WriteLastBlockToDrive:
-	mov		cl, [bp+MEMPIOVARS.bSectorsLeft]
-	push	cx
+	mov		dl, [bp+MEMPIOVARS.bSectorsLeft]
+	push	dx
 	ePUSH_T	bx, CheckErrorsAfterTransferringLastMemoryMappedBlock
 	; Fall to WriteSingleBlockFromDSSIToSectorAccessWindowInESDI
 
 ;--------------------------------------------------------------------
 ; WriteSingleBlockFromDSSIToSectorAccessWindowInESDI
 ;	Parameters:
-;		CX:		Number of sectors in block
+;		DX:		Number of sectors in block
 ;		DS:SI:	Normalized ptr to source buffer
 ;		ES:DI:	Ptr to Sector Access Window
 ;	Returns:
@@ -219,7 +219,6 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 WriteSingleBlockFromDSSIToSectorAccessWindowInESDI:
 	mov		bx, di
-	mov		dx, cx
 	xor		cx, cx
 ALIGN JUMP_ALIGN
 .WriteNextSector:
@@ -234,9 +233,9 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ; ReadSingleBlockFromSectorAccessWindowInDSSItoESDI
 ;	Parameters:
-;		CX		Number of sectors in full block or sectors in last partial block
-;		ES:DI:	Normalized ptr to buffer to receive data (destination)
-;		DS:SI:	Ptr to Sector Access Window (source)
+;		DX:		Number of sectors in block
+;		ES:DI:	Normalized ptr to destination buffer
+;		DS:SI:	Ptr to Sector Access Window
 ;	Returns:
 ;		CX, DX:	Zero
 ;		DI:		Updated
@@ -246,7 +245,6 @@ ALIGN JUMP_ALIGN
 ALIGN JUMP_ALIGN
 ReadSingleBlockFromSectorAccessWindowInDSSItoESDI:
 	mov		bx, si
-	mov		dx, cx
 	xor		cx, cx
 ALIGN JUMP_ALIGN
 .ReadNextSector:

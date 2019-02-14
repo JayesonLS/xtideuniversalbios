@@ -39,7 +39,7 @@ BOOT_READ_RETRY_TIMES		EQU		3
 %ifdef MODULE_HOTKEYS
 
 struc HOTKEYVARS
-	.fpPrevTimerHandler	resb	4		; Previous 1Ch timer hander
+	.fpPrevTimerHandler	resb	4		; Previous 1Ch timer handler
 	.wTimeWhenDisplayed	resb	2		; System time (ticks) when Hotkey bar was first displayed
 	.wFddAndHddLetters:
 	.bFddLetter			resb	1		; Floppy Drive letter hotkey (upper case)
@@ -78,7 +78,7 @@ endstruc
 
 
 ; MAX_HARD_DISK_NAME_LENGTH must be defined ahead of the DRVDETECTINFO structure to avoid problems with NASM
-MAX_HARD_DISK_NAME_LENGTH	EQU		30		; Bytes reserved for drive name
+MAX_HARD_DISK_NAME_LENGTH	EQU		30	; Bytes reserved for drive name
 
 struc DRVDETECTINFO
 	.StartOfDrvDetectInfo:

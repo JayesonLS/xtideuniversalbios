@@ -35,7 +35,7 @@ SECTION .text
 ;		BX, CX
 ;--------------------------------------------------------------------
 AdvAtaInit_DetectControllerForIdeBaseInBX:
-	; Detect if system has PCI bus. If it does, we can skip VLB detection. This is
+	; Detect if system has PCI bus. If it does, we can skip VLB detection. This is a
 	; good thing since detecting Vision QD6580 is dangerous since Intel PIIX4 south bridge
 	; mirrors Interrupt Controller registers from Axh to Bxh. This can lead to faulty
 	; detection of QD6580 that will eventually crash the system when ports are written.
@@ -44,9 +44,11 @@ AdvAtaInit_DetectControllerForIdeBaseInBX:
 	; them already and we don't use the 32-bit registers ourselves anywhere at the moment.
 	push	bx
 	push	di
-	xor		edi, edi		; Some BIOSes require this to be set to zero
-	mov		ax, PCI_INSTALLATION_CHECK
-	int		BIOS_TIME_PCI_PNP_1Ah
+;	xor		edi, edi		; Some BIOSes require this to be set to zero
+	; *FIXME* The above instruction is commented away since RBIL says that this
+	; only applies to software looking for the protected-mode entry point.
+	mov		ax, PCI_INSTALLATION_CHECK	; May corrupt EAX, EBX, ECX, EDX, EDI
+	int		BIOS_TIME_PCI_PNP_INTERRUPT_1Ah
 	pop		di
 	pop		bx
 	test	ah, ah
