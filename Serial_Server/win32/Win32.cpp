@@ -36,7 +36,7 @@
 
 char *bannerStrings[] = {
 	"SerDrive - XTIDE Universal BIOS Serial Drive Server",
-	"Copyright (C) 2012-2018 by XTIDE Universal BIOS Team",
+	"Copyright (C) 2012-2019 by XTIDE Universal BIOS Team",
 	"Released under GNU GPL v2, with ABSOLUTELY NO WARRANTY",
 	ROM_VERSION_STRING,
 	"",
@@ -90,6 +90,7 @@ char *usageStrings[] = {
 	"",
 	"Floppy images may also be used.  Image size must be exactly the same size",
 	"as a 2.88MB, 1.44MB, 1.2MB, 720KB, 360KB, 320KB, 180KB, or 160KB disk.",
+	"Microsoft DMF (Distribution Media Format) images are also supported.",
 	"Floppy images must be the last disks discovered by the BIOS, and only",
 	"two floppy drives are supported by the BIOS at a time.",
 	NULL };

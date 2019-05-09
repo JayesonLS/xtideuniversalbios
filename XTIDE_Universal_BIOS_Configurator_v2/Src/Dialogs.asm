@@ -20,6 +20,31 @@
 ; Section containing code
 SECTION .text
 
+
+;--------------------------------------------------------------------
+; Dialogs_DisplayNotificationFromCSDX
+; Dialogs_DisplayErrorFromCSDX
+;	Parameters:
+;		CS:DX:	Ptr to notification/error string to display
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+Dialogs_DisplayNotificationFromCSDX:
+	push	di
+	mov		di, g_szNotificationDialog
+	jmp		SHORT DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
+
+ALIGN JUMP_ALIGN
+Dialogs_DisplayErrorFromCSDX:
+	push	di
+	mov		di, g_szErrorDialog
+	SKIP1B	al
+	; Fall to DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
+
 ;--------------------------------------------------------------------
 ; Dialogs_DisplayHelpFromCSDXwithTitleInCSDI
 ;	Parameters:
@@ -31,62 +56,27 @@ SECTION .text
 ;	Corrupts registers:
 ;		AX
 ;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
 Dialogs_DisplayHelpFromCSDXwithTitleInCSDI:
-	push	ds
-	push	si
 	push	di
-	push	cx
 
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
-	mov		[si+DIALOG_INPUT.fszTitle], di
-	jmp		SHORT DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
-
-;--------------------------------------------------------------------
-; Dialogs_DisplayNotificationFromCSDX
-; Dialogs_DisplayErrorFromCSDX
-;	Parameters:
-;		CS:DX:	Ptr to notification string to display
-;		SS:BP:	Menu handle
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-Dialogs_DisplayNotificationFromCSDX:
-	push	ds
-	push	si
-	push	di
-	push	cx
-
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
-	mov		WORD [si+DIALOG_INPUT.fszTitle], g_szNotificationDialog
-	jmp		SHORT DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI
-
-ALIGN JUMP_ALIGN
-Dialogs_DisplayErrorFromCSDX:
-	push	ds
-	push	si
-	push	di
-	push	cx
-
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
-	mov		WORD [si+DIALOG_INPUT.fszTitle], g_szErrorDialog
-ALIGN JUMP_ALIGN
 DisplayMessageDialogWithMessageInCSDXandDialogInputInDSSI:
+	push	ds
+	push	si
+	push	cx
+
+	mov		cl, DIALOG_INPUT_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	InitializeDialogInputFromDSSI
+	mov		[si+DIALOG_INPUT.fszTitle], di
 	mov		[si+DIALOG_INPUT.fszItems], dx
 	CALL_MENU_LIBRARY DisplayMessageWithInputInDSSI
 
 	add		sp, BYTE DIALOG_INPUT_size
 	pop		cx
-	pop		di
 	pop		si
 	pop		ds
+
+	pop		di
 	ret
 
 
@@ -134,8 +124,8 @@ ALIGN JUMP_ALIGN
 Dialogs_DisplayYesNoResponseDialogWithTitleStringInBX:
 	push	ds
 
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, DIALOG_INPUT_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	InitializeDialogInputFromDSSI
 	mov		[si+DIALOG_INPUT.fszTitle], bx
 	mov		WORD [si+DIALOG_INPUT.fszItems], g_szMultichoiceBooleanFlag

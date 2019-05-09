@@ -43,8 +43,8 @@ Keyboard_ReadUserInputtedWordWhilePrinting:
 	push	si
 	push	cx
 
-	mov		cx, BUFFER_SIZE_FOR_WORD_INPUT
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, BUFFER_SIZE_FOR_WORD_INPUT
+	call	Memory_ReserveCLbytesFromStackToDSSI
 
 	call	Char_GetFilterFunctionToDXforNumericBaseInBX
 	call	Registers_ExchangeDSSIwithESDI

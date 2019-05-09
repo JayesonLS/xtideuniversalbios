@@ -292,7 +292,7 @@ g_szValueCfgDevice16b:						db	"16-bit",NULL
 g_szValueCfgDevice32b:						db	"32-bit",NULL
 g_szValueCfgDevice8b:						db	"8-bit",NULL
 g_szValueCfgDeviceRev1:						db	"XTIDE r1",NULL
-g_szValueCfgDeviceRev2:						db	"XTIDE r2",NULL
+g_szValueCfgDeviceRev2:
 g_szValueCfgDeviceRev2Olivetti:				db	"XTIDE r2",NULL
 g_szValueCfgDeviceXTCFPio8:					db	"XTCF PIO",NULL
 g_szValueCfgDeviceXTCFPio8WithBIUOffload:	db	"BIU 8",NULL

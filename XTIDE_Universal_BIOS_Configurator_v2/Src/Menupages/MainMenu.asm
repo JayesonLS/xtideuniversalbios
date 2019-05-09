@@ -248,8 +248,8 @@ ExitToDosSelectedFromMenu:
 ALIGN JUMP_ALIGN
 LoadBiosFromFile:
 	call	Buffers_SaveChangesIfFileLoaded
-	mov		cx, FILE_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, FILE_DIALOG_IO_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	Dialogs_DisplayFileDialogWithDialogIoInDSSI
 	cmp		BYTE [si+FILE_DIALOG_IO.bUserCancellation], TRUE
 	je		SHORT .CancelFileLoading

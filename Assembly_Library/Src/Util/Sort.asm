@@ -31,7 +31,7 @@ endstruc
 ;		DS:SI:	Ptr to first item to compare
 ;		ES:DI:	Ptr to second item to compare
 ;	Returns:
-;		FLAGS:	Signed comparition between first and second item
+;		FLAGS:	Signed comparison between first and second item
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
@@ -55,17 +55,15 @@ SECTION .text
 ALIGN JUMP_ALIGN
 Sort_ItemsFromDSSIwithCountInDXsizeInCXandComparatorInBX:
 	push	es
-	push	di
-	mov		di, cx
-	eSHL_IM	cx, 1						; Reserve temp and pivot items
-	add		cx, BYTE QSORT_PARAMS_size
-	eENTER_STRUCT cx
-	push	cx
+	mov		ax, cx
+	eSHL_IM	ax, 1						; Reserve temp and pivot items
+	add		ax, BYTE QSORT_PARAMS_size
+	eENTER_STRUCT ax
+	push	ax
 
 %ifdef CLD_NEEDED
 	cld
 %endif
-	mov		cx, di						; Restore item size to CX
 	xor		ax, ax						; Zero starting index
 	dec		dx							; Count to index of last item
 	mov		[bp+QSORT_PARAMS.lpItems], si
@@ -75,7 +73,6 @@ Sort_ItemsFromDSSIwithCountInDXsizeInCXandComparatorInBX:
 	lds		si, [bp+QSORT_PARAMS.lpItems]
 	pop		ax
 	eLEAVE_STRUCT ax
-	pop		di
 	pop		es
 	ret
 

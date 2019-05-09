@@ -49,8 +49,8 @@ ALIGN JUMP_ALIGN
 Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI:
 	call	Registers_CopyDSSItoESDI
 
-	mov		cx, DIALOG_INPUT_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, DIALOG_INPUT_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	InitializeDialogInputInDSSIfromMenuitemInESDI
 	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.szMultichoice]
 	mov		[si+DIALOG_INPUT.fszItems], ax
@@ -86,8 +86,8 @@ Menuitem_ActivateUnsignedInputForMenuitemInDSSI:
 	mov		bl, 10
 
 	call	Registers_CopyDSSItoESDI
-	mov		cx, WORD_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, WORD_DIALOG_IO_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	InitializeDialogInputInDSSIfromMenuitemInESDI
 	mov		[si+WORD_DIALOG_IO.bNumericBase], bl
 	mov		ax, [es:di+MENUITEM.itemValue+ITEM_VALUE.wMinValue]

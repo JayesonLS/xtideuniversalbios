@@ -611,8 +611,8 @@ HandleFunctionKeyForCreatingNewFileOrDirectory:
 	test	al, FLG_FILEDIALOG_NEW
 	jz		SHORT ReturnWithoutHandlingKeystroke
 
-	mov		cx, STRING_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, STRING_DIALOG_IO_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 
 ;;;	InitializeStringDialogIoInDSSIforInputtingFileName
 	call	InitializeNullStringsToDialogInputInDSSI
@@ -681,8 +681,8 @@ HandleFunctionKeyForDriveChange:
 	jz		SHORT ReturnWithoutHandlingKeystroke
 
 	call	DisplayLoadingMessageInInformationArea
-	mov		cx, DRIVE_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, DRIVE_DIALOG_IO_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	.DisplayDriveSelectionDialogWithIoInDSSI
 	call	.ChangeDriveToUserSelectionFromIoInDSSI
 	add		sp, BYTE DRIVE_DIALOG_IO_size
@@ -740,7 +740,7 @@ ALIGN JUMP_ALIGN
 	push	ds
 	push	ss
 	pop		ds
-	ePUSH_T	ax, CURRENTDIR_CHARACTERS
+	ePUSH_T	ax, CURRENTDIR_CHARACTERS			; The high byte is zero
 	mov		cx, FLG_FILEATTR_DIRECTORY
 	mov		dx, sp
 	mov		ax, FIND_FIRST_MATCHING_FILE<<8

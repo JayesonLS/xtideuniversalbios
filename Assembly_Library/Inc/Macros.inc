@@ -4,6 +4,45 @@
 %ifndef MACROS_INC
 %define MACROS_INC
 
+
+;--------------------------------------------------------------------
+; Skips the immediately following 1 byte instruction by using it
+; as an immediate value to a dummy instruction.
+; Destroys the contents of %1.
+;
+; SKIP1B
+;	Parameters:
+;		%1:		Any 8 bit general purpose register or F for flags.
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		%1
+;--------------------------------------------------------------------
+%macro SKIP1B 1.nolist
+	%ifidni		%1, f
+		db	03Ch					; Opcode byte for CMP AL, <immed>
+		;db	0A8h					; Alt. version TEST AL, <immed>
+	%elifidni	%1, al
+		db	0B0h					; Opcode byte for MOV AL, <immed>
+	%elifidni	%1, ah
+		db	0B4h					; Opcode byte for MOV AH, <immed>
+	%elifidni	%1, bl
+		db	0B3h					; Opcode byte for MOV BL, <immed>
+	%elifidni	%1, bh
+		db	0B7h					; Opcode byte for MOV BH, <immed>
+	%elifidni	%1, cl
+		db	0B1h					; Opcode byte for MOV CL, <immed>
+	%elifidni	%1, ch
+		db	0B5h					; Opcode byte for MOV CH, <immed>
+	%elifidni	%1, dl
+		db	0B2h					; Opcode byte for MOV DL, <immed>
+	%elifidni	%1, dh
+		db	0B6h					; Opcode byte for MOV DH, <immed>
+	%else
+		%error "Invalid parameter passed to SKIP1B"
+	%endif
+%endmacro
+
 ;--------------------------------------------------------------------
 ; Skips the immediately following 2 byte instruction by using it
 ; as an immediate value to a dummy instruction.

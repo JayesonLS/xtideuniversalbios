@@ -121,9 +121,10 @@ Memory_StoreCXbytesFromAccumToESDI:
 
 
 ;--------------------------------------------------------------------
+; Memory_ReserveCLbytesFromStackToDSSI
 ; Memory_ReserveCXbytesFromStackToDSSI
 ;	Parameters
-;		CX:		Number of bytes to reserve
+;		CL/CX:	Number of bytes to reserve
 ;	Returns:
 ;		DS:SI:	Ptr to reserved buffer
 ;	Corrupts registers:
@@ -131,6 +132,8 @@ Memory_StoreCXbytesFromAccumToESDI:
 ;--------------------------------------------------------------------
 %ifndef EXCLUDE_FROM_XUB
 ALIGN JUMP_ALIGN
+Memory_ReserveCLbytesFromStackToDSSI:
+	xor		ch, ch
 Memory_ReserveCXbytesFromStackToDSSI:
 	pop		ax
 	push	ss

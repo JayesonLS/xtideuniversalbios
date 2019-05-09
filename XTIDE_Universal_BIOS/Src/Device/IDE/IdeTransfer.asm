@@ -252,6 +252,16 @@ InitializePiovarsInSSBPwithSectorCountInAH:
 	mov		es, ax
 
 %elifdef USE_186
+%ifdef USE_NEC_V
+	mov		dx, es
+	xor		ax, ax
+	eROL4	dl
+	eROL4	dh
+	add		si, dx
+	adc		al, ah
+	mov		es, ax
+
+%else
 	mov		ax, es
 	rol		ax, 4
 	mov		dx, ax
@@ -261,6 +271,7 @@ InitializePiovarsInSSBPwithSectorCountInAH:
 	adc		al, ah
 	mov		es, ax
 
+%endif
 %else ; 808x
 	mov		al, 4
 	mov		dx, es

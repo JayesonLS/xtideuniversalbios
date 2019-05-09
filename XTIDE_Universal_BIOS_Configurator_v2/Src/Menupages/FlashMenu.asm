@@ -220,8 +220,8 @@ StartFlashing:
 	push	ds
 
 	call	.PrepareBuffersForFlashing
-	mov		cx, FLASHVARS_size + PROGRESS_DIALOG_IO_size
-	call	Memory_ReserveCXbytesFromStackToDSSI
+	mov		cl, FLASHVARS_size + PROGRESS_DIALOG_IO_size
+	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	.InitializeFlashvarsFromDSSI
 	mov		bx, si							; DS:BX now points to FLASHVARS
 	add		si, BYTE FLASHVARS_size			; DS:SI now points to PROGRESS_DIALOG_IO
