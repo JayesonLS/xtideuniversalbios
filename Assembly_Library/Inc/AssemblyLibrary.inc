@@ -20,7 +20,7 @@
 
 
 ; Library dependencies
-%ifdef INCLUDE_MENU_LIBRARY or INCLUDE_MENU_DIALOGS	; To prevent warnings with Nasm 2.13.xx
+%ifdef INCLUDE_MENU_LIBRARY OR INCLUDE_MENU_DIALOGS	; To prevent warnings with Nasm 2.13.xx
 	%include "Menu.inc"
 	%include "MenuEvents.inc"
 	%define INCLUDE_KEYBOARD_LIBRARY

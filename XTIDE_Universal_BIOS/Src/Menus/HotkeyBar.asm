@@ -22,13 +22,12 @@ SECTION .text
 
 
 ;--------------------------------------------------------------------
-; Handler for INT 1Ch System Timer Tick.
+; Handler for INT 1Ch User Timer Tick.
 ; Reads key presses and draws hotkey bar.
 ;
 ; HotkeyBar_TimerTickHandler
 ;	Parameters:
-;		DS:		RAMVARS segment
-;		ES:		BDA segment (zero)
+;		Nothing
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -37,14 +36,7 @@ SECTION .text
 ALIGN JUMP_ALIGN
 HotkeyBar_TimerTickHandler:
 	push	es
-	push	ds
-%ifdef USE_186
-	ePUSHA
-%else
-	push	di
-	push	si
-	push	dx
-	push	cx
+%ifndef USE_186		; LOAD_BDA_SEGMENT_TO will corrupt AX on 8088/8086
 	push	ax
 %endif
 
@@ -52,7 +44,6 @@ HotkeyBar_TimerTickHandler:
 	; timer tick call before we are ready
 
 	LOAD_BDA_SEGMENT_TO es, ax
-	call	RamVars_GetSegmentToDS
 
 	; Call previous handler
 	pushf
@@ -61,19 +52,32 @@ HotkeyBar_TimerTickHandler:
 	; Update Hotkeybar (process key input and draw) every fourth tick
 	test	BYTE [es:BDA.dwTimerTicks], 11b
 	jnz		SHORT .ReturnFromHandler
-	call	UpdateDuringDriveDetection
 
-.ReturnFromHandler:
+	push	ds
 %ifdef USE_186
-	ePOPA
+	pusha
 %else
-	pop		ax
+	push	di
+	push	si
+	push	dx
+	push	cx
+%endif
+	call	RamVars_GetSegmentToDS
+	call	HotkeyBar_UpdateDuringDriveDetection
+%ifdef USE_186
+	popa
+%else
 	pop		cx
 	pop		dx
 	pop		si
 	pop		di
 %endif
 	pop		ds
+
+.ReturnFromHandler:
+%ifndef USE_186
+	pop		ax
+%endif
 	pop		es
 	iret
 
@@ -90,7 +94,7 @@ HotkeyBar_TimerTickHandler:
 ;	Corrupts registers:
 ;		AX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
-UpdateDuringDriveDetection:
+HotkeyBar_UpdateDuringDriveDetection:
 	call	ScanHotkeysFromKeyBufferAndStoreToBootvars
 
 	; If ESC pressed, abort detection by forcing timeout
@@ -112,12 +116,14 @@ UpdateDuringDriveDetection:
 ;		AX, CX, DX, SI, DI
 ;--------------------------------------------------------------------
 HotkeyBar_DrawToTopOfScreen:
-	; Store current screen coordinates to be restored
-	; when Hotkey Bar is rendered
-	call	DetectPrint_GetSoftwareCoordinatesToAX
+	; Store current screen coordinates to stack
+	; (to be restored when Hotkey Bar is rendered)
+	CALL_DISPLAY_LIBRARY GetSoftwareCoordinatesToAX
 	push	ax
 
-	call	MoveCursorToScreenTopLeftCorner
+	; Move cursor to top left corner (0, 0)
+	xor		ax, ax
+	call	HotkeyBar_SetCursorCoordinatesFromAX
 	; Fall to .PrintFloppyDriveHotkeys
 
 ;--------------------------------------------------------------------
@@ -229,27 +235,30 @@ HotkeyBar_DrawToTopOfScreen:
 ;		AX, CX, DI
 ;--------------------------------------------------------------------
 .EndHotkeyBarRendering:
-	call	HotkeyBar_ClearRestOfTopRow
-	pop		ax
-	jmp		SHORT HotkeyBar_RestoreCursorCoordinatesFromAX
-
-
-;--------------------------------------------------------------------
-; HotkeyBar_ClearRestOfTopRow
-;	Parameters:
-;		Nothing
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX, CX, DI
-;--------------------------------------------------------------------
-HotkeyBar_ClearRestOfTopRow:
+	; Clear the rest of the top row
 	CALL_DISPLAY_LIBRARY GetColumnsToALandRowsToAH
 	eMOVZX	cx, al
 	CALL_DISPLAY_LIBRARY GetSoftwareCoordinatesToAX
 	sub		cl, al
 	mov		al, ' '
-	JMP_DISPLAY_LIBRARY PrintRepeatedCharacterFromALwithCountInCX
+	CALL_DISPLAY_LIBRARY PrintRepeatedCharacterFromALwithCountInCX
+
+	; Restore the saved coordinates from stack
+	pop		ax
+	; Fall to HotkeyBar_SetCursorCoordinatesFromAX
+
+
+;--------------------------------------------------------------------
+; HotkeyBar_SetCursorCoordinatesFromAX
+;	Parameters:
+;		Nothing
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, DI
+;--------------------------------------------------------------------
+HotkeyBar_SetCursorCoordinatesFromAX:
+	JMP_DISPLAY_LIBRARY SetCursorCoordinatesFromAX
 
 
 ;--------------------------------------------------------------------
@@ -372,33 +381,6 @@ PushHotkeyParamsAndFormat:
 
 
 ;--------------------------------------------------------------------
-; MoveCursorToScreenTopLeftCorner
-;	Parameters:
-;		Nothing
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX, DI
-;--------------------------------------------------------------------
-MoveCursorToScreenTopLeftCorner:
-	xor		ax, ax			; Top left corner (0, 0)
-	; Fall to HotkeyBar_RestoreCursorCoordinatesFromAX
-
-
-;--------------------------------------------------------------------
-; HotkeyBar_RestoreCursorCoordinatesFromAX
-;	Parameters:
-;		Nothing
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX, DI
-;--------------------------------------------------------------------
-HotkeyBar_RestoreCursorCoordinatesFromAX:
-	JMP_DISPLAY_LIBRARY SetCursorCoordinatesFromAX
-
-
-;--------------------------------------------------------------------
 ; HotkeyBar_StoreDefaultDriveLettersToHotkeyVars
 ;	Parameters:
 ;		ES:		BDA Segment
@@ -431,11 +413,11 @@ HotkeyBar_InitializeVariables:
 	pop		ds
 
 	; Store system 1Ch Timer Tick handler and install our hotkeybar handler
-	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4]
+	mov		ax, [BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler], ax
-	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch*4+2]
+	mov		ax, [BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4+2]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2], ax
-	mov		al, BIOS_SYSTEM_TIMER_TICK_INTERRUPT_1Ch
+	mov		al, BIOS_USER_TIMER_TICK_INTERRUPT_1Ch
 	mov		si, HotkeyBar_TimerTickHandler
 	call	Interrupts_InstallHandlerToVectorInALFromCSSI
 

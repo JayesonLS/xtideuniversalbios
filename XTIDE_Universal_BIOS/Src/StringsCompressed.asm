@@ -99,10 +99,14 @@ g_szRomAt:			; db	LF,CR
 	; db	 25h,  73h,  0ah,  0dh    ; uncompressed
 	  db	 3dh,  39h                ; compressed
 
+%ifdef MODULE_STRINGS_COMPRESSED
 	; db	"Released under GNU GPL v2",LF,CR
 	; db	 52h,  65h,  6ch,  65h,  61h,  73h,  65h,  64h,  20h,  75h,  6eh,  64h,  65h,  72h,  20h,  47h,  4eh,  55h,  20h,  47h,  50h,  4ch,  20h,  76h,  32h,  0ah,  0dh    ; uncompressed
 	  db	 58h,  6bh,  72h,  6bh,  67h,  79h,  6bh, 0eah,  7bh,  74h,  6ah,  6bh, 0f8h,  4dh,  54h, 0dbh,  4dh,  56h, 0d2h,  7ch,  2ch,  39h                                  ; compressed
 
+%else
+db	"Released under GNU GPL v2",LF
+%endif
 	; db	LF,CR,NULL
 	; db	 0ah,  0dh,  00h    ; uncompressed
 	  db	 19h                ; compressed
@@ -313,8 +317,11 @@ g_szDeviceTypeValues_Serial:			; db	"SER",NULL
 %endif ; MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 %endif ; MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 
-g_szDeviceTypeValues_Displacement equ 3		; 3 compressed, 4 uncompressed
-;g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTypeValues)
+%ifdef MODULE_STRINGS_COMPRESSED
+g_szDeviceTypeValues_Displacement equ 3
+%else
+g_szDeviceTypeValues_Displacement equ 4
+%endif
 ;
 ; Ensure that device type strings are correctly spaced in memory
 ;
@@ -600,40 +607,40 @@ StringsCompressed_TranslatesAndFormats:
 %endif
 
 ;; translated usage stats
-;; 54:2
-;; 172:2
-;; 171:2
-;; 47:2
-;; 53:2
-;; 175:1
-;; 56:9
-;; 45:2
-;; 50:2
-;; 200:1
-;; 33:1
-;; 51:3
-;; 179:8
-;; 46:3
-;; 48:2
-;; 34:3
-;; 49:2
 ;; 181:1
-;; 44:1
+;; 48:2
+;; 172:2
+;; 50:2
+;; 171:2
+;; 45:2
+;; 51:3
+;; 200:1
+;; 34:3
+;; 179:8
+;; 33:1
+;; 53:2
+;; 47:2
+;; 54:2
+;; 46:3
 ;; 32:34
+;; 56:9
+;; 175:1
+;; 49:2
+;; 44:1
 ;; total translated: 20
 
 ;; format usage stats
-;; 5-u:2
+;; 5-x:1
+;; s:14
 ;; z:2
+;; u:6
+;; 2-u:1
 ;; nl:12
+;; 2-I:1
+;; c:13
+;; 5-u:2
 ;; x:5
 ;; A:4
-;; 2-u:1
-;; s:14
-;; 2-I:1
-;; 5-x:1
-;; u:6
-;; c:13
 ;; total format: 11
 
 ;; alphabet usage stats

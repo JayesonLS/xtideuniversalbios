@@ -33,21 +33,6 @@ DetectPrint_InitializeDisplayContext:
 	JMP_DISPLAY_LIBRARY InitializeDisplayContext
 
 
-%ifdef MODULE_HOTKEYS
-;--------------------------------------------------------------------
-; DetectPrint_GetSoftwareCoordinatesToAX
-;	Parameters:
-;		Nothing
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		AX, DI
-;--------------------------------------------------------------------
-DetectPrint_GetSoftwareCoordinatesToAX:
-	JMP_DISPLAY_LIBRARY GetSoftwareCoordinatesToAX
-%endif
-
-
 ;--------------------------------------------------------------------
 ; DetectPrint_StartDetectWithMasterOrSlaveStringInCXandIdeVarsInCSBP
 ;	Parameters:

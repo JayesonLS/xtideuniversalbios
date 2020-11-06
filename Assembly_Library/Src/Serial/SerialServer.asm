@@ -24,7 +24,7 @@
 SECTION .text
 
 ;--------------------------------------------------------------------
-; SerialServer_SendReceive:
+; SerialServer_SendReceive
 ;	Parameters:
 ;		DX:		Packed I/O port and baud rate
 ;		ES:SI:	Ptr to buffer (for data transfer commands)

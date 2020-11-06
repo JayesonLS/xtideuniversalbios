@@ -126,7 +126,7 @@ DEFINES_386_LARGE = $(DEFINES_386) $(DEFINES_COMMON_LARGE)
 # Other variables #
 ###################
 
-# Target size of the BIOS, used in main.asm for number of 512B blocks (CNT_ROM_BLOCKS) and by checksum Perl script below ('make checksum').
+# Target size of the BIOS, used in Main.asm for number of 512B blocks (CNT_ROM_BLOCKS) and by checksum Perl script below ('make checksum').
 # Note! The size must be a multiple of 2 KB for compatibility reasons.
 BIOS_SIZE_TINY = 4096
 BIOS_SIZE_SMALL = 8192

@@ -225,7 +225,7 @@ ALIGN JUMP_ALIGN
 ;
 	mov		bx, [si+MENUITEM.itemValue+ITEM_VALUE.rgwChoiceToValueLookup]
 	test	bx, bx
-	jz		.StoreByteOrWordValueFromAXtoESDIwithItemInDSSI
+	jz		SHORT .StoreByteOrWordValueFromAXtoESDIwithItemInDSSI
 
 	eSHL_IM	ax, 1			; Shift for WORD lookup
 	add		bx, ax

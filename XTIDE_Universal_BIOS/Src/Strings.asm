@@ -53,7 +53,11 @@ g_szDashForZero:	db	"- ",NULL	; Required by Display Library
 g_szRomAt:			db	LF,CR
 					db	"%s @ %x",LF,CR						; -=XTIDE ... =- @ Segment
 					db	"%s",LF,CR							; version string
+%ifdef MODULE_STRINGS_COMPRESSED
 					db	"Released under GNU GPL v2",LF,CR
+%else
+					db	"Released under GNU GPL v2",LF
+%endif
 					db	LF,CR,NULL
 %ifdef MODULE_BOOT_MENU
 g_szBootMenuTitle:	db	"%s%c",LF,CR						; -=XTIDE ... =- and null (eaten)
@@ -156,8 +160,11 @@ g_szDeviceTypeValues_Serial:			db	"SER",NULL
 %endif ; MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 %endif ; MODULE_ADVANCED_ATA OR MODULE_8BIT_IDE OR MODULE_8BIT_IDE_ADVANCED OR MODULE_SERIAL
 
-g_szDeviceTypeValues_Displacement equ 3		; 3 compressed, 4 uncompressed
-;g_szDeviceTypeValues_Displacement equ (g_szDeviceTypeValues_32bit - g_szDeviceTypeValues)
+%ifdef MODULE_STRINGS_COMPRESSED
+	g_szDeviceTypeValues_Displacement equ 3
+%else
+	g_szDeviceTypeValues_Displacement equ 4
+%endif
 ;
 ; Ensure that device type strings are correctly spaced in memory
 ;
