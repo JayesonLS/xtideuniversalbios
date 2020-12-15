@@ -22,7 +22,7 @@ SECTION .text
 
 
 ;--------------------------------------------------------------------
-; Handler for INT 1Ch User Timer Tick.
+; Handler for INT 08h System Timer Tick.
 ; Reads key presses and draws hotkey bar.
 ;
 ; HotkeyBar_TimerTickHandler
@@ -39,10 +39,6 @@ HotkeyBar_TimerTickHandler:
 %ifndef USE_186		; LOAD_BDA_SEGMENT_TO will corrupt AX on 8088/8086
 	push	ax
 %endif
-
-	;!!! Keep interrupts disabled so there won't be another
-	; timer tick call before we are ready
-
 	LOAD_BDA_SEGMENT_TO es, ax
 
 	; Call previous handler
@@ -122,7 +118,7 @@ HotkeyBar_DrawToTopOfScreen:
 	push	ax
 
 	; Move cursor to top left corner (0, 0)
-	xor		ax, ax
+	mov		ax, es
 	call	HotkeyBar_SetCursorCoordinatesFromAX
 	; Fall to .PrintFloppyDriveHotkeys
 
@@ -264,12 +260,12 @@ HotkeyBar_SetCursorCoordinatesFromAX:
 ;--------------------------------------------------------------------
 ; FormatDriveHotkeyString
 ;	Parameters:
-;		CH:			Zero if letter in CL is selected for boot
-;		CL:			Drive letter hotkey from BOOTVARS
-;		AL:			First character for drive key string
-;		AH:			Second character for drive key string (ANGLE_QUOTE_RIGHT)
-;		SI:			Offset to hotkey description string
-;		ES:			BDA segment (zero)
+;		CH:		Zero if letter in CL is selected for boot
+;		CL:		Drive letter hotkey from BOOTVARS
+;		AL:		First character for drive key string
+;		AH:		Second character for drive key string (ANGLE_QUOTE_RIGHT)
+;		SI:		Offset to hotkey description string
+;		ES:		BDA segment (zero)
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -291,11 +287,11 @@ FormatDriveHotkeyString:
 ;--------------------------------------------------------------------
 ; FormatFunctionHotkeyString
 ;	Parameters:
-;		AL:			Scancode of function key, to know which if any to show as selected
-;					Later replaced with an 'F' for the call to the output routine
-;		AH:			Second character for drive key string
-;		SI:			Offset to hotkey description string
-;		ES:			BDA segment (zero)
+;		AL:		Scancode of function key, to know which if any to show as selected
+;				Later replaced with an 'F' for the call to the output routine
+;		AH:		Second character for drive key string
+;		SI:		Offset to hotkey description string
+;		ES:		BDA segment (zero)
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -349,11 +345,11 @@ SelectAttributeFromDHorDLbasedOnVideoMode:
 ;--------------------------------------------------------------------
 ; PushHotkeyParamsAndFormat
 ;	Parameters:
-;		AL:			First character
-;		AH:			Second character
-;		DX:			Description Attribute
-;		CX:			Description string parameter
-;		CS:DI:		Description string
+;		AL:		First character
+;		AH:		Second character
+;		DX:		Description Attribute
+;		CX:		Description string parameter
+;		CS:DI:	Description string
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
@@ -412,18 +408,18 @@ HotkeyBar_InitializeVariables:
 	push	es
 	pop		ds
 
-	; Store system 1Ch Timer Tick handler and install our hotkeybar handler
-	mov		ax, [BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4]
+	; Store System Timer Tick handler and install our hotkeybar handler
+	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler], ax
-	mov		ax, [BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4+2]
+	mov		ax, [BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4+2]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2], ax
-	mov		al, BIOS_USER_TIMER_TICK_INTERRUPT_1Ch
+	mov		al, BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h
 	mov		si, HotkeyBar_TimerTickHandler
 	call	Interrupts_InstallHandlerToVectorInALFromCSSI
 
 	; Store time when hotkeybar is displayed
 	; (it will be displayed after initialization is complete)
-	call	TimerTicks_ReadFromBdaToAX
+	mov		ax, [BDA.dwTimerTicks]
 	mov		[BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed], ax
 
 	pop		ds

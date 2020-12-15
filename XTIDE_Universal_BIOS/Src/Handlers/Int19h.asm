@@ -105,9 +105,9 @@ Int19h_BootLoaderHandler:
 	; Restore system timer tick handler since hotkeys are no longer needed
 	cli
 	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
-	mov		[es:BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4], ax
+	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4], ax
 	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2]
-	mov		[es:BIOS_USER_TIMER_TICK_INTERRUPT_1Ch*4+2], ax
+	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4+2], ax
 	sti
 %endif
 	; Fall to .ResetAllDrives
