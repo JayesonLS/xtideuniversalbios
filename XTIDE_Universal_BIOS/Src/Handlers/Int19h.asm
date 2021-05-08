@@ -96,19 +96,25 @@ Int19h_BootLoaderHandler:
 	; We want to display it during wait.
 	;call	HotkeyBar_UpdateDuringDriveDetection
 
+	push	ds
+	push	es
+	pop		ds
+
 .WaitUntilTimeToCloseHotkeyBar:
-	call	TimerTicks_ReadFromBdaToAX
-	sub		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed]
+	mov		ax, [BDA.dwTimerTicks]
+	sub		ax, [BOOTVARS.hotkeyVars+HOTKEYVARS.wTimeWhenDisplayed]
 	cmp		ax, MIN_TIME_TO_DISPLAY_HOTKEY_BAR
 	jb		SHORT .WaitUntilTimeToCloseHotkeyBar
 
 	; Restore system timer tick handler since hotkeys are no longer needed
 	cli
-	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
-	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4], ax
-	mov		ax, [es:BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2]
-	mov		[es:BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4+2], ax
+	mov		ax, [BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler]
+	mov		[BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4], ax
+	mov		ax, [BOOTVARS.hotkeyVars+HOTKEYVARS.fpPrevTimerHandler+2]
+	mov		[BIOS_SYSTEM_TIMER_TICK_INTERRUPT_08h*4+2], ax
 	sti
+
+	pop		ds
 %endif
 	; Fall to .ResetAllDrives
 

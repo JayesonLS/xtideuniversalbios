@@ -83,7 +83,7 @@ endstruc
 %endif
 
 STANDARD_CONTROL_BLOCK_OFFSET			EQU		200h
-XTIDE_CONTROL_BLOCK_OFFSET				EQU		8h		; for XTIDE, A3 is used to control selected register (CS0 vs CS1)...
+XTIDE_CONTROL_BLOCK_OFFSET				EQU		8h		; For XTIDE, A3 is used to control selected register (CS0 vs CS1)...
 XTCF_CONTROL_BLOCK_OFFSET				EQU		10h		; ...and for XT-CF (all variants), it's A4
 ADP50L_CONTROL_BLOCK_OFFSET				EQU		10h
 
@@ -182,12 +182,10 @@ NUMBER_OF_IDEVARS					EQU	((ROMVARS.ideVarsEnd - ROMVARS.ideVarsBegin) / IDEVARS
 
 ; Bit defines for ROMVARS.wFlags
 FLG_ROMVARS_FULLMODE					EQU	(1<<0)	; Full operating mode (steals base RAM, supports EBIOS etc.)
-FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES	EQU	(1<<1)	; Ignores drives configured in motherboard BIOS setup.
-													; For now it is a hack to get Windows 95 IDE drivers working
-													; but it will be needed later when XTUB supports dynamic drive overlay.
-													; Because of that this must be included into AT builds and cannot be a
-													; module (any AT or 386 must be installable to the hard drive so
-													; there won't be need for even more different builds).
+FLG_ROMVARS_CLEAR_BDA_HD_COUNT			EQU	(1<<1)	; This flag has two purposes; * Removes the system BIOS "dummy" drive
+													; so that Windows 9x protected mode drivers can be used with XUB drives.
+													; * Some computers (Zenith Z-171 and Z-161) do not clear the BDA hard
+													; drive count which causes it to increment on each warm boot.
 FLG_ROMVARS_SERIAL_SCANDETECT 			EQU	(1<<3)	; Scan COM ports at the end of drive detection.  Can also be invoked
 													; by holding down the ALT key at the end of drive detection.
 													; (Conveniently, this is 8, a fact we exploit when testing the bit)

@@ -141,13 +141,13 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemClearBdaDriveCount
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoClearBdaDriveCount
 	at	MENUITEM.szHelp,			dw	g_szHelpClearBdaDriveCount
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_FLAGVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_FLAGVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	ROMVARS.wFlags
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgClearBdaDriveCount
 	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceBooleanFlag
 	at	MENUITEM.itemValue + ITEM_VALUE.rgszValueToStringLookup,	dw	g_rgszValueToStringLookupForFlagBooleans
-	at	MENUITEM.itemValue + ITEM_VALUE.wValueBitmask,				dw	FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES
+	at	MENUITEM.itemValue + ITEM_VALUE.wValueBitmask,				dw	FLG_ROMVARS_CLEAR_BDA_HD_COUNT
 iend
 
 
@@ -257,7 +257,6 @@ BootMenuSettingsMenu_EnterMenuOrModifyItemVisibility:
 	call	.EnableOrDisableDefaultBootDrive
 	call	.EnableOrDisableColorThemeSelection
 	call	.EnableOrDisableBootMenuSelectionTimeout
-	call	.EnableOrDisableClearBdaDriveCount
 	mov		si, g_MenupageForBootMenuSettingsMenu
 	jmp		Menupage_ChangeToNewMenupageInDSSI
 
@@ -327,23 +326,6 @@ ALIGN JUMP_ALIGN
 .EnableOrDisableBootMenuSelectionTimeout:
 	mov		bx, g_MenuitemBootMnuStngsSelectionTimeout
 	test	ax, FLG_ROMVARS_MODULE_BOOT_MENU
-	jmp		SHORT .DisableMenuitemFromCSBXifZFset
-
-
-;--------------------------------------------------------------------
-; .EnableOrDisableClearBdaDriveCount
-;	Parameters:
-;		AX:		ROMVARS.wFlags
-;		SS:BP:	Menu handle
-;	Returns:
-;		Nothing
-;	Corrupts registers:
-;		BX
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-.EnableOrDisableClearBdaDriveCount:
-	mov		bx, g_MenuitemBootMnuStngsClearBdaDriveCount
-	call	Buffers_IsXTbuildLoaded
 .DisableMenuitemFromCSBXifZFset:
 	jz		SHORT .DisableMenuitemFromCSBX
 	; Fall to .EnableMenuitemFromCSBX
@@ -447,9 +429,9 @@ WriteColorTheme:
 
 	mov		cx, ATTRIBUTE_CHARS_size
 	mul		cl							; Multiply with the menu choice index
-	mov		si, ColorThemeTable
-	add		si, ax
-	mov		ax, [es:di]					; Fetch the ptr to ColorTheme
+	mov		si, [es:di]					; Fetch the ptr to ColorTheme
+	add		ax, ColorThemeTable
+	xchg	si, ax
 	mov		di, ax
 
 	call	Memory_CopyCXbytesFromDSSItoESDI

@@ -117,6 +117,10 @@ g_szItemCfgIdleTimeout:	db	"Power Management",NULL
 g_szDlgAutoConfigure:	db	"Found "
 g_bControllersDetected:	db	'x'				; Value stored directly here
 						db	" controllers.",NULL
+g_szDlgBadBiosFound:	db	"This computer has been identified as being one of the following models:",LF,LF
+						db	"Zenith Z-171",LF
+						db	"Zenith Z-161",LF,LF
+						db	"The Boot settings menu option 'Remove other hard drives' has been set to YES for this reason.",NULL
 g_szDlgCfgFullMode:		db	"Enable full operating mode?",NULL
 g_szDlgCfgStealSize:	db	"How many kiB of base memory to steal for XTIDE Universal BIOS variables (1...255)?",NULL
 g_szDlgCfgIdeCnt:		db	"How many IDE controllers to manage (1...4)?",NULL
@@ -464,8 +468,10 @@ g_szHelpSerialDetect:		db	"Set to Yes, at the end of normal drive detection, COM
 							db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
 							db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
 							db	" no scan will take place (to avoid finding the same drive twice).",NULL
-g_szHelpClearBdaDriveCount:	db	"Set to NO for normal operation. Set to YES to get Windows 95 drivers to work when"
-							db	" MODULE_WIN95_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup).",NULL
+g_szHelpClearBdaDriveCount:	db	"Set to NO for normal operation. Set to YES to get Windows 9x protected mode drivers to work when"
+							db	" MODULE_WIN9X_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup). This option must"
+							db	" also be set to YES on computers where the system BIOS does not initialize RAM properly. Zenith models Z-171 and"
+							db	" Z-161 are known examples of such machines.",NULL
 
 g_szMultichoiceBootDispMode:	db	"Default",LF
 								db	"40x25 Black & White",LF

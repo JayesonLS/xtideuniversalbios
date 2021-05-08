@@ -59,8 +59,8 @@ BITS 16							; Set 16 bit code generation
 		WORD_ALIGN		EQU		2
 	%endif
 %else ; XT
-	JUMP_ALIGN		EQU		1
-	WORD_ALIGN		EQU		1
+	JUMP_ALIGN		EQU		1	; 2 is optimal for 8086 and NEC V30 CPUs but it's not worth the ROM space for most XT machines with 8088 or NEC V20 CPUs.
+	WORD_ALIGN		EQU		2	; The same applies here but the cost of ROM space is negligible.
 %endif
 
 ;==========================================================================

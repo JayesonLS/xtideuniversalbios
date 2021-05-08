@@ -69,19 +69,19 @@ DetectDrives_FromAllIDEControllers:
 ; if serial drive detected, do not scan (avoids duplicate drives and isn't needed - we already have a connection)
 ;
 	call	FindDPT_ToDSDIforSerialDevice	; Does not modify AX
-	jnc		.AddHardDisks
+	jnc		SHORT .AddHardDisks
 
 	mov		bp, ROMVARS.ideVarsSerialAuto	; Point to our special IDEVARS structure, just for serial scans
 
 %ifdef MODULE_HOTKEYS
 	cmp		al, COM_DETECT_HOTKEY_SCANCODE	; Set by last call to ScanHotkeysFromKeyBufferAndStoreToBootvars above
-	je		.DriveDetectLoop
+	je		SHORT .DriveDetectLoop
 %endif
 
 	mov		al, [cs:ROMVARS.wFlags]			; Configurator set to always scan?
 	or		al, [es:BDA.bKBFlgs1]			; Or, did the user hold down the ALT key?
 	and		al, 8							; 8 = alt key depressed, same as FLG_ROMVARS_SERIAL_SCANDETECT
-	jnz		.DriveDetectLoop
+	jnz		SHORT .DriveDetectLoop
 %endif ; MODULE_SERIAL
 
 .AddHardDisks:
@@ -95,36 +95,32 @@ DetectDrives_FromAllIDEControllers:
 ; FindDPT_ForDriveNumber will not find any drives that are ours.
 ;
 
-; Here we might want to replace BIOS configured drives with the ones we detected.
-; Primary reason is to support dynamic overlay feature in the future. Second reason
-; is a hack to get Windows 95 to load its built-in protected mode IDE driver.
+; This is a hack to get Windows 9x to load its built-in protected mode IDE driver.
 ;
 ; The Windows hack has two parts. First part is to try to alter CMOS address 12h as that
-; is what Windows 95 driver reads to detect IDE drives. Altering is not possible on all
+; is what Windows 9x driver reads to detect IDE drives. Altering is not possible on all
 ; systems since CMOS has a checksum but its location is not standardized. We will first
 ; try to detect valid checksum. If it succeeds, then it is safe to assume this system
 ; has compatible CMOS and we can alter it.
-; If verify fails, we do the more dirty hack to zero BDA drive count. Then Windows 95 works
+; If verify fails, we do the more dirty hack to zero BDA drive count. Then Windows 9x works
 ; as long as user has configured at least one drive in the BIOS setup.
-
-%ifdef USE_AT	; FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES is for AT builds only
-%ifdef MODULE_WIN95_CMOS_HACK
+%ifdef MODULE_WIN9X_CMOS_HACK
 	mov		dl, HARD_DISK_TYPES
 	call	CMOS_ReadFromIndexInDLtoAL
 	test	al, 0F0h
-	jnz		SHORT .ClearBdaDriveCount		; CMOS byte 12h is ready for Windows 95
+	jnz		SHORT .ClearBdaDriveCount		; CMOS byte 12h is ready for Windows 9x
 	call	CMOS_Verify10hTo2Dh				; Can we modify CMOS?
 	jnz		SHORT .ClearBdaDriveCount		; Unsupported BIOS, use plan B
 
 	; Now we can alter CMOS location 12h. Award BIOS locks if we set drive 0 type to Fh
-	; (but accept changes to drive type 1). Windows 95 requires that the drive 0 type is
+	; (but accept changes to drive type 1). Windows 9x requires that the drive 0 type is
 	; non zero and ignores drive 1 type. So if we only set drive 1, then Award BIOS
-	; won't give problems but Windows 95 stays in MS-DOS compatibility mode.
+	; won't give problems but Windows 9x stays in MS-DOS compatibility mode.
 	;
 	; For Award BIOSes we could set the Drive 0 type to 1 and then clear the BDA drive count.
-	; So essentially we could automatically do what user needs to do manually to get Windows 95
+	; So essentially we could automatically do what user needs to do manually to get Windows 9x
 	; working on Award BIOSes. However, I think that should be left to do manually since
-	; there may be SCSI drives on the system or FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES could
+	; there may be SCSI drives on the system or FLG_ROMVARS_CLEAR_BDA_HD_COUNT could
 	; be intentionally cleared and forcing the dummy drive might cause only trouble.
 
 	; Try to detect Award BIOS (Seems to work on a tested 128k BIOS so hopefully
@@ -146,17 +142,26 @@ DetectDrives_FromAllIDEControllers:
 	call	CMOS_WriteALtoIndexInDL
 	call	CMOS_StoreNewChecksumFor10hto2Dh
 .ClearBdaDriveCount:
-%endif ; MODULE_WIN95_CMOS_HACK
-
-	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_IGNORE_MOTHERBOARD_DRIVES
-	jz		SHORT .ContinueInitialization
-	mov		BYTE [es:BDA.bHDCount], 0		; Set hard disk count to zero
-.ContinueInitialization:
-%endif ; USE_AT
+%endif ; MODULE_WIN9X_CMOS_HACK
 
 	mov		cx, [RAMVARS.wDrvCntAndFlopCnt]	; Our count of hard disks
 	mov		al, [es:BDA.bHDCount]
-	add		[es:BDA.bHDCount], cl			; Add our drives to the system count
+%ifndef MODULE_MFM_COMPATIBILITY
+	; This is excluded when MODULE_MFM_COMPATIBILITY is included because it doesn't make sense to use both at the same time anyway.
+	; Note that the option to "Remove other hard drives" is still visible in XTIDECFG.COM for builds including MODULE_MFM_COMPATIBILITY.
+	; Changing that option just won't do anything. We might want to remove the option for builds that contain MODULE_MFM_COMPATIBILITY
+	; but that would require a ROMVARS flag that is probably better spent on other things.
+	test	BYTE [cs:ROMVARS.wFlags], FLG_ROMVARS_CLEAR_BDA_HD_COUNT	; Clears CF
+	jz		SHORT .ContinueInitialization
+%ifdef USE_UNDOC_INTEL
+	salc
+%else
+	xor		al, al
+%endif
+.ContinueInitialization:
+%endif ; MODULE_MFM_COMPATIBILITY
+	add		cl, al
+	mov		[es:BDA.bHDCount], cl			; Update the system count
 	or		al, 80h							; Or in hard disk flag
 	mov		[RAMVARS.bFirstDrv], al			; Store first drive number
 
@@ -176,7 +181,7 @@ DetectDrives_FromAllIDEControllers:
 
 	add		al, ch							; Add our drives to existing drive count
 	cmp		al, 3							; For BDA, max out at 4 drives (ours is zero based)
-	jb		.MaxBDAFloppiesExceeded
+	jb		SHORT .MaxBDAFloppiesExceeded
 	mov		al, 3
 .MaxBDAFloppiesExceeded:
 	eROR_IM	al, 2							; move to bits 6-7

@@ -28,7 +28,7 @@
 # MODULE_STRINGS_COMPRESSED   Use compressed strings to save space                                 #
 # MODULE_VERY_LATE_INIT       Initialize on INT 13h if our INT 19h handler is not called           #
 # MODULE_POWER_MANAGEMENT     Power Management support                                             #
-# MODULE_WIN95_CMOS_HACK      Hack for Windows 95 compatibility                                    #
+# MODULE_WIN9X_CMOS_HACK      Hack for Windows 9x compatibility                                    #
 # MODULE_MFM_COMPATIBILITY    Restores BDA drive count for MFM controllers that expect to be the   #
 #                             only hard drive controller on the system                             #
 #                                                                                                  #
@@ -118,7 +118,7 @@ DEFINES_XTPLUS_LARGE = $(DEFINES_XTPLUS) $(DEFINES_COMMON_LARGE)
 DEFINES_AT_LARGE = $(DEFINES_AT) $(DEFINES_COMMON_LARGE)
 
 DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION CLD_NEEDED
-DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN95_CMOS_HACK
+DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN9X_CMOS_HACK
 DEFINES_386_LARGE = $(DEFINES_386) $(DEFINES_COMMON_LARGE)
 
 

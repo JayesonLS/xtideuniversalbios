@@ -202,7 +202,7 @@ TimerTicks_GetElapsedToAXfromDSBX:
 ;		Nothing
 ;--------------------------------------------------------------------
 %ifdef EXCLUDE_FROM_XUB
-	%ifndef MODULE_BOOT_MENU OR MODULE_HOTKEYS
+	%ifndef MODULE_BOOT_MENU
 		%define EXCLUDE
 	%endif
 %endif

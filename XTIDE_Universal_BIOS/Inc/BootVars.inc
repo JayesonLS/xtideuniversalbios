@@ -39,7 +39,7 @@ BOOT_READ_RETRY_TIMES		EQU		3
 %ifdef MODULE_HOTKEYS
 
 struc HOTKEYVARS
-	.fpPrevTimerHandler	resb	4		; Previous 1Ch timer handler
+	.fpPrevTimerHandler	resb	4		; Previous 08h timer handler
 	.wTimeWhenDisplayed	resb	2		; System time (ticks) when Hotkey bar was first displayed
 	.wFddAndHddLetters:
 	.bFddLetter			resb	1		; Floppy Drive letter hotkey (upper case)

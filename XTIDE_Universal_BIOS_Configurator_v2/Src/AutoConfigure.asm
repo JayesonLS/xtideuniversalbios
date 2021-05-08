@@ -40,6 +40,7 @@ AutoConfigure_ForThisSystem:
 	call	Buffers_GetFileBufferToESDI		; ROMVARS now in ES:DI
 	push	es
 	pop		ds								; ROMVARS now in DS:DI
+	call	ChecksumSystemBios
 	call	ResetIdevarsToDefaultValues
 	call	DetectIdePortsAndDevices
 	call	EnableInterruptsForAllStandardControllers
@@ -47,6 +48,92 @@ AutoConfigure_ForThisSystem:
 
 	pop		ds
 	pop		es
+.Return:
+	ret
+
+
+;--------------------------------------------------------------------
+; ChecksumSystemBios
+;	Parameters:
+;		DS:DI:	Ptr to ROMVARS
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX, CX, DX, SI
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+ChecksumSystemBios:
+	push	ds
+	mov		si, 0F000h
+	mov		ds, si
+	mov		si, 0FFFFh
+	; DS:SI now points to the end of the System BIOS.
+	std
+	mov		cx, 32768	; The smallest known problematic BIOS so far.
+	mov		dx, si		; Initialize the checksum
+	call	CalculateCRC_CCITTfromDSSIwithSizeInCX
+	pop		ds
+	mov		bx, .Checksums
+	cld
+.NextChecksum:
+	mov		ax, [cs:bx]
+	test	ax, ax
+	jz		SHORT AutoConfigure_ForThisSystem.Return
+	inc		bx
+	inc		bx
+	cmp		ax, dx
+	jne		SHORT .NextChecksum
+	or		BYTE [di+ROMVARS.wFlags], FLG_ROMVARS_CLEAR_BDA_HD_COUNT
+	mov		dx, g_szDlgBadBiosFound
+	jmp		Dialogs_DisplayNotificationFromCSDX
+
+ALIGN WORD_ALIGN
+.Checksums:
+	dw		0D192h						; 32 KB Zenith Z-161 (071784)
+	dw		02F69h						; 32 KB Zenith Z-171 (031485)
+	dw		0
+
+
+;--------------------------------------------------------------------
+; CalculateCRC_CCITTfromDSSIwithSizeInCX
+;	Parameters:
+;		DS:SI:	Pointer to string to checksum
+;		CX:		Length of string to checksum
+;		DX:		Checksum (initially 0FFFFh)
+;		DF:		Set/Clear depending on direction wanted
+;	Returns:
+;		DX:		Checksum
+;		DS:SI:	Pointer to byte after the end of checksummed string
+;	Corrupts registers:
+;		AX, BX, CX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+CalculateCRC_CCITTfromDSSIwithSizeInCX:
+;	jcxz	.Return
+	xor		bh, bh
+	mov		ah, 0E0h
+.NextByte:
+	lodsb
+	xor		dh, al
+	mov		bl, dh
+	rol		bx, 1
+	rol		bx, 1
+	rol		bx, 1
+	rol		bx, 1
+	xor		dx, bx
+	rol		bx, 1
+	xchg	dh, dl
+	xor		dx, bx
+	ror		bx, 1
+	ror		bx, 1
+	ror		bx, 1
+	ror		bx, 1
+	and		bl, ah
+	xor		dx, bx
+	ror		bx, 1
+	xor		dh, bl
+	loop	.NextByte
+;.Return:
 	ret
 
 

@@ -219,15 +219,15 @@ CreateDPT_FromAtaInformation:
 ;		B. the auto serial code is always executed last
 ;		C. the serial server always returns floppy drives last
 ;
-	adc		byte [RAMVARS.xlateVars+XLATEVARS.bFlopCreateCnt], 0
-	jnz		.AllDone
+	adc		BYTE [RAMVARS.xlateVars+XLATEVARS.bFlopCreateCnt], 0
+	jnz		SHORT .AllDone
 %else ; ~MODULE_SERIAL_FLOPPY
 ;
 ; Even without floppy support enabled, we shouldn't try to mount a floppy image as a hard disk, which
 ; could lead to unpredictable results since no MBR will be present, etc.  The server doesn't know that
 ; floppies are supported, so it is important to still fail here if a floppy is seen during the drive scan.
 ;
-	jc		.AllDone
+	jc		SHORT .AllDone
 %endif ; MODULE_SERIAL_FLOPPY
 %endif ; MODULE_SERIAL
 
