@@ -60,7 +60,6 @@ AH8h_HandlerForReadDiskDriveParameters:
 	jnz		SHORT .CalledForHardDrive
 
 	mov		[bp+IDEPACK.intpack+INTPACK.bl], bl
-
 	mov		[bp+IDEPACK.intpack+INTPACK.es], es
 	mov		[bp+IDEPACK.intpack+INTPACK.di], di
 
@@ -149,9 +148,6 @@ AH8h_GetDriveParameters:
 ;		Nothing
 ;--------------------------------------------------------------------
 AH8h_LimitAXtoMaximumLCylinders:
-%ifdef RESERVE_DIAGNOSTIC_CYLINDER
-	dec		ax
-%endif
 	MIN_U	ax, MAX_LCHS_CYLINDERS
 	ret
 

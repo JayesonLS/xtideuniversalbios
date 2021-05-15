@@ -73,9 +73,9 @@ AtaGeometry_GetLbaSectorCountToBXDXAXfromAtaInfoInESSI:
 ;		BL:		Number of L-CHS heads (1...255)
 ;		BH:		Number of L-CHS sectors per track (1...63)
 ;		CX:		Number of bits shifted (0...3)
-;		DL:		CHS Translate Mode
+;		DX:		CHS Translate Mode
 ;	Corrupts registers:
-;		DH
+;		Nothing
 ;--------------------------------------------------------------------
 AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX:
 	call	AtaGeometry_GetPCHStoAXBLBHfromAtaInfoInESSI
@@ -98,6 +98,11 @@ AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX:
 	; Generate L-CHS using simple bit shift algorithm (ECHS) if
 	; 8192 or less cylinders.
 	cmp		ax, 8192
+	jbe		SHORT ConvertPCHfromAXBLtoEnhancedCHinAXBL
+%else
+	; Check if the drive is within the limits of NORMAL addressing.
+	; If it is, then no CHS translation is necessary.
+	cmp		ax, MAX_LCHS_CYLINDERS
 	jbe		SHORT ConvertPCHfromAXBLtoEnhancedCHinAXBL
 %endif
 
@@ -160,9 +165,9 @@ GetSectorCountToDXAXfromCHSinAXBLBH:
 ;		BL:		Number of heads (16, 32, 64, 128 or 255)
 ;		BH:		Number of sectors per track (always 63)
 ;		CX:		Number of bits shifted (0)
-;		DL:		TRANSLATEMODE_ASSISTED_LBA
+;		DX:		TRANSLATEMODE_ASSISTED_LBA
 ;	Corrupts registers:
-;		DH
+;		Nothing
 ;--------------------------------------------------------------------
 ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
 	; Value CH = Total sector count / 63
@@ -212,6 +217,8 @@ ConvertChsSectorCountFromDXAXtoLbaAssistedLCHSinAXBLBH:
 
 	xchg	bh, cl						; Sectors per Track to BH, zero to CL (CX)
 	mov		dl, TRANSLATEMODE_ASSISTED_LBA
+	; All combinations of value CH from 1 to 262128 divided by number of heads
+	; (16/32/64/128/255) has been verified to return with DH cleared.
 ReturnLCHSinAXBLBH:
 	ret
 

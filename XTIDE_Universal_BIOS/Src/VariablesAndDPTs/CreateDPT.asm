@@ -107,7 +107,7 @@ CreateDPT_FromAtaInformation:
 
 	; Store P-CHS and flags
 	call	AtaGeometry_GetPCHStoAXBLBHfromAtaInfoInESSI
-	dec		dl						; Set ZF if TRANSLATEMODE_LARGE, SF if TRANSLATEMODE_NORMAL
+	dec		dx						; Set ZF if TRANSLATEMODE_LARGE, SF if TRANSLATEMODE_NORMAL
 	jle		SHORT .JumpOverSetBitForAssistedLBA
 
 	; Set LBA bit for Assisted LBA
