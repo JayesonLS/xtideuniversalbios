@@ -98,15 +98,23 @@ DetectMemoryMappedDeviceFromSegmentDX:
 ;		AH, BX
 ;--------------------------------------------------------------------
 DetectPortMappedDeviceFromPortDX:
+	mov		si, dx
+	mov		bx, STATUS_REGISTER_in | (ALTERNATE_STATUS_REGISTER_in << 8)
+	; *** Try to detect AC-1075 / AC-1070 controllers ***
+	cmp		dh, 25h
+	jne		SHORT .NotArcoComputerProducts
+	add		si, BYTE 8					; Add control block offset
+	call	DetectIdeDeviceFromPortsDXandSIwithOffsetsInBLandBH
+	mov		al, DEVICE_16BIT_ATA
+	ret
+.NotArcoComputerProducts:
 	; *** Try to detect Standard 16- and 32-bit IDE Devices ***
 	mov		al, DEVICE_16BIT_ATA		; Assume 16-bit ISA slot for AT builds
 	call	Buffers_IsXTbuildLoaded
 	eCMOVE	al, DEVICE_8BIT_ATA			; Assume 8-bit ISA slot for XT builds
 
 	; Start with standard Control Block base port used by Primary and Secondary IDE
-	mov		si, dx
 	add		si, STANDARD_CONTROL_BLOCK_OFFSET
-	mov		bx, STATUS_REGISTER_in | (ALTERNATE_STATUS_REGISTER_in << 8)
 .RedetectTertiaryOrQuaternaryWithDifferentControlBlockAddress:
 	push	ax							; Store device type
 	call	DetectIdeDeviceFromPortsDXandSIwithOffsetsInBLandBH
@@ -119,7 +127,6 @@ DetectPortMappedDeviceFromPortDX:
 	; use DEVICE_ATA_SECONDARY_PORTCTRL for Tertiary and Quaternary even though only Secondary should use that.
 	call	ChangeControlBlockAddressInSI
 	jz		SHORT .RedetectTertiaryOrQuaternaryWithDifferentControlBlockAddress
-
 
 	; Detect 8-bit devices only if MODULE_8BIT_IDE is available
 	test	BYTE [di+ROMVARS.wFlags], FLG_ROMVARS_MODULE_8BIT_IDE | FLG_ROMVARS_MODULE_8BIT_IDE_ADVANCED
@@ -257,8 +264,7 @@ ChangeControlBlockAddressInSI:
 	mov		si, DEVICE_ATA_SECONDARY_PORTCTRL + 8	; Changes to 370h used by Sound Blaster 16 (CT2290)
 	; Fall to .TrySecondAlternative
 .TrySecondAlternative:
-	sub		si, BYTE 8h		; 368h to 360h, 3E8h to 3E0h
-	cmp		sp, sp			; Set ZF
+	lea		si, [si-8]		; 368h to 360h, 3E8h to 3E0h
 .Return:
 	ret
 
@@ -283,7 +289,7 @@ IdeAutodetect_IncrementDXtoNextIdeBasePort:
 	mov		si, .rgwIdeBasePorts
 .CompareNextIdeBasePort:
 	cmp		[cs:si], dx
-	lea		si, [si+2]	; Increment SI and preserve FLAGS
+	lea		si, [si+2]			; Increment SI and preserve FLAGS
 	jne		SHORT .CompareNextIdeBasePort
 
 	mov		dx, [cs:si]			; Get next port
@@ -319,6 +325,9 @@ ALIGN WORD_ALIGN
 	dw		3A0h
 	dw		3C0h
 	dw		3E0h
+	; Arco Computer Products AC-1075 / AC-1070 (16-bit MCA IDE adapters with Control Block at +8 and no IRQ)
+	dw		2510h
+	dw		2520h
 	; Memory Segment Addresses
 	dw		0C000h	; JR-IDE/ISA
 	dw		0C400h	; JR-IDE/ISA

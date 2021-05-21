@@ -83,7 +83,7 @@ AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX:
 	; Check if user defined translate mode
 	dec		dx						; Set ZF if TRANSLATEMODE_LARGE, SF if TRANSLATEMODE_NORMAL
 	jns		SHORT .CheckIfLargeTranslationWanted
-	MIN_U	ax, MAX_LCHS_CYLINDERS	; TRANSLATEMODE_NORMAL maximum cylinders
+	call	AH8h_LimitAXtoMaximumLCylinders	; TRANSLATEMODE_NORMAL maximum cylinders
 	inc		dx
 .CheckIfLargeTranslationWanted:
 	jz		SHORT ConvertPCHfromAXBLtoRevisedEnhancedCHinAXBL
