@@ -592,10 +592,17 @@ IdeControllerMenu_WriteDevice:
 
 	; Standard ATA controllers, including 8-bit mode
 .StandardIdeDevice:
+	; Enable IRQ for standard ATA
+
 	lea		ax, [di-ROMVARS.ideVars0+IDEVARS.wBasePort]
 	mov		bl, IDEVARS_size
 	div		bl
-	mov		bx, .rgbLowByteOfStdIdeInterfacePorts
+	push	ax
+	mov		bx, .rgbDefaultIrqForStdIde			; Enable interrupt for primary and secondary IDE
+	xlat
+	mov		[es:di+IDEVARS.bIRQ-IDEVARS.wBasePort], al
+	pop		ax
+	sub		bx, BYTE .rgbDefaultIrqForStdIde - .rgbLowByteOfStdIdeInterfacePorts
 	xlat										; DS=CS so no segment override needed
 	mov		ah, 1								; DEVICE_ATA_*_PORT >> 8
 	mov		bh, 3								; DEVICE_ATA_*_PORTCTRL >> 8
@@ -607,6 +614,11 @@ IdeControllerMenu_WriteDevice:
 	db		DEVICE_ATA_SECONDARY_PORT	& 0FFh
 	db		DEVICE_ATA_TERTIARY_PORT	& 0FFh
 	db		DEVICE_ATA_QUATERNARY_PORT	& 0FFh
+.rgbDefaultIrqForStdIde:
+	db		14
+	db		15
+	db		0									; These can vary so lets disable by default
+	db		0
 
 .NotStandardIdeDevice:
 	cmp		al, DEVICE_SERIAL_PORT
@@ -644,6 +656,10 @@ IdeControllerMenu_WriteDevice:
 .ChangingToXTIDEorXTCF:
 	mov		ax, DEVICE_XTIDE_DEFAULT_PORT		; Defaults for 8-bit XTIDE and XT-CF devices
 	mov		bx, DEVICE_XTIDE_DEFAULT_PORTCTRL
+	
+	; XT-CF does not support IRQ so it must be disabled (IRQ setting is not visible for XT-CF)
+	; XTIDE does not use IRQs by default
+	mov		BYTE [es:di+IDEVARS.bIRQ-IDEVARS.wBasePort], 0
 
 .WriteNonSerial:
 	stosw										; Store defaults in IDEVARS.wBasePort and IDEVARS.wBasePortCtrl
