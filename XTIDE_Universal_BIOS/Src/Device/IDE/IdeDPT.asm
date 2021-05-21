@@ -109,6 +109,11 @@ IdeDPT_Finalize:	; Unused entrypoint OK
 ;		AX, BX, CX, DX
 ;--------------------------------------------------------------------
 .DetectAdvancedIdeController:
+	; Detection is only relevant on standard devices. XT-CF seems to give false positive for
+	; PDC20x30 detection so better to skip detection for 8-bit devices
+	cmp		BYTE [di+DPT_ATA.bDevice], DEVICE_32BIT_ATA
+	ja		SHORT .NoAdvancedControllerDetected
+	
 	mov		bx, [di+DPT.wBasePort]
 	call	AdvAtaInit_DetectControllerForIdeBaseInBX
 	mov		[di+DPT_ADVANCED_ATA.wControllerID], ax	; Store zero if none detected
