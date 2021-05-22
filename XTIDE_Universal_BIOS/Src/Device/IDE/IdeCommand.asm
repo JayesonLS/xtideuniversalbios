@@ -239,6 +239,14 @@ IdeCommand_SelectDrive:
 	mov		bx, cx
 	call	IdeWait_PollStatusFlagInBLwithTimeoutInBH
 
+	; Output again to make sure head bits are set. They were lost if the device
+	; was busy when we first output drive select (although it shouldn't be busy
+	; since we have waited error result after previous command). Some low power
+	; drives (CF cards, 1.8" HDDs etc) have some internal sleep modes that
+	; might cause trouble? Normal HDDs seem to work fine.
+	mov		al, [bp+IDEPACK.bDrvAndHead]
+	OUTPUT_AL_TO_IDE_REGISTER	DRIVE_AND_HEAD_SELECT_REGISTER
+
 	; Ignore errors from IDE Error Register (set by previous command)
 	cmp		ah, RET_HD_TIMEOUT
 	je		SHORT .FailedToSelectDrive
