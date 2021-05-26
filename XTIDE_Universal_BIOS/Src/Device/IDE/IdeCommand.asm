@@ -172,8 +172,8 @@ IdeCommand_OutputWithParameters:	; Unused entrypoint OK
 
 	; Output Sector Address High (only used by LBA48)
 %ifdef MODULE_EBIOS
-	eMOVZX	ax, [bp+IDEPACK.bLbaLowExt]		; Zero sector count
-	xchg	al, ah		; LBA low ext to AH, zero sectors to AL
+	mov		ah, [bp+IDEPACK.bLbaLowExt]
+	xor		al, al							; Zero sector count
 	mov		cx, [bp+IDEPACK.wLbaMiddleAndHighExt]
 	call	OutputSectorCountAndAddress
 %endif

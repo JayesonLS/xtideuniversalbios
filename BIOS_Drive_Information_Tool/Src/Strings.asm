@@ -21,7 +21,7 @@
 SECTION .data
 
 g_szProgramName:	db	"BIOS Drive Information Tool v1.0.3",CR,LF
-					db	"(C) 2012-2018 by XTIDE Universal BIOS Team",CR,LF
+					db	"(C) 2012-2021 by XTIDE Universal BIOS Team",CR,LF
 					db	"Released under GNU GPL v2",CR,LF
 					db	"http://xtideuniversalbios.org/",CR,LF,NULL
 

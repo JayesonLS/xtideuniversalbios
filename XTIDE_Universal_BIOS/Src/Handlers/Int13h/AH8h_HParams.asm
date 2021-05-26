@@ -101,7 +101,7 @@ AH8h_HandlerForReadDiskDriveParameters:
 ;--------------------------------------------------------------------
 AH8h_GetDriveParameters:
 	call	AccessDPT_GetLCHStoAXBLBH
-	call	AH8h_LimitAXtoMaximumLCylinders
+	call	AtaGeometry_LimitAXtoMaximumLCylinders
 	; Fall to .PackReturnValues
 
 ;--------------------------------------------------------------------
@@ -135,20 +135,6 @@ AH8h_GetDriveParameters:
 	mov		bl, [di+DPT.bFlagsHigh]
 	eSHR_IM	bl, FLGH_DPT_SERIAL_FLOPPY_TYPE_FIELD_POSITION
 %endif
-	ret
-
-
-;--------------------------------------------------------------------
-; AH8h_LimitAXtoMaximumLCylinders
-;	Parameters:
-;		AX:		Number of total L-CHS cylinders (1...1027)
-;	Returns:
-;		AX:		Number of usable L-CHS cylinders (1...1024)
-;	Corrupts registers:
-;		Nothing
-;--------------------------------------------------------------------
-AH8h_LimitAXtoMaximumLCylinders:
-	MIN_U	ax, MAX_LCHS_CYLINDERS
 	ret
 
 

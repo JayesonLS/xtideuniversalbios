@@ -83,7 +83,7 @@ AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX:
 	; Check if user defined translate mode
 	dec		dx						; Set ZF if TRANSLATEMODE_LARGE, SF if TRANSLATEMODE_NORMAL
 	jns		SHORT .CheckIfLargeTranslationWanted
-	call	AH8h_LimitAXtoMaximumLCylinders	; TRANSLATEMODE_NORMAL maximum cylinders
+	call	AtaGeometry_LimitAXtoMaximumLCylinders	; TRANSLATEMODE_NORMAL maximum cylinders
 	inc		dx
 .CheckIfLargeTranslationWanted:
 	jz		SHORT ConvertPCHfromAXBLtoRevisedEnhancedCHinAXBL
@@ -238,6 +238,11 @@ AtaGeometry_GetPCHStoAXBLBHfromAtaInfoInESSI:
 	mov		ax, [es:si+ATA1.wCylCnt]	; Cylinders (1...16383)
 	mov		bl, [es:si+ATA1.wHeadCnt]	; Heads (1...16)
 	mov		bh, [es:si+ATA1.wSPT]		; Sectors per Track (1...63)
+%ifndef EXCLUDE_FROM_BIOSDRVS	; We want the true value in BIOSDRVS
+	; Some CF cards (for example Sandisk Ultra 16/32 GB) violates
+	; the ATA specification by reporting more than 16383 cylinders.
+	MIN_U	ax, MAX_PCHS_CYLINDERS		; Limit the count to avoid problems.
+%endif
 	ret
 
 
@@ -357,5 +362,19 @@ AtaGeometry_IsDriveSmallEnoughForECHS:
 	jb		SHORT .RevisedECHSisNotNeeded
 	cmp		bl, 16	; Drives with 8193 or more cylinders can report 15 heads
 .RevisedECHSisNotNeeded:
+	ret
+
+
+;--------------------------------------------------------------------
+; AtaGeometry_LimitAXtoMaximumLCylinders
+;	Parameters:
+;		AX:		Number of total L-CHS cylinders (1...1027)
+;	Returns:
+;		AX:		Number of usable L-CHS cylinders (1...1024)
+;	Corrupts registers:
+;		Nothing
+;--------------------------------------------------------------------
+AtaGeometry_LimitAXtoMaximumLCylinders:
+	MIN_U	ax, MAX_LCHS_CYLINDERS
 	ret
 

@@ -242,6 +242,5 @@ DisplayXUBcompatibilityInfoUsingAtaInfoFromDSBX:
 	mov		si, bx				; DS == ES
 	mov		dx, TRANSLATEMODE_AUTO
 	call	AtaGeometry_GetLCHStoAXBLBHfromAtaInfoInESSIwithTranslateModeInDX
-	dec		ax					; Reserve diagnostics cylinder
 	MIN_U	ax, MAX_LCHS_CYLINDERS
 	jmp		Print_ModeFromDLandCHSfromAXLBH
