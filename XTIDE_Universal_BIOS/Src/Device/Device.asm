@@ -87,6 +87,8 @@ Device_ResetMasterAndSlaveController:
 ; Device_IdentifyToBufferInESSIwithDriveSelectByteInBH
 ;	Parameters:
 ;		BH:		Drive Select byte for Drive and Head Select Register
+;		CX:		XUB_INT13h_SIGNATURE to ignore illegal ATA-ID values, otherwise
+;				correct them (only used if NOT build with NO_ATAID_CORRECTION)
 ;		DX:		Autodetected port (for devices that support autodetection)
 ;		DS:		Segment to RAMVARS
 ;		ES:SI:	Ptr to buffer to receive 512-byte IDE Information
@@ -97,8 +99,17 @@ Device_ResetMasterAndSlaveController:
 ;	Corrupts registers:
 ;		AL, BX, CX, DX, SI, DI, ES
 ;--------------------------------------------------------------------
-%ifdef MODULE_SERIAL	; IDE + Serial
 Device_IdentifyToBufferInESSIwithDriveSelectByteInBH:
+%ifndef NO_ATAID_CORRECTION
+	cmp		cx, XUB_INT13h_SIGNATURE
+	je		SHORT .DoNotFixAtaInformation
+	push	es
+	push	si
+	ePUSH_T	cx, AtaID_PopESSIandFixIllegalValuesFromESSI	; Here we modify ATA information if necessary
+.DoNotFixAtaInformation:
+%endif
+
+%ifdef MODULE_SERIAL	; IDE + Serial
 	cmp		BYTE [cs:bp+IDEVARS.bDevice], DEVICE_SERIAL_PORT
 %ifdef USE_386
 	jne		IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH
@@ -111,7 +122,7 @@ Device_IdentifyToBufferInESSIwithDriveSelectByteInBH:
 %endif
 
 %else					; IDE
-	Device_IdentifyToBufferInESSIwithDriveSelectByteInBH	EQU		IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH
+	jmp		IdeCommand_IdentifyDeviceToBufferInESSIwithDriveSelectByteInBH
 %endif
 
 

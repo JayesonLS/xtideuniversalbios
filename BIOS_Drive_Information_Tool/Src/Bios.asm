@@ -117,12 +117,13 @@ Bios_ReadOldInt13hCapacityFromDriveDL:
 ;		CF:		Cleared = no errors
 ;				Set = BIOS error code stored in AH
 ;	Corrupts registers:
-;		ES
+;		CX, ES
 ;--------------------------------------------------------------------
 Bios_ReadAtaInfoFromDriveDLtoBX:
 	mov		bx, g_rgbAtaInfo
 	push	ds
 	pop		es
+	mov		cx, XUB_INT13h_SIGNATURE	; Signature to read unaltered ATA ID
 	mov		ah, GET_DRIVE_INFORMATION
 	int		BIOS_DISK_INTERRUPT_13h
 	ret

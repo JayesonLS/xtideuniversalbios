@@ -25,11 +25,13 @@ SECTION .text
 ;
 ; AH25h_HandlerForGetDriveInformation
 ;	Parameters:
-;		ES:		Same as in INTPACK
+;		CX, ES:	Same as in INTPACK
 ;		DL:		Translated Drive number
 ;		DS:DI:	Ptr to DPT (in RAMVARS segment)
 ;		SS:BP:	Ptr to IDEPACK
 ;	Parameters on INTPACK:
+;		CX:		XUB_INT13h_SIGNATURE to ignore illegal ATA-ID values, otherwise
+;				correct them (only used if NOT build with NO_ATAID_CORRECTION)
 ;		ES:BX:	Ptr to buffer to receive 512-byte drive information
 ;	Returns with INTPACK:
 ;		AH:		Int 13h return status

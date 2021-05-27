@@ -36,6 +36,7 @@ g_szNormal:			db	"NORMAL",NULL
 g_szLarge:			db	"LARGE ",NULL
 g_szLBA:			db	"LBA   ",NULL
 g_szFormatCHS:		db	" Cylinders    : %5u, Heads: %3u, Sectors: %2u",NULL
+g_szWillBeModified:	db	"Will be modified to:",CR,LF,NULL		
 g_szChsSectors:		db	" CHS   sectors: ",NULL
 g_szLBA28:			db	" LBA28 sectors: ",NULL
 g_szLBA48:			db	" LBA48 sectors: ",NULL

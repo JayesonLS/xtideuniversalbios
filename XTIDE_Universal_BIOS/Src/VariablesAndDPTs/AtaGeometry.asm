@@ -238,11 +238,6 @@ AtaGeometry_GetPCHStoAXBLBHfromAtaInfoInESSI:
 	mov		ax, [es:si+ATA1.wCylCnt]	; Cylinders (1...16383)
 	mov		bl, [es:si+ATA1.wHeadCnt]	; Heads (1...16)
 	mov		bh, [es:si+ATA1.wSPT]		; Sectors per Track (1...63)
-%ifndef EXCLUDE_FROM_BIOSDRVS	; We want the true value in BIOSDRVS
-	; Some CF cards (for example Sandisk Ultra 16/32 GB) violates
-	; the ATA specification by reporting more than 16383 cylinders.
-	MIN_U	ax, MAX_PCHS_CYLINDERS		; Limit the count to avoid problems.
-%endif
 	ret
 
 

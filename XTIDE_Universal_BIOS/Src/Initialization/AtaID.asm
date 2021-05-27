@@ -22,6 +22,46 @@
 SECTION .text
 
 ;--------------------------------------------------------------------
+; Adjust ATA information for compatibility, debug, etc purposes.
+; We can also completely ignore the drive if necessary.
+;
+; AtaID_FixIllegalValuesFromESSI
+;	Parameters:
+;		AH:		INT 13h Error Code from reading ATA information
+;		CF:		Cleared if successfully read ATA information,
+;				Set if failed to read ATA information
+;		ES:SI:	Ptr to 512-byte ATA information read from the drive
+;	Returns:
+;		ES:SI:	Ata information with possible corrections made
+;		AH:		INT 13h Error Code from reading ATA information
+;		CF 		cleared if drive now accepted
+;	Corrupts registers:
+;		AL, BX, CX, DX, DI
+;--------------------------------------------------------------------
+%ifndef NO_ATAID_CORRECTION
+%ifndef EXCLUDE_FROM_BIOSDRVS
+AtaID_PopESSIandFixIllegalValuesFromESSI:
+	pop		si
+	pop		es
+%endif
+AtaID_FixIllegalValuesFromESSI:
+	jc		SHORT .Return	; Nothing to fix since failed to read ATA Info
+
+	; Only correct cylinders since there are no reports that head or sectors could be wrong
+	MIN_U	WORD [es:si+ATA1.wCylCnt], MAX_VALID_PCHS_CYLINDERS		; Limit to max allowed value
+	
+	; Note! There are ATA ID words 54-58 that also need to be modified! However,
+	; the drive itself should modify them when we do Initialize Device Parameters command at AH=9h.
+	; Verification from real drive needed before we fix them manually
+	
+	clc						; Return success
+.Return:
+	ret
+%endif ; NO_ATAID_CORRECTION
+
+
+%ifndef EXCLUDE_FROM_BIOSDRVS
+;--------------------------------------------------------------------
 ; AtaID_VerifyFromESSI
 ;	Parameters:
 ;		ES:SI:	Ptr to 512-byte ATA information read from the drive
@@ -232,3 +272,5 @@ AtaID_GetActiveTimeToAXfromPioModeInBX:
 	db		PIO_6_MIN_ACTIVE_TIME_NS
 
 %endif ; MODULE_ADVANCED_ATA
+
+%endif ; EXCLUDE_FROM_BIOSDRVS

@@ -35,7 +35,7 @@ AtaInfo_DisplayAtaInformationForDriveDL:
 	push	dx
 
 	; Read ATA Information from the drive
-	call	Bios_ReadAtaInfoFromDriveDLtoBX
+	call	Bios_ReadAtaInfoFromDriveDLtoBX	; Unaltered ATA information
 	call	Print_ErrorMessageFromAHifError	; AH=25h is not available on many BIOSes
 	jc		SHORT .SkipAtaInfoSinceError
 
@@ -43,7 +43,17 @@ AtaInfo_DisplayAtaInformationForDriveDL:
 	call	Print_NameFromAtaInfoInBX
 
 	; Print Drive P-CHS parameters
-	call	DisplayPCHSusingAtaInfoFromDSBX
+	call	DisplayPCHSusingAtaInfoFromDSBX	; Unaltered
+
+	; Fix and display values (ATA Info will stay fixed)
+	xor		ah, ah							; Successfully read ATA ID
+	push	ds
+	pop		es
+	mov		si, bx
+	call	AtaID_FixIllegalValuesFromESSI	; Modify ATA information if necessary
+	mov		si, g_szWillBeModified
+	call	Print_NullTerminatedStringFromSI
+	call	DisplayPCHSusingAtaInfoFromDSBX	; Display fixed values
 
 	; Print Drive CHS sector count
 	test	WORD [bx+ATA1.wFields], A1_wFields_54to58

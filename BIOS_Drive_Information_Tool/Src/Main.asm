@@ -24,6 +24,7 @@
 %include "AssemblyLibrary.inc"	; Assembly Library. Must be included first!
 %include "Version.inc"			; From XTIDE Universal BIOS
 %include "ATA_ID.inc"			; From XTIDE Universal BIOS
+%include "Ramvars.inc"			; From XTIDE Universal BIOS (needed by Int13h.inc)
 %include "Int13h.inc"			; From XTIDE Universal BIOS
 %include "EBIOS.inc"			; From XTIDE Universal BIOS
 %include "IdeRegisters.inc"		; From XTIDE Universal BIOS
@@ -41,6 +42,7 @@ Start:
 
 ; Include library and other sources
 %include "AssemblyLibrary.asm"
+%include "AtaID.asm"			; From XTIDE Universal BIOS
 %include "AtaGeometry.asm"		; From XTIDE Universal BIOS
 %include "Strings.asm"
 %include "AtaInfo.asm"

@@ -20,6 +20,9 @@
 %ifndef INT13H_INC
 %define INT13H_INC
 
+; Signature for XTIDE Universal BIOS specific functions
+XUB_INT13h_SIGNATURE	EQU		RAMVARS_RAM_SIGNATURE
+
 ; Hard Disk function (INT 13h) return status codes in AH
 RET_HD_SUCCESS			EQU		0h		; Operation successful, no error occurred
 RET_HD_INVALID			EQU		1h		; Invalid value passed or unsupported func
