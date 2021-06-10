@@ -25,7 +25,7 @@ g_s$NotMinimumDosVersion:			db	LF,"This program requires DOS version 2 or higher
 
 ; Menu title
 g_szProgramTitle:					db	"Configuration and Flashing program for XTIDE Universal BIOS v2.0.0.",LF,CR,NULL
-g_szXtideUniversalBiosSignature:	db	FLASH_SIGNATURE,NULL
+g_sXtideUniversalBiosSignature:		db	FLASH_SIGNATURE		; No need to terminate with NULL.
 g_szBiosIsNotLoaded:				db	"BIOS is not loaded!",NULL
 g_szEEPROM:							db	"EEPROM",NULL
 g_szSourceAndTypeSeparator:			db	" : ",NULL
@@ -306,172 +306,178 @@ g_szValueCfgDeviceJrIdeIsa:					db	"JR-ISA",NULL
 g_szValueCfgDeviceADP50L:					db	"ADP50L",NULL
 g_szValueCfgDeviceSerial:					db	"Serial",NULL
 
-g_szSerialCOMChoice:	db	"COM1 - address 3F8h",LF
-						db	"COM2 - address 2F8h",LF
-						db	"COM3 - address 3E8h",LF
-						db	"COM4 - address 2E8h",LF
-						db	"COM5 - address 2F0h",LF
-						db	"COM6 - address 3E0h",LF
-						db	"COM7 - address 2E0h",LF
-						db	"COM8 - address 260h",LF
-						db	"COM9 - address 368h",LF
-						db	"COMA - address 268h",LF
-						db	"COMB - address 360h",LF
-						db	"COMC - address 270h",LF
-						db	"COMx - Custom address",NULL
+g_szSerialCOMChoice:			db	"COM1 - address 3F8h",LF
+								db	"COM2 - address 2F8h",LF
+								db	"COM3 - address 3E8h",LF
+								db	"COM4 - address 2E8h",LF
+								db	"COM5 - address 2F0h",LF
+								db	"COM6 - address 3E0h",LF
+								db	"COM7 - address 2E0h",LF
+								db	"COM8 - address 260h",LF
+								db	"COM9 - address 368h",LF
+								db	"COMA - address 268h",LF
+								db	"COMB - address 360h",LF
+								db	"COMC - address 270h",LF
+								db	"COMx - Custom address",NULL
 
-g_szValueCfgCOM1:		db	"COM1",NULL
-g_szValueCfgCOM2:		db	"COM2",NULL
-g_szValueCfgCOM3:		db	"COM3",NULL
-g_szValueCfgCOM4:		db	"COM4",NULL
-g_szValueCfgCOM5:		db	"COM5",NULL
-g_szValueCfgCOM6:		db	"COM6",NULL
-g_szValueCfgCOM7:		db	"COM7",NULL
-g_szValueCfgCOM8:		db	"COM8",NULL
-g_szValueCfgCOM9:		db	"COM9",NULL
-g_szValueCfgCOMA:		db	"COMA",NULL
-g_szValueCfgCOMB:		db	"COMB",NULL
-g_szValueCfgCOMC:		db	"COMC",NULL
-g_szValueCfgCOMx:		db	"Custom",NULL
+g_szValueCfgCOM1:				db	"COM1",NULL
+g_szValueCfgCOM2:				db	"COM2",NULL
+g_szValueCfgCOM3:				db	"COM3",NULL
+g_szValueCfgCOM4:				db	"COM4",NULL
+g_szValueCfgCOM5:				db	"COM5",NULL
+g_szValueCfgCOM6:				db	"COM6",NULL
+g_szValueCfgCOM7:				db	"COM7",NULL
+g_szValueCfgCOM8:				db	"COM8",NULL
+g_szValueCfgCOM9:				db	"COM9",NULL
+g_szValueCfgCOMA:				db	"COMA",NULL
+g_szValueCfgCOMB:				db	"COMB",NULL
+g_szValueCfgCOMC:				db	"COMC",NULL
+g_szValueCfgCOMx:				db	"Custom",NULL
 
-g_szSerialBaudChoice:	db	"115.2K baud",LF
-						db	"57.6K baud",LF
-						db	"38.4K baud",LF
-						db	"28.8K baud",LF
-						db	"19.2K baud",LF
-						db	"9600 baud",LF
-						db	"4800 baud",LF
-						db	"2400 baud",NULL
+g_szSerialBaudChoice:			db	"115.2K baud",LF
+								db	"57.6K baud",LF
+								db	"38.4K baud",LF
+								db	"28.8K baud",LF
+								db	"19.2K baud",LF
+								db	"9600 baud",LF
+								db	"4800 baud",LF
+								db	"2400 baud",NULL
 
-g_szValueCfgBaud115_2:	db	"115.2K",NULL
-g_szValueCfgBaud57_6:	db	"57.6K",NULL
-g_szValueCfgBaud38_4:	db	"38.4K",NULL
-g_szValueCfgBaud28_8:	db	"28.8K",NULL
-g_szValueCfgBaud19_2:	db	"19.2K",NULL
-g_szValueCfgBaud9600:	db	"9600",NULL
-g_szValueCfgBaud4800:	db	"4800",NULL
-g_szValueCfgBaud2400:	db	"2400",NULL
+g_szValueCfgBaud115_2:			db	"115.2K",NULL
+g_szValueCfgBaud57_6:			db	"57.6K",NULL
+g_szValueCfgBaud38_4:			db	"38.4K",NULL
+g_szValueCfgBaud28_8:			db	"28.8K",NULL
+g_szValueCfgBaud19_2:			db	"19.2K",NULL
+g_szValueCfgBaud9600:			db	"9600",NULL
+g_szValueCfgBaud4800:			db	"4800",NULL
+g_szValueCfgBaud2400:			db	"2400",NULL
 
 
 ; Strings for DRVPARAMS menu
-g_szItemDrvBackToIde:	db	"Back to IDE Controller Menu",NULL
-g_szItemDrvBlockMode:	db	"Block Mode Transfers",NULL
-g_szItemDrvXlateMode:	db	"CHS translation method",NULL
-g_szItemDrvWriteCache:	db	"Internal Write Cache",NULL
-g_szItemDrvUserCHS:		db	"User specified CHS",NULL
-g_szItemDrvCyls:		db	"Cylinders",NULL
-g_szItemDrvHeads:		db	"Heads",NULL
-g_szItemDrvSect:		db	"Sectors per track",NULL
-g_szItemDrvUserLBA:		db	"User specified LBA",NULL
-g_szItemDrvLbaSectors:	db	"Millions of sectors",NULL
+g_szItemDrvBackToIde:			db	"Back to IDE Controller Menu",NULL
+g_szItemDrvDisableDetection:	db	"Disable Detection",NULL
+g_szItemDrvBlockMode:			db	"Block Mode Transfers",NULL
+g_szItemDrvXlateMode:			db	"CHS translation method",NULL
+g_szItemDrvWriteCache:			db	"Internal Write Cache",NULL
+g_szItemDrvUserCHS:				db	"User specified CHS",NULL
+g_szItemDrvCyls:				db	"Cylinders",NULL
+g_szItemDrvHeads:				db	"Heads",NULL
+g_szItemDrvSect:				db	"Sectors per track",NULL
+g_szItemDrvUserLBA:				db	"User specified LBA",NULL
+g_szItemDrvLbaSectors:			db	"Millions of sectors",NULL
 
-g_szDlgDrvBlockMode:	db	"Enable Block Mode Transfers?",NULL
-g_szDlgDrvXlateMode:	db	"Select P-CHS to L-CHS translation method.",NULL
-g_szDlgDrvWriteCache:	db	"Select hard drive internal write cache settings.",NULL
-g_szDlgDrvUserCHS:		db	"Specify (P-)CHS parameters manually?",NULL
-g_szDlgDrvCyls:			db	"Enter number of P-CHS cylinders (1...16383).",NULL
-g_szDlgDrvHeads:		db	"Enter number of P-CHS heads (1...16).",NULL
-g_szDlgDrvSect:			db	"Enter number of sectors per track (1...63).",NULL
-g_szDlgDrvUserLBA:		db	"Limit drive capacity?",NULL
-g_szDlgDrvLbaSectors:	db	"Enter maximum capacity in millions of sectors (16...256).",NULL
+g_szDlgDrvDisableDetection:		db	"Disable detection of this drive?",NULL
+g_szDlgDrvBlockMode:			db	"Enable Block Mode Transfers?",NULL
+g_szDlgDrvXlateMode:			db	"Select P-CHS to L-CHS translation method.",NULL
+g_szDlgDrvWriteCache:			db	"Select hard drive internal write cache settings.",NULL
+g_szDlgDrvUserCHS:				db	"Specify (P-)CHS parameters manually?",NULL
+g_szDlgDrvCyls:					db	"Enter number of P-CHS cylinders (1...16383).",NULL
+g_szDlgDrvHeads:				db	"Enter number of P-CHS heads (1...16).",NULL
+g_szDlgDrvSect:					db	"Enter number of sectors per track (1...63).",NULL
+g_szDlgDrvUserLBA:				db	"Limit drive capacity?",NULL
+g_szDlgDrvLbaSectors:			db	"Enter maximum capacity in millions of sectors (16...256).",NULL
 
-g_szNfoDrvBlockMode:	db	"Transfer multiple sectors per data request.",NULL
-g_szNfoDrvXlateMode:	db	"P-CHS to L-CHS translation method.",NULL
-g_szNfoDrvWriteCache:	db	"Hard Drive Internal Write Cache settings (WARNING!).",NULL
-g_szNfoDrvUserCHS:		db	"Specify (P-)CHS parameters manually instead of autodetecting them.",NULL
-g_szNfoDrvCyls:			db	"Number of user specified P-CHS cylinders.",NULL
-g_szNfoDrvHeads:		db	"Number of user specified P-CHS heads.",NULL
-g_szNfoDrvSect:			db	"Number of user specified P-CHS sectors per track.",NULL
-g_szNfoDrvUserLBA:		db	"Limit drive capacity to fix compatibility problems with Windows 9x.",NULL
-g_szNfoDrvLbaSectors:	db	"Millions of sectors (1024*1024). 1M sectors = 512 MiB. Recommended limits are 64 for Windows 95, 128 for Windows 98 and 256 for Windows ME (and 98 with updated fdisk).",NULL
+g_szNfoDrvDisableDetection:		db	"Disable detection of this drive.",NULL
+g_szNfoDrvBlockMode:			db	"Transfer multiple sectors per data request.",NULL
+g_szNfoDrvXlateMode:			db	"P-CHS to L-CHS translation method.",NULL
+g_szNfoDrvWriteCache:			db	"Hard Drive Internal Write Cache settings (WARNING!).",NULL
+g_szNfoDrvUserCHS:				db	"Specify (P-)CHS parameters manually instead of autodetecting them.",NULL
+g_szNfoDrvCyls:					db	"Number of user specified P-CHS cylinders.",NULL
+g_szNfoDrvHeads:				db	"Number of user specified P-CHS heads.",NULL
+g_szNfoDrvSect:					db	"Number of user specified P-CHS sectors per track.",NULL
+g_szNfoDrvUserLBA:				db	"Limit drive capacity to fix compatibility problems with Windows 9x.",NULL
+g_szNfoDrvLbaSectors:			db	"Millions of sectors (1024*1024). 1M sectors = 512 MiB. Recommended limits are 64 for Windows 95,"
+								db	" 128 for Windows 98 and 256 for Windows ME (and 98 with updated fdisk).",NULL
 
-g_szHelpDrvBlockMode:	db	"Block Mode will speed up transfers since multiple sectors can be transferred before waiting next data request."
-						db	" Normally Block Mode should always be kept enabled but there is at least one"
-						db	" drive with buggy Block Mode implementation (Quantum ProDrive LPS 340A).",NULL
+g_szHelpDrvDisableDetection:	db	"Disabling slave drive detection will reduce the boot time slightly. This is useful when you know that"
+								db	" there will never be a slave drive connected to a particular controller.",NULL
 
-g_szHelpDrvWriteCache:	db	"Modern Hard Drives have a large amount of internal write cache."
-						db	" The cache will speed up writes since the drive can free the bus right after data has been written to cache."
-						db	" The drive then starts to write the data from cache to disk by itself."
-						db	" This can be dangerous since all unwritten data in cache is lost if power is turned off or the system is reset."
-						db	" Modern operating systems will flush the cache when user shuts down the system."
-						db	" DOS does not have that sort of protection so it is up to the user to make sure cache is flushed."
-						db	" WARNING!!! Write cache should be left disabled.",NULL
+g_szHelpDrvBlockMode:			db	"Block Mode will speed up transfers since multiple sectors can be transferred before waiting next data request."
+								db	" Normally Block Mode should always be kept enabled but there is at least one"
+								db	" drive with buggy Block Mode implementation (Quantum ProDrive LPS 340A).",NULL
 
-g_szHelpDrvUserCHS:		db	"Specify (P-)CHS parameters manually instead of autodetecting them."
-						db	" This can be used to limit drive size for old operating systems that do not support large hard disks."
-						db	" Some early IDE drives have buggy autodetection so they require CHS to be specified manually."
-						db	" Limiting Cylinders will work for all drives but drives may not accept all values for Heads and Sectors per Track.",NULL
+g_szHelpDrvWriteCache:			db	"Modern Hard Drives have a large amount of internal write cache."
+								db	" The cache will speed up writes since the drive can free the bus right after data has been written to cache."
+								db	" The drive then starts to write the data from cache to disk by itself."
+								db	" This can be dangerous since all unwritten data in cache is lost if power is turned off or the system is reset."
+								db	" Modern operating systems will flush the cache when user shuts down the system."
+								db	" DOS does not have that sort of protection so it is up to the user to make sure cache is flushed."
+								db	" WARNING!!! Write cache should be left disabled.",NULL
 
-g_szHelpDrvUserLBA:		db	"Limit drive size to X million sectors for EBIOS functions. This option is useful to"
-						db	" prevent large drive compatibility problems with MS-DOS 7.x (Windows 95 and 98).",NULL
+g_szHelpDrvUserCHS:				db	"Specify (P-)CHS parameters manually instead of autodetecting them."
+								db	" This can be used to limit drive size for old operating systems that do not support large hard disks."
+								db	" Some early IDE drives have buggy autodetection so they require CHS to be specified manually."
+								db	" Limiting Cylinders will work for all drives but drives may not accept all values for Heads and Sectors per Track.",NULL
 
-g_szMultichoiseXlateMode:
-						db	"NORMAL",LF
-						db	"LARGE",LF
-						db	"Assisted LBA",LF
-						db	"Autodetect",NULL
+g_szHelpDrvUserLBA:				db	"Limit drive size to X million sectors for EBIOS functions. This option is useful to"
+								db	" prevent large drive compatibility problems with MS-DOS 7.x (Windows 95 and 98).",NULL
 
-g_szValueDrvXlateNormal:db	"NORMAL",NULL
-g_szValueDrvXlateLarge:	db	"LARGE",NULL
-g_szValueDrvXlateLBA:	db	"LBA",NULL
-g_szValueDrvXlateAuto:	db	"Auto",NULL
+g_szMultichoiceXlateMode:		db	"NORMAL",LF
+								db	"LARGE",LF
+								db	"Assisted LBA",LF
+								db	"Autodetect",NULL
 
-g_szMultichoiseWrCache:	db	"Drive Default",LF
-						db	"Disable Write Cache",LF
-						db	"Enable Write Cache",NULL
+g_szValueDrvXlateNormal:		db	"NORMAL",NULL
+g_szValueDrvXlateLarge:			db	"LARGE",NULL
+g_szValueDrvXlateLBA:			db	"LBA",NULL
+g_szValueDrvXlateAuto:			db	"Auto",NULL
 
-g_szValueDrvWrCaDis:	db	"Disabled",NULL
-g_szValueDrvWrCaEn:		db	"Enabled",NULL
+g_szMultichoiceWrCache:			db	"Drive Default",LF
+								db	"Disable Write Cache",LF
+								db	"Enable Write Cache",NULL
+
+g_szValueDrvWrCaDis:			db	"Disabled",NULL
+g_szValueDrvWrCaEn:				db	"Enabled",NULL
 
 
 ; Strings for boot settings menu
-g_szItemBootTimeout:		db	"Selection timeout",NULL
-g_szItemBootDrive:			db	"Default boot drive",NULL
-g_szItemBootDispMode:		db	"Display Mode",NULL
-g_szItemColorTheme:			db	"Color Theme",NULL
-g_szItemBootFloppyDrvs:		db	"Number of Floppy Drives",NULL
-g_szItemSerialDetect:		db	"Scan for Serial Drives",NULL
-g_szItemClearBdaDriveCount:	db	"Remove other hard drives",NULL
+g_szItemBootTimeout:			db	"Selection timeout",NULL
+g_szItemBootDrive:				db	"Default boot drive",NULL
+g_szItemBootDispMode:			db	"Display Mode",NULL
+g_szItemColorTheme:				db	"Color Theme",NULL
+g_szItemBootFloppyDrvs:			db	"Number of Floppy Drives",NULL
+g_szItemSerialDetect:			db	"Scan for Serial Drives",NULL
+g_szItemClearBdaDriveCount:		db	"Remove other hard drives",NULL
 
-g_szDlgBootTimeout:			db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
-g_szDlgBootDrive:			db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
-g_szDlgBootDispMode:		db	"Select display mode.",NULL
-g_szDlgColorTheme:			db	"Select color theme.",NULL
-g_szDlgBootFloppyDrvs:		db	"Select number of Floppy Drives in system.",NULL
-g_szDlgSerialDetect:		db	"Scan for serial drives?",NULL
-g_szDlgClearBdaDriveCount:	db	"Remove existing INT 13h hard drives during drive detection?",NULL
+g_szDlgBootTimeout:				db	"Enter Boot Menu selection timeout in BIOS timer ticks (2...1092).",NULL
+g_szDlgBootDrive:				db	"Enter default drive number (0xh for Floppy Drives, 8xh for Hard Disks).",NULL
+g_szDlgBootDispMode:			db	"Select display mode.",NULL
+g_szDlgColorTheme:				db	"Select color theme.",NULL
+g_szDlgBootFloppyDrvs:			db	"Select number of Floppy Drives in system.",NULL
+g_szDlgSerialDetect:			db	"Scan for serial drives?",NULL
+g_szDlgClearBdaDriveCount:		db	"Remove existing INT 13h hard drives during drive detection?",NULL
 
-g_szNfoBootTimeout:			db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
-g_szNfoBootDrive:			db	"Default boot drive.",NULL
-g_szNfoDispMode:			db	"Display mode to set when booting.",NULL
-g_szNfoColorTheme:			db	"Color theme used by the boot menu and the hotkey bar.",NULL
-g_szNfoBootFloppyDrvs:		db	"Number of Floppy Drives in system.",NULL
-g_szNfoSerialDetect:		db	"Scans all standard COM ports for serial drives."
-							db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
-g_szNfoClearBdaDriveCount:	db	"Can be used to remove duplicate hard drives.",NULL
+g_szNfoBootTimeout:				db	"Menu item selection timeout in BIOS timer ticks. 1 tick = 54.9 ms.",NULL
+g_szNfoBootDrive:				db	"Default boot drive.",NULL
+g_szNfoDispMode:				db	"Display mode to set when booting.",NULL
+g_szNfoColorTheme:				db	"Color theme used by the boot menu and the hotkey bar.",NULL
+g_szNfoBootFloppyDrvs:			db	"Number of Floppy Drives in system.",NULL
+g_szNfoSerialDetect:			db	"Scans all standard COM ports for serial drives."
+								db	" This can also be invoked by holding down ALT at the end of normal drive detection.",NULL
+g_szNfoClearBdaDriveCount:		db	"Can be used to remove duplicate hard drives.",NULL
 
-g_szHelpBootTimeout:		db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
-							db	" When timer goes to zero, currently selected drive will be booted automatically."
-							db	" Timeout can be disabled by setting this to 0.",NULL
-g_szHelpBootDrive:			db	"Drive to be set selected by default when Boot Menu is displayed.",NULL
-g_szHelpColorTheme:			db	"Pick a theme from a list of several pre-defined themes to customize the colors used by the boot menu and, if"
-							db	" available, the hotkey bar. Selecting a theme or loading a BIOS, or its settings, from file or from ROM will"
-							db	" make XTIDECFG apply the theme to itself for easy preview. The ability to preview themes requires that"
-							db	" XTIDECFG is running in a display mode that can display colors. In other words, you may configure the"
-							db	" BIOS on a machine with a monochrome graphics adapter and not be able to preview the theme but the BIOS will"
-							db	" still use the selected theme when installed in a machine with a color graphics adapter.",NULL
-g_szHelpBootFloppyDrvs:		db	"Detecting the correct number of floppy drives might fail when using a floppy controller with its own BIOS."
-							db	" A minimum number of floppy drives can be specified to force non-detected drives to appear on boot menu.",NULL
-g_szHelpSerialDetect:		db	"Set to Yes, at the end of normal drive detection, COM ports 1-7 (in reverse order) will be scanned for a connection"
-							db	" to a serial drive server. This option provides flexibility with the COM port and baud rate to be used,"
-							db	" it need not be configured ahead of time, but at the expense of a slower boot process."
-							db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
-							db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
-							db	" no scan will take place (to avoid finding the same drive twice).",NULL
-g_szHelpClearBdaDriveCount:	db	"Set to NO for normal operation. Set to YES to get Windows 9x protected mode drivers to work when"
-							db	" MODULE_WIN9X_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup). This option must"
-							db	" also be set to YES on computers where the system BIOS does not initialize RAM properly. Zenith models Z-171 and"
-							db	" Z-161 are known examples of such machines.",NULL
+g_szHelpBootTimeout:			db	"Boot Menu selection timeout in BIOS timer ticks (1 second = 18.2 ticks)."
+								db	" When timer goes to zero, currently selected drive will be booted automatically."
+								db	" Timeout can be disabled by setting this to 0.",NULL
+g_szHelpBootDrive:				db	"Drive to be set selected by default when Boot Menu is displayed.",NULL
+g_szHelpColorTheme:				db	"Pick a theme from a list of several pre-defined themes to customize the colors used by the boot menu and, if"
+								db	" available, the hotkey bar. Selecting a theme or loading a BIOS, or its settings, from file or from ROM will"
+								db	" make XTIDECFG apply the theme to itself for easy preview. The ability to preview themes requires that"
+								db	" XTIDECFG is running in a display mode that can display colors. In other words, you may configure the"
+								db	" BIOS on a machine with a monochrome graphics adapter and not be able to preview the theme but the BIOS will"
+								db	" still use the selected theme when installed in a machine with a color graphics adapter.",NULL
+g_szHelpBootFloppyDrvs:			db	"Detecting the correct number of floppy drives might fail when using a floppy controller with its own BIOS."
+								db	" A minimum number of floppy drives can be specified to force non-detected drives to appear on boot menu.",NULL
+g_szHelpSerialDetect:			db	"Set to Yes, at the end of normal drive detection, COM ports 1-7 (in reverse order) will be scanned for a connection"
+								db	" to a serial drive server. This option provides flexibility with the COM port and baud rate to be used,"
+								db	" it need not be configured ahead of time, but at the expense of a slower boot process."
+								db	" Even when this option is set to No, this functionality can still be invoked by holding down the ALT key at the end"
+								db	" of normal drive detection. Note that if any serial drives are detected during the normal drive detection,"
+								db	" no scan will take place (to avoid finding the same drive twice).",NULL
+g_szHelpClearBdaDriveCount:		db	"Set to NO for normal operation. Set to YES to get Windows 9x protected mode drivers to work when"
+								db	" MODULE_WIN9X_CMOS_HACK is not included (dummy drive needs to be defined in system BIOS setup). This option must"
+								db	" also be set to YES on computers where the system BIOS does not initialize RAM properly. Zenith models Z-171 and"
+								db	" Z-161 are known examples of such machines.",NULL
 
 g_szMultichoiceBootDispMode:	db	"Default",LF
 								db	"40x25 Black & White",LF
@@ -512,74 +518,71 @@ g_szValueBootFloppyDrvsAuto:	db	"Auto",NULL
 
 
 ; Strings for Flash menu
-g_szItemFlashStart:		db	"Start flashing",NULL
-g_szItemFlashEepromType:db	"EEPROM type",NULL
-g_szItemFlashSDP:		db	"SDP command",NULL
-g_szItemFlashAddr:		db	"EEPROM address",NULL
-g_szItemFlashPageSize:	db	"Page size",NULL
-g_szItemFlashChecksum:	db	"Generate checksum byte",NULL
+g_szItemFlashStart:				db	"Start flashing",NULL
+g_szItemFlashEepromType:		db	"EEPROM type",NULL
+g_szItemFlashSDP:				db	"SDP command",NULL
+g_szItemFlashAddr:				db	"EEPROM address",NULL
+g_szItemFlashPageSize:			db	"Page size",NULL
+g_szItemFlashChecksum:			db	"Generate checksum byte",NULL
 
-g_szDlgFlashEepromType:	db	"Select EEPROM type.",NULL
-g_szDlgFlashSDP:		db	"Select Software Data Protection command.",NULL
-g_szDlgFlashAddr:		db	"Enter segment address where EEPROM is located.",NULL
-g_szDlgFlashPageSize:	db	"Select write page size.",NULL
-g_szDlgFlashChecksum:	db	"Generate checksum byte to the end of BIOS image?",NULL
+g_szDlgFlashEepromType:			db	"Select EEPROM type.",NULL
+g_szDlgFlashSDP:				db	"Select Software Data Protection command.",NULL
+g_szDlgFlashAddr:				db	"Enter segment address where EEPROM is located.",NULL
+g_szDlgFlashPageSize:			db	"Select write page size.",NULL
+g_szDlgFlashChecksum:			db	"Generate checksum byte to the end of BIOS image?",NULL
 
-g_szNfoFlashEepromType:	db	"EEPROM type.",NULL
-g_szNfoFlashStart:		db	"Writes BIOS to EEPROM.",NULL
-g_szNfoFlashSDP:		db	"Software Data Protection command.",NULL
-g_szNfoFlashAddr:		db	"Address (segment) where EEPROM is located.",NULL
-g_szNfoFlashPageSize:	db	"Number of bytes to write before delay.",NULL
-g_szNfoFlashChecksum:	db	"Generate checksum byte to the end of BIOS image.",NULL
+g_szNfoFlashEepromType:			db	"EEPROM type.",NULL
+g_szNfoFlashStart:				db	"Writes BIOS to EEPROM.",NULL
+g_szNfoFlashSDP:				db	"Software Data Protection command.",NULL
+g_szNfoFlashAddr:				db	"Address (segment) where EEPROM is located.",NULL
+g_szNfoFlashPageSize:			db	"Number of bytes to write before delay.",NULL
+g_szNfoFlashChecksum:			db	"Generate checksum byte to the end of BIOS image.",NULL
 
-g_szHelpFlashSDP:		db	"Software Data Protection Command:",LF
-						db	"None    = Do not use Software Data Protection. Meant for EEPROMs that do not support SDP.",LF,LF
-						db	"Enable  = Write protects the EEPROM after flashing."
-						db	" Software Data Protection should always be enabled if EEPROM supports it.",LF,LF
-						db	"Disable = Disables Software Data Protection after flashing.",NULL
+g_szHelpFlashSDP:				db	"Software Data Protection Command:",LF
+								db	"None    = Do not use Software Data Protection. Meant for EEPROMs that do not support SDP.",LF,LF
+								db	"Enable  = Write protects the EEPROM after flashing."
+								db	" Software Data Protection should always be enabled if EEPROM supports it.",LF,LF
+								db	"Disable = Disables Software Data Protection after flashing.",NULL
 
-g_szHelpFlashPageSize:	db	"Larger page size will improve write performance but not all EEPROMs support large pages or page writing at all."
-						db	" Byte writing mode will be used when page size is set to 1. Byte writing mode is supported by all EEPROMs."
-						db	" Large pages cannot be flashed with slow CPUs.",NULL
+g_szHelpFlashPageSize:			db	"Larger page size will improve write performance but not all EEPROMs support large pages or page writing at all."
+								db	" Byte writing mode will be used when page size is set to 1. Byte writing mode is supported by all EEPROMs."
+								db	" Large pages cannot be flashed with slow CPUs.",NULL
 
-g_szHelpFlashChecksum:	db	"PC BIOSes require a checksum byte at the end of expansion card BIOS ROMs."
-						db	" You might not want to generate checksum byte when flashing some other images than XTIDE Universal BIOS.",NULL
+g_szHelpFlashChecksum:			db	"PC BIOSes require a checksum byte at the end of expansion card BIOS ROMs."
+								db	" You might not want to generate checksum byte when flashing some other images than XTIDE Universal BIOS.",NULL
 
-g_szMultichoiceEepromType:
-						db	"2816 (2 kiB)",LF
-						db	"2864 (8 kiB)",LF
-						db	"2864 mod (8 kiB)",LF
-						db	"28256 (32 kiB)",LF
-						db	"28512 (64 kiB)",NULL
-g_szValueFlash2816:		db	"2816",NULL
-g_szValueFlash2864:		db	"2864",NULL
-g_szValueFlash2864Mod:	db	"2864mod",NULL
-g_szValueFlash28256:	db	"28256",NULL
-g_szValueFlash28512:	db	"28512",NULL
+g_szMultichoiceEepromType:		db	"2816 (2 kiB)",LF
+								db	"2864 (8 kiB)",LF
+								db	"2864 mod (8 kiB)",LF
+								db	"28256 (32 kiB)",LF
+								db	"28512 (64 kiB)",NULL
+g_szValueFlash2816:				db	"2816",NULL
+g_szValueFlash2864:				db	"2864",NULL
+g_szValueFlash2864Mod:			db	"2864mod",NULL
+g_szValueFlash28256:			db	"28256",NULL
+g_szValueFlash28512:			db	"28512",NULL
 
-g_szMultichoiceSdpCommand:
-						db	"None",LF
-						db	"Enable",LF
-g_szValueFlashDisable:	db	"Disable",NULL
-g_szValueFlashEnable:	db	"Enable",NULL
-g_szValueFlashNone:		db	"None",NULL
+g_szMultichoiceSdpCommand:		db	"None",LF
+								db	"Enable",LF
+g_szValueFlashDisable:			db	"Disable",NULL
+g_szValueFlashEnable:			db	"Enable",NULL
+g_szValueFlashNone:				db	"None",NULL
 
-g_szMultichoicePageSize:
-						db	"1 byte",LF
-						db	"2 bytes",LF
-						db	"4 bytes",LF
-						db	"8 bytes",LF
-						db	"16 bytes",LF
-						db	"32 bytes",LF
-g_szValueFlash64bytes:	db	"64 bytes",NULL
-g_szValueFlash32bytes:	db	"32 bytes",NULL
-g_szValueFlash16bytes:	db	"16 bytes",NULL
-g_szValueFlash8bytes:	db	"8 bytes",NULL
-g_szValueFlash4bytes:	db	"4 bytes",NULL
-g_szValueFlash2bytes:	db	"2 bytes",NULL
-g_szValueFlash1byte:	db	"1 byte",NULL
+g_szMultichoicePageSize:		db	"1 byte",LF
+								db	"2 bytes",LF
+								db	"4 bytes",LF
+								db	"8 bytes",LF
+								db	"16 bytes",LF
+								db	"32 bytes",LF
+g_szValueFlash64bytes:			db	"64 bytes",NULL
+g_szValueFlash32bytes:			db	"32 bytes",NULL
+g_szValueFlash16bytes:			db	"16 bytes",NULL
+g_szValueFlash8bytes:			db	"8 bytes",NULL
+g_szValueFlash4bytes:			db	"4 bytes",NULL
+g_szValueFlash2bytes:			db	"2 bytes",NULL
+g_szValueFlash1byte:			db	"1 byte",NULL
 
-g_szSelectionTimeout:	db	DOUBLE_BOTTOM_LEFT_CORNER,DOUBLE_LEFT_HORIZONTAL_TO_SINGLE_VERTICAL,"%ASelection in %2u s",NULL
-g_szDashForZero:		db	"- ",NULL
-g_szValueUnknownError:	db	"Error!",NULL
+g_szSelectionTimeout:			db	DOUBLE_BOTTOM_LEFT_CORNER,DOUBLE_LEFT_HORIZONTAL_TO_SINGLE_VERTICAL,"%ASelection in %2u s",NULL
+g_szDashForZero:				db	"- ",NULL
+g_szValueUnknownError:			db	"Error!",NULL
 

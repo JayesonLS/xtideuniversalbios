@@ -19,6 +19,7 @@
 ;
 
 ; Flash signature revisions:
+; XUB208	Added option to skip slave drive detection
 ; XTIDE207	Added device type DEVICE_8BIT_XTIDE_REV2_OLIVETTI
 ; XTIDE206	Added support for Color Themes
 ; XTIDE205	Added DEVICE_8BIT_XTCF_PIO16_WITH_BIU_OFFLOAD after other XT-CF
@@ -49,7 +50,7 @@
 
 %define	TITLE_STRING			TITLE_STRING_START, TITLE_STRING_END
 %define	ROM_VERSION_STRING		"v2.0.0",BETA,"3+ (",__DATE__,")",NULL
-%define	FLASH_SIGNATURE			"XTIDE207"	; Do not terminate with NULL
+%define	FLASH_SIGNATURE			"XUB208"	; Do not terminate with NULL
 
 
 %endif ; VERSION_INC

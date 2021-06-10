@@ -24,6 +24,7 @@
 
 %include "AssemblyLibrary.inc"	; Assembly Library. Must be included first!
 %include "RomVars.inc"			; XTIDE Universal BIOS variables
+%include "ATA_ID.inc"			; Needed for Master/Slave Drive menu
 %include "IdeRegisters.inc"		; Needed for port and device autodetection
 %include "JRIDE_ISA.inc"		; For JR-IDE/ISA default segment
 %include "ADP50L.inc"			; For ADP50L default segment

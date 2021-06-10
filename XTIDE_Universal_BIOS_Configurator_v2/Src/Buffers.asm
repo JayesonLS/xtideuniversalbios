@@ -72,7 +72,7 @@ ALIGN JUMP_ALIGN
 Buffers_IsXtideUniversalBiosSignatureInESDI:
 	push	di
 
-	mov		si, g_szXtideUniversalBiosSignature
+	mov		si, g_sXtideUniversalBiosSignature
 	add		di, BYTE ROMVARS.rgbSign
 	mov		cx, XTIDE_SIGNATURE_LENGTH / 2
 %ifdef CLD_NEEDED

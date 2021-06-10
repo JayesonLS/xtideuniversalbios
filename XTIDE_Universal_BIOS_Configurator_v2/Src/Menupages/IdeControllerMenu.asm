@@ -474,34 +474,28 @@ ALIGN JUMP_ALIGN
 ;		AX, BX
 ;--------------------------------------------------------------------
 .EnableOrDisableSerial:
-	mov		bx, g_MenuitemIdeControllerSerialBaud
-	call	DisableMenuitemFromCSBX
-
-	mov		bx, g_MenuitemIdeControllerSerialCOM
-	call	DisableMenuitemFromCSBX
-
-	mov		bx, g_MenuitemIdeControllerSerialPort
-	call	DisableMenuitemFromCSBX
-
 	mov		bx, [g_MenuitemIdeControllerDevice+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
 	cmp		al, DEVICE_SERIAL_PORT
-	jne		SHORT .DisableAllSerial
-
-	mov		bx, g_MenuitemIdeControllerSerialCOM
-	call	EnableMenuitemFromCSBX
-
-	mov		bx, g_MenuitemIdeControllerSerialBaud
-	call	EnableMenuitemFromCSBX
-
+	mov		ax, DisableMenuitemFromCSBX
+	jne		SHORT .DisableSerialControllerMenuitems
+	mov		ax, EnableMenuitemFromCSBX
+	call	.EnableSerialControllerMenuitems
 	mov		bx, [g_MenuitemIdeControllerSerialCOM+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
-	mov		bx, g_MenuitemIdeControllerSerialPort
 	cmp		al, 'x'
-	je		SHORT .EnableMenuitemFromCSBX
-	jmp		SHORT .DisableMenuitemFromCSBX
-.DisableAllSerial:
+	mov		ax, DisableMenuitemFromCSBX
+	jne		SHORT .DisableCustomPortMenuitem
 	ret
+.DisableSerialControllerMenuitems:
+.EnableSerialControllerMenuitems:
+	mov		bx, g_MenuitemIdeControllerSerialCOM
+	call	ax
+	mov		bx, g_MenuitemIdeControllerSerialBaud
+	call	ax
+.DisableCustomPortMenuitem:
+	mov		bx, g_MenuitemIdeControllerSerialPort
+	jmp		ax
 
 
 ;--------------------------------------------------------------------
@@ -515,40 +509,19 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 MasterDrive:
+	mov		bx, g_MenuitemMasterSlaveDisableDetection
+	call	DisableMenuitemFromCSBX
 	mov		bx, [cs:g_MenuitemIdeControllerMasterDrive+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	jmp		SHORT DisplayMasterSlaveMenu
 
 ALIGN JUMP_ALIGN
 SlaveDrive:
+	mov		bx, g_MenuitemMasterSlaveDisableDetection
+	call	EnableMenuitemFromCSBX
 	mov		bx, [cs:g_MenuitemIdeControllerSlaveDrive+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
 	; Fall to DisplayMasterSlaveMenu
 
-ALIGN JUMP_ALIGN
 DisplayMasterSlaveMenu:
-;
-; "Block Mode Transfers" and "Internal Write Cache" are not supported on serial drives, disable/enable the options as appropriate
-;
-	push	bx
-	mov		bx, [cs:g_MenuitemIdeControllerDevice+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
-	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
-	mov		bx, g_MenuitemMasterSlaveBlockModeTransfers
-
-	cmp		al, DEVICE_SERIAL_PORT
-	je		.isSerial
-
-	call	EnableMenuitemFromCSBX
-	mov		bx, g_MenuitemMasterSlaveWriteCache
-	call	EnableMenuitemFromCSBX
-	jmp		.isDone
-
-.isSerial:
-	call	DisableMenuitemFromCSBX
-	mov		bx, g_MenuitemMasterSlaveWriteCache
-	call	DisableMenuitemFromCSBX
-
-.isDone:
-	pop		bx
-
 	call	MasterSlaveMenu_InitializeToDrvparamsOffsetInBX
 	jmp		MasterSlaveMenu_EnterMenuOrModifyItemVisibility
 
@@ -656,7 +629,7 @@ IdeControllerMenu_WriteDevice:
 .ChangingToXTIDEorXTCF:
 	mov		ax, DEVICE_XTIDE_DEFAULT_PORT		; Defaults for 8-bit XTIDE and XT-CF devices
 	mov		bx, DEVICE_XTIDE_DEFAULT_PORTCTRL
-	
+
 	; XT-CF does not support IRQ so it must be disabled (IRQ setting is not visible for XT-CF)
 	; XTIDE does not use IRQs by default
 	mov		BYTE [es:di+IDEVARS.bIRQ-IDEVARS.wBasePort], 0

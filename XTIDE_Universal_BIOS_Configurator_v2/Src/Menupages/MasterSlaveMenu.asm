@@ -25,7 +25,7 @@ g_MenupageForMasterSlaveMenu:
 istruc MENUPAGE
 	at	MENUPAGE.fnEnter,			dw	MasterSlaveMenu_EnterMenuOrModifyItemVisibility
 	at	MENUPAGE.fnBack,			dw	IdeControllerMenu_EnterMenuOrModifyItemVisibility
-	at	MENUPAGE.wMenuitems,		dw	10
+	at	MENUPAGE.wMenuitems,		dw	11
 iend
 
 g_MenuitemMasterSlaveBackToIdeControllerMenu:
@@ -38,6 +38,22 @@ istruc MENUITEM
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_PAGEBACK
 iend
 
+g_MenuitemMasterSlaveDisableDetection:
+istruc MENUITEM
+	at	MENUITEM.fnActivate,		dw	Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI
+	at	MENUITEM.fnFormatValue,		dw	MenuitemPrint_WriteLookupValueStringToBufferInESDIfromShiftedItemInDSSI
+	at	MENUITEM.szName,			dw	g_szItemDrvDisableDetection
+	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvDisableDetection
+	at	MENUITEM.szHelp,			dw	g_szHelpDrvDisableDetection
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_FLAGVALUE
+	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
+	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
+	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvDisableDetection
+	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceBooleanFlag
+	at	MENUITEM.itemValue + ITEM_VALUE.rgszValueToStringLookup,	dw	g_rgszValueToStringLookupForFlagBooleans
+	at	MENUITEM.itemValue + ITEM_VALUE.wValueBitmask,				dw	FLG_DRVPARAMS_DO_NOT_DETECT
+iend
+
 g_MenuitemMasterSlaveBlockModeTransfers:
 istruc MENUITEM
 	at	MENUITEM.fnActivate,		dw	Menuitem_ActivateMultichoiceSelectionForMenuitemInDSSI
@@ -45,7 +61,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemDrvBlockMode
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvBlockMode
 	at	MENUITEM.szHelp,			dw	g_szHelpDrvBlockMode
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_FLAGVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_FLAGVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvBlockMode
@@ -61,11 +77,11 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemDrvXlateMode
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvXlateMode
 	at	MENUITEM.szHelp,			dw	g_szNfoDrvXlateMode
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_MASKVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MASKVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvXlateMode
-	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiseXlateMode
+	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceXlateMode
 	at	MENUITEM.itemValue + ITEM_VALUE.rgwChoiceToValueLookup,		dw	g_rgwChoiceToValueLookupForXlateMode
 	at	MENUITEM.itemValue + ITEM_VALUE.rgszChoiceToStringLookup,	dw	g_rgszChoiceToStringLookupForXlateMode
 	at	MENUITEM.itemValue + ITEM_VALUE.wValueBitmask,				dw	MASK_DRVPARAMS_TRANSLATEMODE
@@ -79,11 +95,11 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemDrvWriteCache
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvWriteCache
 	at	MENUITEM.szHelp,			dw	g_szHelpDrvWriteCache
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_MASKVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MASKVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvWriteCache
-	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiseWrCache
+	at	MENUITEM.itemValue + ITEM_VALUE.szMultichoice,				dw	g_szMultichoiceWrCache
 	at	MENUITEM.itemValue + ITEM_VALUE.rgwChoiceToValueLookup,		dw	g_rgwChoiceToValueLookupForWriteCache
 	at	MENUITEM.itemValue + ITEM_VALUE.rgszChoiceToStringLookup,	dw	g_rgszChoiceToStringLookupForWriteCache
 	at	MENUITEM.itemValue + ITEM_VALUE.wValueBitmask,				dw	MASK_DRVPARAMS_WRITECACHE
@@ -97,7 +113,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemDrvUserCHS
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvUserCHS
 	at	MENUITEM.szHelp,			dw	g_szHelpDrvUserCHS
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_FLAGVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_FLAGVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvUserCHS
@@ -162,7 +178,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemDrvUserLBA
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoDrvUserLBA
 	at	MENUITEM.szHelp,			dw	g_szHelpDrvUserLBA
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_VISIBLE | FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_FLAGVALUE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_FLAGVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	NULL
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgDrvUserLBA
@@ -238,6 +254,7 @@ MasterSlaveMenu_InitializeToDrvparamsOffsetInBX:
 	lea		ax, [bx+DRVPARAMS.wFlags]
 %endif
 %endif
+	mov		[g_MenuitemMasterSlaveDisableDetection+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 	mov		[g_MenuitemMasterSlaveBlockModeTransfers+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 	mov		[g_MenuitemMasterSlaveChsTranslateMode+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
 	mov		[g_MenuitemMasterSlaveWriteCache+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset], ax
@@ -273,11 +290,67 @@ ALIGN JUMP_ALIGN
 MasterSlaveMenu_EnterMenuOrModifyItemVisibility:
 	push	cs
 	pop		ds
+	mov		bx, [g_MenuitemMasterSlaveDisableDetection+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
+	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
+	mov		si, g_MenupageForMasterSlaveMenu
+	ePUSH_T	bx, Menupage_ChangeToNewMenupageInDSSI
+	test	al, FLG_DRVPARAMS_DO_NOT_DETECT
+	jnz		SHORT .DisableAllItemsOnThisMenuExceptDisableDetection
+	call	.EnableOrDisableItemsDependingOnControllerBeingSerialOrNot
 	call	.EnableOrDisableUserCHSandLBA
 	call	.EnableOrDisableCHandS
-	call	.EnableOrDisableUserLbaValue
-	mov		si, g_MenupageForMasterSlaveMenu
-	jmp		Menupage_ChangeToNewMenupageInDSSI
+	jmp		.EnableOrDisableUserLbaValue
+
+
+;--------------------------------------------------------------------
+; .EnableOrDisableItemsDependingOnControllerBeingSerialOrNot
+;	Parameters:
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.EnableOrDisableItemsDependingOnControllerBeingSerialOrNot:
+	mov		bx, [g_MenuitemIdeControllerDevice+MENUITEM.itemValue+ITEM_VALUE.wRomvarsValueOffset]
+	call	Buffers_GetRomvarsValueToAXfromOffsetInBX
+	mov		bx, g_MenuitemMasterSlaveChsTranslateMode
+	call	EnableMenuitemFromCSBX
+	cmp		al, DEVICE_SERIAL_PORT
+	je		SHORT .DisableAllItemsNotApplicableToSerialDrives
+	mov		bx, g_MenuitemMasterSlaveBlockModeTransfers
+	call	EnableMenuitemFromCSBX
+	mov		bx, g_MenuitemMasterSlaveWriteCache
+	jmp		EnableMenuitemFromCSBX
+
+
+;--------------------------------------------------------------------
+; .DisableAllItemsOnThisMenuExceptDisableDetection
+; .DisableAllItemsNotApplicableToSerialDrives
+;	Parameters:
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.DisableAllItemsOnThisMenuExceptDisableDetection:
+	mov		bx, g_MenuitemMasterSlaveChsTranslateMode
+	call	DisableMenuitemFromCSBX
+	mov		bx, g_MenuitemMasterSlaveUserCHS
+	call	DisableMenuitemFromCSBX
+	call	.DisableCHandS
+	mov		bx, g_MenuitemMasterSlaveUserLBA
+	call	DisableMenuitemFromCSBX
+	mov		bx, g_MenuitemMasterSlaveUserLbaValue
+	call	DisableMenuitemFromCSBX
+.DisableAllItemsNotApplicableToSerialDrives:
+	mov		bx, g_MenuitemMasterSlaveBlockModeTransfers
+	call	DisableMenuitemFromCSBX
+	mov		bx, g_MenuitemMasterSlaveWriteCache
+	jmp		SHORT .DisableMenuitemFromCSBX
 
 
 ;--------------------------------------------------------------------
@@ -337,21 +410,18 @@ ALIGN JUMP_ALIGN
 	test	al, FLG_DRVPARAMS_USERLBA
 	jnz		SHORT .DisableCHandS
 
-	mov		bx, g_MenuitemMasterSlaveCylinders
-	call	EnableMenuitemFromCSBX
-	mov		bx, g_MenuitemMasterSlaveHeads
-	call	EnableMenuitemFromCSBX
-	mov		bx, g_MenuitemMasterSlaveSectors
-	jmp		SHORT .EnableMenuitemFromCSBX
+	mov		ax, EnableMenuitemFromCSBX
+	jmp		SHORT .EnableCHandS
 
-ALIGN JUMP_ALIGN
 .DisableCHandS:
+	mov		ax, DisableMenuitemFromCSBX
+.EnableCHandS:
 	mov		bx, g_MenuitemMasterSlaveCylinders
-	call	DisableMenuitemFromCSBX
+	call	ax
 	mov		bx, g_MenuitemMasterSlaveHeads
-	call	DisableMenuitemFromCSBX
+	call	ax
 	mov		bx, g_MenuitemMasterSlaveSectors
-	jmp		SHORT .DisableMenuitemFromCSBX
+	jmp		ax
 
 
 ;--------------------------------------------------------------------

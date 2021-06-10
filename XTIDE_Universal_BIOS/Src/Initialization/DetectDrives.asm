@@ -43,9 +43,12 @@ DetectDrives_FromAllIDEControllers:
 	mov		bh, MASK_DRVNHEAD_SET								; Select Master drive
 	call	StartDetectionWithDriveSelectByteInBHandStringInCX	; Detect and create DPT + BOOTNFO
 
+	test	BYTE [cs:bp+IDEVARS.drvParamsSlave+DRVPARAMS.wFlags], FLG_DRVPARAMS_DO_NOT_DETECT
+	jnz		SHORT .SkipSlaveDetection
 	mov		cx, g_szDetectSlave
 	mov		bh, MASK_DRVNHEAD_SET | FLG_DRVNHEAD_DRV
 	call	StartDetectionWithDriveSelectByteInBHandStringInCX
+.SkipSlaveDetection:
 
 %ifdef MODULE_HOTKEYS
 %ifdef MODULE_SERIAL

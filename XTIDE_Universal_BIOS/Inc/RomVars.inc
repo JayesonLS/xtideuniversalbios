@@ -45,11 +45,8 @@ MASK_DRVPARAMS_TRANSLATEMODE	EQU	(3<<TRANSLATEMODE_FIELD_POSITION)	; Bits 2...3,
 	TRANSLATEMODE_AUTO				EQU	3	; Only available in ROMVARS, not in DPTs
 FLG_DRVPARAMS_BLOCKMODE			EQU	(1<<4)	; Enable Block mode transfers
 FLG_DRVPARAMS_USERCHS			EQU	(1<<5)	; User specified P-CHS values
-	MAX_PCHS_CYLINDERS				EQU	16383
-	MAX_PCHS_HEADS					EQU	16
-	MAX_PCHS_SECTORS_PER_TRACK		EQU	63
-	MAX_PCHS_TOTAL_SECTOR_COUNT		EQU	(MAX_PCHS_CYLINDERS * MAX_PCHS_HEADS * MAX_PCHS_SECTORS_PER_TRACK)	; 16,514,064
 FLG_DRVPARAMS_USERLBA			EQU	(1<<6)	; User specified LBA value
+FLG_DRVPARAMS_DO_NOT_DETECT		EQU	(1<<7)	; Disable detection of drive
 
 
 ; Controller specific variables
@@ -142,7 +139,7 @@ struc ROMVARS
 	.bRomSize			resb	1	; ROM size in 512 byte blocks
 	.rgbJump			resb	3	; First instruction to ROM init (jmp)
 
-	.rgbSign			resb	8	; Signature for XTIDE Configurator Program
+	.rgbSign			resb	6	; Signature for XTIDE Configurator Program (must be even length)
 	.szTitle			resb	31	; BIOS title string
 	.szVersion			resb	25	; BIOS version string
 

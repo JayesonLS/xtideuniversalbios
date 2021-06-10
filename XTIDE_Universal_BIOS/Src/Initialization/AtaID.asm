@@ -34,7 +34,7 @@ SECTION .text
 ;	Returns:
 ;		ES:SI:	Ata information with possible corrections made
 ;		AH:		INT 13h Error Code from reading ATA information
-;		CF 		cleared if drive now accepted
+;		CF 		Cleared if drive now accepted
 ;	Corrupts registers:
 ;		AL, BX, CX, DX, DI
 ;--------------------------------------------------------------------
@@ -48,12 +48,12 @@ AtaID_FixIllegalValuesFromESSI:
 	jc		SHORT .Return	; Nothing to fix since failed to read ATA Info
 
 	; Only correct cylinders since there are no reports that head or sectors could be wrong
-	MIN_U	WORD [es:si+ATA1.wCylCnt], MAX_VALID_PCHS_CYLINDERS		; Limit to max allowed value
-	
+	MIN_U	WORD [es:si+ATA1.wCylCnt], MAX_PCHS_CYLINDERS		; Limit to max allowed value
+
 	; Note! There are ATA ID words 54-58 that also need to be modified! However,
 	; the drive itself should modify them when we do Initialize Device Parameters command at AH=9h.
 	; Verification from real drive needed before we fix them manually
-	
+
 	clc						; Return success
 .Return:
 	ret
@@ -81,15 +81,15 @@ AtaID_VerifyFromESSI:
 
 	; Verify P-CHS cylinders
 	mov		bx, ATA1.wCylCnt
-	mov		ax, MAX_VALID_PCHS_CYLINDERS
+	mov		ax, MAX_PCHS_CYLINDERS
 	call	.CompareCHorSfromOffsetBXtoMaxValueInAX
 
 	mov		bl, ATA1.wHeadCnt & 0FFh
-	mov		ax, MAX_VALID_PCHS_HEADS
+	mov		ax, MAX_PCHS_HEADS
 	call	.CompareCHorSfromOffsetBXtoMaxValueInAX
 
 	mov		bl, ATA1.wSPT & 0FFh
-	mov		al, MAX_VALID_PCHS_SECTORS_PER_TRACK
+	mov		al, MAX_PCHS_SECTORS_PER_TRACK
 	call	.CompareCHorSfromOffsetBXtoMaxValueInAX
 
 	; Check signature byte. It is only found on ATA-5 and later. It should be zero on

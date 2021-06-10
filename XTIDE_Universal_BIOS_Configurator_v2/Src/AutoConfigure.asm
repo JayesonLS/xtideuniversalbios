@@ -41,6 +41,7 @@ AutoConfigure_ForThisSystem:
 	push	es
 	pop		ds								; ROMVARS now in DS:DI
 	call	ChecksumSystemBios
+	call	DetectOlivettiM24
 	call	ResetIdevarsToDefaultValues
 	call	DetectIdePortsAndDevices
 	call	EnableInterruptsForAllStandardControllers
@@ -135,6 +136,31 @@ CalculateCRC_CCITTfromDSSIwithSizeInCX:
 	loop	.NextByte
 ;.Return:
 	ret
+
+
+;--------------------------------------------------------------------
+; DetectOlivettiM24
+;	Parameters:
+;		Nothing
+;	Returns:
+;		ZF:		Set if computer is not an Olivetti M24
+;				Clear if computer is an Olivetti M24
+;	Corrupts registers:
+;		AX, BX, CX, DX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+DetectOlivettiM24:
+	mov		ah, 0FEh	; Request the current date and time
+	mov		ch, 0FFh	; Set the hours to an invalid value
+	int		BIOS_TIME_PCI_PNP_INTERRUPT_1Ah
+	inc		ch			; Hours changed?
+	jz		SHORT .ThisIsNotAnOlivettiM24
+	mov		BYTE [cs:IsOlivettiM24], 1
+.ThisIsNotAnOlivettiM24:
+	ret
+
+IsOlivettiM24:
+	db		0
 
 
 ;--------------------------------------------------------------------

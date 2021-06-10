@@ -138,8 +138,13 @@ DetectPortMappedDeviceFromPortDX:
 	add		si, BYTE XTCF_CONTROL_BLOCK_OFFSET
 	eSHL_IM	bx, 1						; SHL 1 register offsets for XT-CF
 	call	DetectIdeDeviceFromPortsDXandSIwithOffsetsInBLandBH
+	jc		SHORT .ContinueDetection
+	mov		al, DEVICE_8BIT_XTCF_PIO8_WITH_BIU_OFFLOAD
+	cmp		BYTE [cs:IsOlivettiM24], 1
+	jne		SHORT .IdeDeviceFound
 	mov		al, DEVICE_8BIT_XTCF_PIO8
-	jnc		SHORT .IdeDeviceFound
+	jmp		SHORT .IdeDeviceFound
+.ContinueDetection:
 	shr		bx, 1
 .SkipXTCF:
 
@@ -165,7 +170,12 @@ DetectPortMappedDeviceFromPortDX:
 	in		al, dx						; Read back
 	pop		dx
 	cmp		al, DEVICE_8BIT_XTIDE_REV2
-	je		SHORT .IdeDeviceFound
+	jne		SHORT .XtideRev1
+	cmp		BYTE [cs:IsOlivettiM24], 1
+	jne		SHORT .IdeDeviceFound
+	mov		al, DEVICE_8BIT_XTIDE_REV2_OLIVETTI
+	ret		; With CF cleared
+.XtideRev1:
 	mov		al, DEVICE_8BIT_XTIDE_REV1	; We must have rev 1
 .IdeDeviceFound:
 	clc
