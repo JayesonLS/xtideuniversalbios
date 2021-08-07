@@ -199,8 +199,24 @@ AH9h_InitializeDriveForUse:
 	test	BYTE [di+DPT.bFlagsHigh], FLGH_DPT_POWER_MANAGEMENT_SUPPORTED
 	jz		SHORT .NoPowerManagementSupport
 
-	mov		al, COMMAND_IDLE
+	; Do we need to disable APM?
+;TODO: We should check APM feature set flag from ATA ID word 83. The above
+;FLGH_DPT_POWER_MANAGEMENT_SUPPORTED is from ATA ID word 82
 	mov		dl, [cs:ROMVARS.bIdleTimeout]
+	push	dx
+	push	dx
+	call	AH23h_EnableOrDisableAdvancedPowerManagement
+
+	; COMMAND_IDLE is not enough for Toshiba 1,8" HDD since idle mode is the default mode
+	; COMMAND_STAND_BY seemed to do the trick
+	pop		dx
+	mov		al, COMMAND_STAND_BY
+	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_BSY, FLG_STATUS_BSY)
+	call	Idepack_StoreNonExtParametersAndIssueCommandFromAL
+	STORE_ERROR_FLAG_TO_DPT		FLG_INITERROR_FAILED_TO_INITIALIZE_STANDBY_TIMER
+
+	pop		dx
+	mov		al, COMMAND_IDLE
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_BSY, FLG_STATUS_BSY)
 	call	Idepack_StoreNonExtParametersAndIssueCommandFromAL
 	STORE_ERROR_FLAG_TO_DPT		FLG_INITERROR_FAILED_TO_INITIALIZE_STANDBY_TIMER

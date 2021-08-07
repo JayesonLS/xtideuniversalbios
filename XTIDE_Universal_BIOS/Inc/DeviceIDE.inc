@@ -30,6 +30,11 @@ TIMEOUT_SELECT_DRIVE_DURING_DRIVE_DETECTION	EQU	(500/55)	;  500 ms
 TIMEOUT_MOTOR_STARTUP	EQU		(10000/55)	;   10 s
 TIMEOUT_MAXIMUM			EQU		255			; We would actually want 31 seconds here but I don't think there are so slow drives
 
+
+; ATA specs say that in standby mode time to respond could be as long as 30 seconds
+; Note that some low-power drives (like Toshiba 1,8" HDD) have power management enabled by default
+; TODO: It might be better to define timeouts in IDEVARS (in ROMVARS) or in DPT. Having even a single bit in DPT means
+; we could adjust timeouts on runtime when enabling or disabling power management.
 %ifdef MODULE_POWER_MANAGEMENT
 	TIMEOUT_BSY			EQU		TIMEOUT_MOTOR_STARTUP
 	TIMEOUT_DRDY		EQU		TIMEOUT_MOTOR_STARTUP
