@@ -46,8 +46,12 @@ IdeDPT_Finalize:	; Unused entrypoint OK
 ;--------------------------------------------------------------------
 .DetectPowerManagementSupport:
 	mov		al, [es:si+ATA6.wSetSup82]
+	mov		ah, [es:si+ATA6.wSetSup83]
+	and		ah, A6_wSetSup83_APM
+	shl		ah, 1						; APM bit 3 to bit 4
 	and		al, A6_wSetSup82_POWERMAN	; A6_wSetSup82_POWERMAN (bit 3) is the same
-	or		[di+DPT.bFlagsHigh], al		; bit as FLGH_DPT_POWER_MANAGEMENT_SUPPORTED
+	or		al, ah
+	or		[di+DPT.bFlagsHigh], al		; bit as FLGH_DPT_POWER_MANAGEMENT_SUPPORTED and FLGH_DPT_APM_SUPPORTED
 %endif ; MODULE_POWER_MANAGEMENT
 
 

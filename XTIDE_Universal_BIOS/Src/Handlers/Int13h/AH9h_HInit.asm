@@ -196,16 +196,18 @@ AH9h_InitializeDriveForUse:
 %ifdef MODULE_POWER_MANAGEMENT
 ;;;	InitStandbyTimer
 	; Initialize the standby timer (if supported)
-	test	BYTE [di+DPT.bFlagsHigh], FLGH_DPT_POWER_MANAGEMENT_SUPPORTED
+	mov		dh, [di+DPT.bFlagsHigh]
+	test	dh, FLGH_DPT_POWER_MANAGEMENT_SUPPORTED
 	jz		SHORT .NoPowerManagementSupport
 
 	; Do we need to disable APM?
-;TODO: We should check APM feature set flag from ATA ID word 83. The above
-;FLGH_DPT_POWER_MANAGEMENT_SUPPORTED is from ATA ID word 82
 	mov		dl, [cs:ROMVARS.bIdleTimeout]
 	push	dx
 	push	dx
+	test	dh, FLGH_DPT_APM_SUPPORTED
+	jz		SHORT .NoAdvancedPowerManagementSupport
 	call	AH23h_EnableOrDisableAdvancedPowerManagement
+.NoAdvancedPowerManagementSupport:
 
 	; COMMAND_IDLE is not enough for Toshiba 1,8" HDD since idle mode is the default mode
 	; COMMAND_STAND_BY seemed to do the trick

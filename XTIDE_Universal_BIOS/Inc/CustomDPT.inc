@@ -71,6 +71,7 @@ endstruc
 %endif
 %ifdef MODULE_POWER_MANAGEMENT
 	FLGH_DPT_POWER_MANAGEMENT_SUPPORTED	EQU (1<<3)				; Bit 3, Drive supports power management (must be bit 3!)
+	FLGH_DPT_APM_SUPPORTED				EQU	(1<<4)				; Bit 4, Drive supports advanced power management (must be bit 4!)
 %endif
 %ifdef MODULE_ADVANCED_ATA
 	FLGH_DPT_IORDY						EQU	(1<<7)				; Bit 7, Controller and Drive supports IORDY
