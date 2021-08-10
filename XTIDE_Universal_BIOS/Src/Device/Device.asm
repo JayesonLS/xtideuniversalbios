@@ -163,6 +163,40 @@ ALIGN JUMP_ALIGN
 
 
 ;--------------------------------------------------------------------
+; Device_ReadLBAlowRegisterToAL
+; Returns LBA low register / Sector number register contents.
+; Note that this returns valid value only after transfer command (read/write/verify)
+; has stopped to an error. Do not call this otherwise.
+;	Parameters:
+;		DS:DI:	Ptr to DPT (in RAMVARS segment)
+;	Returns:
+;		AL:		Byte read from the device register
+;	Corrupts registers:
+;		BX, DX
+;--------------------------------------------------------------------
+;%ifdef MODULE_SERIAL	; IDE + Serial
+;ALIGN JUMP_ALIGN
+;Device_ReadLBAlowRegisterToAL:
+;	test	BYTE [di+DPT.bFlagsHigh], FLGH_DPT_SERIAL_DEVICE
+;%ifdef USE_386
+;	jz		IdeCommand_ReadLBAlowRegisterToAL
+;	jmp		SerialCommand_ReadLBAlowRegisterToAL
+;%else
+;	jnz		SHORT .ReadFromSerialPort
+;	jmp		IdeCommand_ReadLBAlowRegisterToAL
+
+;ALIGN JUMP_ALIGN
+;.ReadFromSerialPort:
+;	jmp		SerialCommand_ReadLBAlowRegisterToAL
+;%endif
+
+;%else					; IDE only
+	Device_ReadLBAlowRegisterToAL		EQU		IdeCommand_ReadLBAlowRegisterToAL
+;%endif
+; TODO: For now we simply assume serial device do not produce verify errors
+
+
+;--------------------------------------------------------------------
 ; Device_SelectDrive
 ;	Parameters:
 ;		DS:DI:	Ptr to DPT (in RAMVARS segment)

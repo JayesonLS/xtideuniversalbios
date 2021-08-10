@@ -28,7 +28,7 @@ SECTION .text
 ;		AL, CX, DH:	Same as in INTPACK
 ;		DL:		Translated Drive number
 ;		DS:DI:	Ptr to DPT (in RAMVARS segment)
-;		SS:BP:	Ptr to INTPACK
+;		SS:BP:	Ptr to IDEPACK
 ;	Parameters on INTPACK in SS:BP:
 ;		AL:		Number of sectors to verify (1...128)
 ;		CH:		Cylinder number, bits 7...0
@@ -45,10 +45,39 @@ AH4h_HandlerForVerifyDiskSectors:
 	mov		ah, COMMAND_VERIFY_SECTORS
 	call	Prepare_ByValidatingSectorsInALforOldInt13h	; Preserves AX
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_DRQ, FLG_STATUS_DRDY)
-%ifdef USE_186
-	push	Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAHandTransferredSectorsFromCL
-	jmp		Idepack_TranslateOldInt13hAddressAndIssueCommandFromAH
-%else
+	push	ax			; Store number of sectors to verify
 	call	Idepack_TranslateOldInt13hAddressAndIssueCommandFromAH
+	pop		cx			; Number of sectors verified if successful
+	jnc		SHORT .NoErrors
+
+; TODO: For now we assume serial device do not produce verify errors
+	call	AH4h_CalculateNumberOfSuccessfullyVerifiedSectors
+.NoErrors:
 	jmp		Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAHandTransferredSectorsFromCL
-%endif
+
+
+;--------------------------------------------------------------------
+; Calculates number of succesfully verified sectors. This function works only
+; if verify command stopped to an device error (such as bad sector) since IDE
+; register contents are not valid unless error.
+;
+; AH4h_CalculateNumberOfSuccessfullyVerifiedSectors
+;	Parameters:
+;		AH:		INT 13h error code
+;		CX:		Number of sectors that was meant to we verified
+;		DS:DI:	Ptr to DPT (in RAMVARS segment)
+;		SS:BP:	Ptr to IDEPACK
+;	Returns with INTPACK in SS:BP:
+;		CX:		Number of sectors succesfully verified
+;		CF:		1
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+AH4h_CalculateNumberOfSuccessfullyVerifiedSectors:
+	xchg	cx, ax			; Store error code to CL
+	call	Device_ReadLBAlowRegisterToAL
+	mov		ah, [bp+IDEPACK.bLbaLow]
+	sub		al, ah			; AL = sector address with verify failure - starting sector address
+	xor		ah, ah
+	xchg	cx, ax			; Number of successfully verified sectors in CX, error code in AH
+	stc
+	ret

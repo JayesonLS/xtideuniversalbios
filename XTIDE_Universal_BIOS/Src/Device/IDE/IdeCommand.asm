@@ -287,3 +287,23 @@ OutputSectorCountAndAddress:
 	mov		al, ch
 	OUTPUT_AL_TO_IDE_REGISTER	LBA_HIGH_REGISTER
 	ret
+
+
+;--------------------------------------------------------------------
+; IdeCommand_ReadLBAlowRegisterToAL
+; Returns LBA low register / Sector number register contents.
+; Note that this returns valid value only after transfer command (read/write/verify)
+; has stopped to an error. Do not call this otherwise.
+;	Parameters:
+;		DS:DI:	Ptr to DPT (in RAMVARS segment)
+;	Returns:
+;		AL:		Byte read from the register
+;	Corrupts registers:
+;		BX, DX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+IdeCommand_ReadLBAlowRegisterToAL:
+	; HOB bit (defined in 48-bit address feature set) should be zero by default
+	; so we get the correct value for CHS, LBA28 and LBA48 drives and commands
+	INPUT_TO_AL_FROM_IDE_REGISTER	LBA_LOW_REGISTER
+	ret

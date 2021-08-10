@@ -40,7 +40,21 @@ SECTION .text
 ALIGN JUMP_ALIGN
 AH44h_HandlerForExtendedVerifySectors:
 	call	Prepare_ByLoadingDapToESSIandVerifyingForTransfer
+	push	WORD [es:si+DAP.wSectorCount]				; Store for successfull number of sectors transferred
 	mov		ah, [cs:bx+g_rgbVerifyCommandLookup]
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_DRQ, FLG_STATUS_DRDY)
 	call	Idepack_ConvertDapToIdepackAndIssueCommandFromAH
+
+	; Now we need number of succesfully verifed sectors to CX. Since we did not transfer anything,
+	; we did not have any sector counter like in read and write functions.
+	; In case of error, drive LBA registers are set to address where the error occurred. We must
+	; calculate number of succesfully transferred sectors from it.
+	pop		cx
+	jnc		SHORT .AllSectorsVerifiedSuccessfully
+
+; TODO: For now we assume serial device do not produce verify errors
+	call	AH4h_CalculateNumberOfSuccessfullyVerifiedSectors
+
+ALIGN JUMP_ALIGN
+.AllSectorsVerifiedSuccessfully:
 	jmp		SHORT AH42h_ReturnFromInt13hAfterStoringErrorCodeFromAHandTransferredSectorsFromCX
