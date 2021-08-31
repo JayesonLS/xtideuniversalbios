@@ -48,7 +48,8 @@ AtaID_FixIllegalValuesFromESSI:
 	jc		SHORT .Return	; Nothing to fix since failed to read ATA Info
 
 	; Only correct cylinders since there are no reports that head or sectors could be wrong
-	MIN_U	WORD [es:si+ATA1.wCylCnt], MAX_PCHS_CYLINDERS		; Limit to max allowed value
+	mov		cx, MAX_PCHS_CYLINDERS
+	MIN_U	[es:si+ATA1.wCylCnt], cx	; Limit to max allowed value
 
 	; Note! There are ATA ID words 54-58 that also need to be modified! However,
 	; the drive itself should modify them when we do Initialize Device Parameters command at AH=9h.

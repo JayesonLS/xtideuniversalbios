@@ -143,7 +143,7 @@ DetectPortMappedDeviceFromPortDX:
 	cmp		BYTE [cs:IsOlivettiM24], 1
 	jne		SHORT .IdeDeviceFound
 	mov		al, DEVICE_8BIT_XTCF_PIO8
-	jmp		SHORT .IdeDeviceFound
+	ret		; With CF cleared
 .ContinueDetection:
 	shr		bx, 1
 .SkipXTCF:
@@ -330,7 +330,7 @@ ALIGN WORD_ALIGN
 	dw		300h
 	dw		320h
 	dw		340h
-	dw		360h
+	dw		360h	; Acculogic sIDE-1/16 (same controller type as XT-IDE rev 1)
 	dw		380h
 	dw		3A0h
 	dw		3C0h

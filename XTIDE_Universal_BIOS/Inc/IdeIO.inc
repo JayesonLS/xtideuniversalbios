@@ -98,7 +98,7 @@
 	%ifnidni %1, dl
 		mov		dl, %1
 	%endif
-		call	IdeIO_InputToALfromIdeRegisterInDL
+	call	IdeIO_InputToALfromIdeRegisterInDL
 
 %endif
 %endmacro

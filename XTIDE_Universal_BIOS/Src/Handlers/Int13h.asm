@@ -249,10 +249,15 @@ Int13h_DirectCallToAnotherBios:
 	; Restore drive number translation back to what it was
 	pop		WORD [RAMVARS.xlateVars+XLATEVARS.wFDandHDswap]
 	cmp		dl, [RAMVARS.xlateVars+XLATEVARS.bXlatedDrv]	; DL is still drive number?
-	je		SHORT Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAH
+	je		SHORT Int13h_ReturnFromHandlerWithoutStoringErrorCode
 	mov		[bp+IDEPACK.intpack+INTPACK.dl], dl	; Something is returned in DL
 %endif
-	jmp		SHORT Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAH
+	jmp		SHORT Int13h_ReturnFromHandlerWithoutStoringErrorCode
+	; We cannot return via Int13h_ReturnFromHandlerAfterStoringErrorCodeFromAH!
+	; 1. If the other BIOS returns something in DL then that is assumed to be a drive number
+	;    (if MODULE_SERIAL_FLOPPY is included) even though it could be anything.
+	; 2. Any non-zero value in AH will cause the CF to be set on return from the handler.
+	;    This breaks INT 13h/AH=15h for drives handled by the other BIOS.
 
 
 %ifdef MODULE_SERIAL_FLOPPY

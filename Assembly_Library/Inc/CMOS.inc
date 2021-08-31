@@ -29,7 +29,7 @@ FLG_CMOS_INDEX_NMI_DISABLE		EQU		(1<<7)	; CMOS Index Register bit 7 is NMI disab
 
 
 ; Almost all of the CMOS locations are vendor specific and
-; there is very little standardation
+; there is very little standardization.
 HARD_DISK_TYPES					EQU		12h		; Windows 9x reads this to check if IDE drives
 												; are present so it should be safe to access this.
 												; Bits 0...3 Hard Disk 1 type (Primary Slave)

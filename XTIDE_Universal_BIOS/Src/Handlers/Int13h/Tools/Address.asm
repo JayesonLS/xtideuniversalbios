@@ -38,8 +38,13 @@ ALIGN JUMP_ALIGN
 Address_ExtractLCHSparametersFromOldInt13hAddress:
 	mov		bl, 3Fh				; Load sector number mask
 	and		bl, cl				; Sector number now in BL
+%ifndef USE_186
 	sub		cl, bl				; Remove from cylinder number high
-	eROL_IM	cl, 2				; High bits to beginning
+	rol		cl, 1				; High bits to beginning
+	rol		cl, 1
+%else
+	shr		cl, 6
+%endif
 	mov		bh, dh				; Copy Head number
 	xchg	cl, ch				; Cylinder number now in CX
 	ret

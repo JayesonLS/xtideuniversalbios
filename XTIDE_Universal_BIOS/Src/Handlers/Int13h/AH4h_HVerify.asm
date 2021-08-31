@@ -64,7 +64,7 @@ AH4h_HandlerForVerifyDiskSectors:
 ; AH4h_CalculateNumberOfSuccessfullyVerifiedSectors
 ;	Parameters:
 ;		AH:		INT 13h error code
-;		CX:		Number of sectors that was meant to we verified
+;		CX:		Number of sectors that was meant to be verified
 ;		DS:DI:	Ptr to DPT (in RAMVARS segment)
 ;		SS:BP:	Ptr to IDEPACK
 ;	Returns with INTPACK in SS:BP:
@@ -73,11 +73,10 @@ AH4h_HandlerForVerifyDiskSectors:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 AH4h_CalculateNumberOfSuccessfullyVerifiedSectors:
-	xchg	cx, ax			; Store error code to CL
+	xchg	cx, ax						; Store error code to CH
 	call	Device_ReadLBAlowRegisterToAL
-	mov		ah, [bp+IDEPACK.bLbaLow]
-	sub		al, ah			; AL = sector address with verify failure - starting sector address
+	sub		al, [bp+IDEPACK.bLbaLow]	; AL = sector address with verify failure - starting sector address
 	xor		ah, ah
-	xchg	cx, ax			; Number of successfully verified sectors in CX, error code in AH
+	xchg	cx, ax						; Number of successfully verified sectors in CX, error code in AH
 	stc
 	ret

@@ -203,7 +203,6 @@ AH9h_InitializeDriveForUse:
 	; Do we need to disable APM?
 	mov		dl, [cs:ROMVARS.bIdleTimeout]
 	push	dx
-	push	dx
 	test	dh, FLGH_DPT_APM_SUPPORTED
 	jz		SHORT .NoAdvancedPowerManagementSupport
 	call	AH23h_EnableOrDisableAdvancedPowerManagement
@@ -212,6 +211,7 @@ AH9h_InitializeDriveForUse:
 	; COMMAND_IDLE is not enough for Toshiba 1,8" HDD since idle mode is the default mode
 	; COMMAND_STAND_BY seemed to do the trick
 	pop		dx
+	push	dx
 	mov		al, COMMAND_STAND_BY
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_BSY, FLG_STATUS_BSY)
 	call	Idepack_StoreNonExtParametersAndIssueCommandFromAL

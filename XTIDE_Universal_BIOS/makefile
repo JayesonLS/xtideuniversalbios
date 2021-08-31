@@ -2,11 +2,12 @@
 # Makefile to build XTIDE Universal BIOS.                                                          #
 #                                                                                                  #
 # Valid makefile targets are:                                                                      #
-# all       Removes existing files and builds binary files in \Build                               #
-# small     Builds 8 kiB binaries only (without checksum)                                          #
-# large     Builds 12 kiB binaries only (without checksum)                                         #
+# all       Removes existing files and builds binary files in \Build (without checksums)           #
+# small     Builds only binaries smaller than or equal to 8 kiB (without checksums)                #
+# large     Builds only binaries larger than 8 kiB (without checksums)                             #
+# custom    Builds custom binary without checksum (change DEFINES_CUSTOM / BIOS_SIZE_CUSTOM first) #
 # clean     Removes all files from \Build                                                          #
-# checksum* Builds all and then generates checksum byte to all binary files                        #
+# checksum* Same as 'all' but also applies checksums to the binaries                               #
 # strings*  Compress src\Strings.asm to src\StringsCompressed.asm                                  #
 # unused*   Checks if there are any unused functions that can be removed to save space             #
 #                                                                                                  #
@@ -36,7 +37,7 @@
 # ELIMINATE_CGA_SNOW          Prevents CGA snowing at the cost of a few bytes                      #
 # RELOCATE_INT13H_STACK **    Relocates INT 13h stack to beginning of stolen conventional memory   #
 # NO_ATAID_VALIDATION ***     Excludes code that tries to ensure proper communication with drives  #
-# NO_ATAID_CORRECTION		  Excludes code that corrects illegal CHS values from some CF cards    #
+# NO_ATAID_CORRECTION         Excludes code that corrects illegal CHS values from some CF cards    #
 # USE_186                     Use instructions supported by 80188/80186 and V20/V30 and later      #
 # USE_286                     Use instructions supported by 286 and later (defines USE_UNDOC_INTEL)#
 # USE_386                     Use instructions supported by 386 and later (defines USE_286)        #
@@ -103,23 +104,25 @@ LIBS += ../XTIDE_Universal_BIOS/Inc/
 HEADERS += $(LIBS)
 
 
-#################################################################
-# Assembler preprocessor defines.                               #
-#################################################################
+##################################
+# Assembler preprocessor defines #
+##################################
 DEFINES_COMMON = MODULE_STRINGS_COMPRESSED MODULE_HOTKEYS MODULE_8BIT_IDE MODULE_EBIOS MODULE_SERIAL MODULE_SERIAL_FLOPPY MODULE_POWER_MANAGEMENT NO_ATAID_VALIDATION CLD_NEEDED
 DEFINES_COMMON_LARGE = MODULE_BOOT_MENU MODULE_8BIT_IDE_ADVANCED MODULE_COMPATIBLE_TABLES
 
 DEFINES_XT = $(DEFINES_COMMON) ELIMINATE_CGA_SNOW MODULE_8BIT_IDE_ADVANCED
 DEFINES_XTPLUS = $(DEFINES_XT) USE_186
 DEFINES_AT = $(DEFINES_COMMON) USE_AT USE_286 MODULE_IRQ MODULE_COMPATIBLE_TABLES
+DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN9X_CMOS_HACK
 
 DEFINES_XT_LARGE = $(DEFINES_XT) $(DEFINES_COMMON_LARGE)
 DEFINES_XTPLUS_LARGE = $(DEFINES_XTPLUS) $(DEFINES_COMMON_LARGE)
 DEFINES_AT_LARGE = $(DEFINES_AT) $(DEFINES_COMMON_LARGE)
-
-DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION CLD_NEEDED
-DEFINES_386 = $(DEFINES_AT) USE_386 MODULE_ADVANCED_ATA MODULE_WIN9X_CMOS_HACK
 DEFINES_386_LARGE = $(DEFINES_386) $(DEFINES_COMMON_LARGE)
+
+DEFINES_XT_TINY = MODULE_STRINGS_COMPRESSED MODULE_8BIT_IDE NO_ATAID_VALIDATION NO_ATAID_CORRECTION CLD_NEEDED
+
+DEFINES_CUSTOM = ?
 
 
 ###################
@@ -131,6 +134,7 @@ DEFINES_386_LARGE = $(DEFINES_386) $(DEFINES_COMMON_LARGE)
 BIOS_SIZE_TINY = 4096
 BIOS_SIZE_SMALL = 8192
 BIOS_SIZE_LARGE = 10240
+BIOS_SIZE_CUSTOM = ?
 
 # Add -D in front of every preprocessor define declaration
 DEFS_XT = $(DEFINES_XT:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
@@ -142,12 +146,14 @@ DEFS_AT_LARGE = $(DEFINES_AT_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
 DEFS_XT_TINY = $(DEFINES_XT_TINY:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_TINY)
 DEFS_386 = $(DEFINES_386:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_SMALL)
 DEFS_386_LARGE = $(DEFINES_386_LARGE:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_LARGE)
+DEFS_CUSTOM = $(DEFINES_CUSTOM:%=-D%) -DBIOS_SIZE=$(BIOS_SIZE_CUSTOM)
 
 # Add -I in front of all header directories
 IHEADERS = $(HEADERS:%=-I%)
 
 # Path + target file to be built
 TARGET = $(BUILD_DIR)/$(PROG)
+
 
 #########################
 # Compilers and linkers #
@@ -222,6 +228,10 @@ xt_tiny:
 386_large:
 	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_386_LARGE) -l"$(TARGET)_386l.lst" -o"$(TARGET)_386l.bin"
 	@echo * Large 386 version "$(TARGET)_386l.bin" built.
+
+custom:
+	@$(AS) "$(SRC_ASM)" $(ASFLAGS) $(DEFS_CUSTOM) -l"$(TARGET)_custom.lst" -o"$(TARGET)_custom.bin"
+	@echo * Custom version "$(TARGET)_custom.bin" built.
 
 strings: src\Strings.asm
 	@$(AS) src\Strings.asm $(ASFLAGS) $(DEFS_AT_LARGE) -DCHECK_FOR_UNUSED_ENTRYPOINTS -DMODULE_STRINGS_COMPRESSED_PRECOMPRESS -o build\Strings.bin -l build\StringsPrecompress.lst

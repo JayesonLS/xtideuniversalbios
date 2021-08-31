@@ -105,7 +105,7 @@ AH23h_Disable8bitPioMode:
 ;--------------------------------------------------------------------
 ; Enable/disable advanced power management command can be used to scale
 ; power consumption and performance. Drive supporting Enable APM might not
-; support Disable AMP so we set the drive to max performance if stand by
+; support Disable APM so we set the drive to max performance if stand by
 ; timer value is 0 (idle/standby disabled)
 ;
 ;
@@ -125,12 +125,11 @@ AH23h_EnableOrDisableAdvancedPowerManagement:
 	mov		si, FEATURE_ENABLE_ADVANCED_POWER_MANAGEMENT
 	test	dl, dl
 	jnz		SHORT .EnablePowerSave
-	dec		dx
-	dec		dx		; DL = FEh = Maximum performance
-	jmp		AH23h_SetControllerFeatures
-	
+	mov		dl, 0FEh	; Maximum performance
+	SKIP2B	f
+
 ; TODO: We should add power management level to IDEVARS to be adjustable with xtidecfg
 .EnablePowerSave:
 	mov		dl, 0BFh	; For Toshiba 1.8" HDD: 80h...BFh = Mode 1
-	jmp		AH23h_SetControllerFeatures
-%endif ; %ifdef MODULE_POWER_MANAGEMENT
+	jmp		SHORT AH23h_SetControllerFeatures
+%endif ; MODULE_POWER_MANAGEMENT

@@ -40,7 +40,7 @@ SECTION .text
 ALIGN JUMP_ALIGN
 AH44h_HandlerForExtendedVerifySectors:
 	call	Prepare_ByLoadingDapToESSIandVerifyingForTransfer
-	push	WORD [es:si+DAP.wSectorCount]				; Store for successfull number of sectors transferred
+	push	WORD [es:si+DAP.wSectorCount]				; Store for successful number of sectors transferred
 	mov		ah, [cs:bx+g_rgbVerifyCommandLookup]
 	mov		bx, TIMEOUT_AND_STATUS_TO_WAIT(TIMEOUT_DRQ, FLG_STATUS_DRDY)
 	call	Idepack_ConvertDapToIdepackAndIssueCommandFromAH
