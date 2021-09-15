@@ -26,7 +26,6 @@ SECTION .text
 ;		DS:SI:	Ptr to string to convert
 ;	Returns:
 ;		CX:		Number of characters processed
-;		SI:		Updated
 ;	Corrupts registers:
 ;		Nothing
 ;--------------------------------------------------------------------
@@ -51,7 +50,6 @@ String_ConvertDSSItoLowerCase:
 ;	Returns:
 ;		AX:		Word converted from string
 ;		CX:		Number of characters processed
-;		SI:		Updated
 ;		CF:		Cleared if successful
 ;				Set if error during conversion
 ;	Corrupts registers:
