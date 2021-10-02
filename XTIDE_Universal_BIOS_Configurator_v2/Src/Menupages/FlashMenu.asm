@@ -253,6 +253,11 @@ ALIGN JUMP_ALIGN
 StartFlashing:
 	call	.MakeSureThatImageFitsInEeprom
 	jc		SHORT .InvalidFlashingParameters
+	cmp		WORD [cs:g_cfgVars+CFGVARS.bEepromType], EEPROM_TYPE.SST_39SF
+	jnz		SHORT .SkipAlignmentCheck
+	call	.MakeSureAddress32KAligned
+	jc		SHORT .InvalidFlashingParameters
+.SkipAlignmentCheck:
 	push	es
 	push	ds
 
@@ -290,7 +295,27 @@ ALIGN JUMP_ALIGN
 	stc
 ALIGN JUMP_ALIGN, ret
 .ImageFitsInSelectedEeprom:
+.AlignmentIs32K:
 .DoNotGenerateChecksumByte:
+	ret
+
+;--------------------------------------------------------------------
+; .MakeSureAddress32KAligned
+;	Parameters:
+;		SS:BP:	Ptr to MENU
+;	Returns:
+;		CF:		Set if EEPROM segment is not 32K aligned
+;	Corrupts registers:
+;		AX, BX, DX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.MakeSureAddress32KAligned:
+	mov		ax, [cs:g_cfgVars+CFGVARS.wEepromSegment]
+	and		ax, 007FFh
+	jz		SHORT .AlignmentIs32K
+	mov		dx, g_szErrAddrNot32KAligned
+	call	Dialogs_DisplayErrorFromCSDX
+	stc
 	ret
 
 ;--------------------------------------------------------------------

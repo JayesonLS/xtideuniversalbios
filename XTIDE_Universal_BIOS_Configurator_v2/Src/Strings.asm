@@ -52,15 +52,17 @@ g_szErrorDialog:		db	"Error!",NULL
 g_szGenericDialogInfo:	db	"Press ENTER or ESC to close dialog.",NULL
 
 ; Flashing related strings
-g_szFlashTitle:			db	"Flashing EEPROM, please wait.",NULL
-g_szErrEepromTooSmall:	db	"Image is too large for selected EEPROM type!",NULL
-g_szErrEepromPolling:	db	"Timeout when polling EEPROM.",LF
-						db	"EEPROM was not flashed properly!",NULL
-g_szErrEepromVerify:	db	"EEPROM did not return the same byte that was written.",LF
-						db	"EEPROM was not flashed properly!",NULL
-g_szPCFlashSuccessful:	db	"EEPROM was written successfully.",LF
-						db	"Press any key to reboot.",NULL
-g_szForeignFlash:		db	"EEPROM was written successfully.",NULL
+g_szFlashTitle:				db	"Flashing EEPROM, please wait.",NULL
+g_szErrEepromTooSmall:		db	"Image is too large for selected EEPROM type!",NULL
+g_szErrAddrNot32KAligned:	db	"The selected EEPROM type requires the address be 32 "
+							db	"kiB aligned (C800, D000, D800, E000, etc.)",NULL
+g_szErrEepromPolling:		db	"Timeout when polling EEPROM.",LF
+							db	"EEPROM was not flashed properly!",NULL
+g_szErrEepromVerify:		db	"EEPROM did not return the same byte that was written.",LF
+							db	"EEPROM was not flashed properly!",NULL
+g_szPCFlashSuccessful:		db	"EEPROM was written successfully.",LF
+							db	"Press any key to reboot.",NULL
+g_szForeignFlash:			db	"EEPROM was written successfully.",NULL
 
 
 ; Strings for main menu
