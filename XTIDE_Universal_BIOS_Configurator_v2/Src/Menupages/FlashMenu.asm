@@ -280,7 +280,7 @@ StartFlashing:
 	ret
 
 .FlashWithoutProgressBar:
-;	call	Flash_SstWithFlashvarsInDSSI	; SST devices complete flashing and/or
+	call	Flash_SstWithFlashvarsInDSSI	; SST devices complete flashing and/or
 	jmp		SHORT .FlashComplete			; timeout in well under 1 second. 
 
 ;--------------------------------------------------------------------

@@ -95,6 +95,9 @@ struc FLASHVARS
 	.bEepromSdpCommand			resb	1
 	.bEepromType				resb	1
 
+	.wTimeoutCalibrationLow		resb	2	; Used by SST flashing.
+	.wTimeoutCalibrationHigh	resb	2
+
 	.wProgressUpdateParam		resb	2
 	.wTimeoutCounter			resb	2
 	.wLastOffsetWritten			resb	2

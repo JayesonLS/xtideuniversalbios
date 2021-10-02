@@ -55,6 +55,7 @@ Start:
 %include "Dialogs.asm"
 %include "EEPROM.asm"
 %include "Flash.asm"
+%include "FlashSST.asm"
 %include "IdeAutodetect.asm"
 %include "MenuEvents.asm"
 %include "Menuitem.asm"
