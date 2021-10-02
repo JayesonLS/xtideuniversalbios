@@ -56,6 +56,7 @@ struc EEPROM_TYPE
 	.2864_8kiB_MOD		resb	2	; Reversed A0 and A3 address lines
 	.28256_32kiB		resb	2
 	.28512_64kiB		resb	2
+	.SST_39SF			resb	2
 endstruc
 
 ; Software Data Protection commands

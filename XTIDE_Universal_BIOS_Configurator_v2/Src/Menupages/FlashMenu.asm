@@ -55,7 +55,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemFlashEepromType
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoFlashEepromType
 	at	MENUITEM.szHelp,			dw	g_szNfoFlashEepromType
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE | FLG_MENUITEM_VISIBLE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_MODIFY_MENU | FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE | FLG_MENUITEM_VISIBLE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	CFGVARS.bEepromType
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgFlashEepromType
@@ -71,7 +71,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemFlashSDP
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoFlashSDP
 	at	MENUITEM.szHelp,			dw	g_szHelpFlashSDP
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE | FLG_MENUITEM_VISIBLE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	CFGVARS.bSdpCommand
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgFlashSDP
@@ -87,7 +87,7 @@ istruc MENUITEM
 	at	MENUITEM.szName,			dw	g_szItemFlashPageSize
 	at	MENUITEM.szQuickInfo,		dw	g_szNfoFlashPageSize
 	at	MENUITEM.szHelp,			dw	g_szHelpFlashPageSize
-	at	MENUITEM.bFlags,			db	FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE | FLG_MENUITEM_VISIBLE
+	at	MENUITEM.bFlags,			db	FLG_MENUITEM_PROGRAMVAR | FLG_MENUITEM_BYTEVALUE
 	at	MENUITEM.bType,				db	TYPE_MENUITEM_MULTICHOICE
 	at	MENUITEM.itemValue + ITEM_VALUE.wRomvarsValueOffset,		dw	CFGVARS.bEepromPage
 	at	MENUITEM.itemValue + ITEM_VALUE.szDialogTitle,				dw	g_szDlgFlashPageSize
@@ -133,12 +133,15 @@ g_rgwChoiceToValueLookupForEepromType:
 	dw	EEPROM_TYPE.2864_8kiB_MOD
 	dw	EEPROM_TYPE.28256_32kiB
 	dw	EEPROM_TYPE.28512_64kiB
+	dw	EEPROM_TYPE.SST_39SF
+
 g_rgszValueToStringLookupForEepromType:
 	dw	g_szValueFlash2816
 	dw	g_szValueFlash2864
 	dw	g_szValueFlash2864Mod
 	dw	g_szValueFlash28256
 	dw	g_szValueFlash28512
+	dw	g_szValueFlashSST39SF
 
 g_rgwChoiceToValueLookupForSdpCommand:
 	dw	SDP_COMMAND.none
@@ -200,8 +203,42 @@ FlashMenu_EnterMenuOrModifyItemVisibility:
 
 .AlreadySet:
 	mov		si, g_MenupageForFlashMenu
-	jmp		Menupage_ChangeToNewMenupageInDSSI
+	ePUSH_T	bx, Menupage_ChangeToNewMenupageInDSSI
+	cmp		WORD [g_cfgVars+CFGVARS.bEepromType], EEPROM_TYPE.SST_39SF
+	jz		SHORT .DisableMenuitemsUnusedBySstFlash
+	; Fall to .EnableMenuitemsUnusedBySstFlash
 
+;--------------------------------------------------------------------
+; .EnableMenuitemsUnusedBySstFlash
+;	Parameters:
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.EnableMenuitemsUnusedBySstFlash:
+	mov		bx, g_MenuitemFlashSdpCommand
+	call	EnableMenuitemFromCSBX
+	mov		bx, g_MenuitemFlashPageSize
+	jmp		EnableMenuitemFromCSBX
+
+;--------------------------------------------------------------------
+; .DisableMenuitemsUnusedBySstFlash
+;	Parameters:
+;		SS:BP:	Menu handle
+;	Returns:
+;		Nothing
+;	Corrupts registers:
+;		AX, BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.DisableMenuitemsUnusedBySstFlash:
+	mov		bx, g_MenuitemFlashSdpCommand
+	call	DisableMenuitemFromCSBX
+	mov		bx, g_MenuitemFlashPageSize
+	jmp		DisableMenuitemFromCSBX
 
 ;--------------------------------------------------------------------
 ; MENUITEM activation functions (.fnActivate)
