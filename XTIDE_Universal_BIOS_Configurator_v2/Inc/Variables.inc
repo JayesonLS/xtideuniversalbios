@@ -105,6 +105,7 @@ endstruc
 ; Flashing results
 struc FLASH_RESULT
 	.success					resb	2
+	.DeviceNotDetected			resb	2
 	.PollingTimeoutError		resb	2
 	.DataVerifyError			resb	2
 endstruc

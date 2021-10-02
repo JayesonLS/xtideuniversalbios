@@ -266,8 +266,11 @@ StartFlashing:
 	call	Memory_ReserveCLbytesFromStackToDSSI
 	call	.InitializeFlashvarsFromDSSI
 	mov		bx, si							; DS:BX now points to FLASHVARS
+	cmp		WORD [cs:g_cfgVars+CFGVARS.bEepromType], EEPROM_TYPE.SST_39SF
+	jz		SHORT .FlashWithoutProgressBar
 	add		si, BYTE FLASHVARS_size			; DS:SI now points to PROGRESS_DIALOG_IO
 	call	Dialogs_DisplayProgressDialogForFlashingWithDialogIoInDSSIandFlashvarsInDSBX
+.FlashComplete:
 	call	.DisplayFlashingResultsFromFlashvarsInDSBX
 
 	add		sp, BYTE FLASHVARS_size + PROGRESS_DIALOG_IO_size
@@ -275,6 +278,10 @@ StartFlashing:
 	pop		es
 .InvalidFlashingParameters:
 	ret
+
+.FlashWithoutProgressBar:
+;	call	Flash_SstWithFlashvarsInDSSI	; SST devices complete flashing and/or
+	jmp		SHORT .FlashComplete			; timeout in well under 1 second. 
 
 ;--------------------------------------------------------------------
 ; .MakeSureThatImageFitsInEeprom
@@ -429,11 +436,13 @@ ALIGN JUMP_ALIGN
 ALIGN WORD_ALIGN
 .rgfnFlashResultMessage:
 	dw		.DisplayFlashSuccessful
+	dw		.DisplayDeviceDetectionError
 	dw		.DisplayPollingError
 	dw		.DisplayDataVerifyError
 
 
 ;--------------------------------------------------------------------
+; .DisplayDeviceDetectionError
 ; .DisplayPollingError
 ; .DisplayDataVerifyError
 ; .DisplayFlashSuccessful
@@ -444,6 +453,11 @@ ALIGN WORD_ALIGN
 ;	Corrupts registers:
 ;		AX, DX, DI, ES
 ;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+.DisplayDeviceDetectionError:
+	mov		dx, g_szErrEepromDetection
+	jmp		Dialogs_DisplayErrorFromCSDX
+
 ALIGN JUMP_ALIGN
 .DisplayPollingError:
 	mov		dx, g_szErrEepromPolling
