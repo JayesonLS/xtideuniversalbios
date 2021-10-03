@@ -26,7 +26,7 @@ FlashSst_WithFlashvarsInDSBX:
 	push	cx
 	push	si
 	push	bp
-	mov		bp, bx									; Flashvars now in SS:BP
+	mov		bp, bx					; Flashvars now in SS:BP.
 
 	mov		BYTE [bp+FLASHVARS.flashResult], FLASH_RESULT.DeviceNotDetected
 	call	DetectSstDevice
@@ -40,12 +40,29 @@ FlashSst_WithFlashvarsInDSBX:
 	les		di, [bp+FLASHVARS.fpNextDestinationPage]
 
 ALIGN JUMP_ALIGN
-.FlashNextPage:
+.NextPage:
+	; See if this page needs updating.
+	push	si
+	push	di
+	push	cx
+	mov		cx, [bp+FLASHVARS.wEepromPageSize]
+	mov		bx, cx
+	repe cmpsb
+	pop		cx
+	pop		di
+	pop		si
+	jnz		.FlashThisPage
+	add		si, bx
+	add		di, bx
+	jmp		.ContinueLoop
+
+.FlashThisPage:
 	call	EraseSstPage
 	jc		SHORT .ExitOnError
 	call	WriteSstPage
 	jc		SHORT .ExitOnError
-	loop	.FlashNextPage
+.ContinueLoop:
+	loop	.NextPage
 
 	; The write process has already confirmed the results one byte at a time.
 	; Here we do an additional verify check just in case there was some 
@@ -218,7 +235,7 @@ WriteSstPage:
 	push	cx
 
 	mov		bx, [bp+FLASHVARS.wTimeoutCounter]
-	mov		dx, SST_PAGE_SIZE
+	mov		dx, [bp+FLASHVARS.wEepromPageSize]
 	cli
 
 .NextByte:
