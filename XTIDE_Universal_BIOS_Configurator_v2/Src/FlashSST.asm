@@ -36,7 +36,9 @@ FlashSst_WithFlashvarsInDSBX:
 	
 	mov		BYTE [bp+FLASHVARS.flashResult], FLASH_RESULT.PollingTimeoutError
 	mov		cx, [bp+FLASHVARS.wPagesToFlash]
-	; TODO: load DS:SI and ES:DI with source/dest.
+	lds		si, [bp+FLASHVARS.fpNextSourcePage]
+	les		di, [bp+FLASHVARS.fpNextDestinationPage]
+
 ALIGN JUMP_ALIGN
 .FlashNextPage:
 	call	EraseSstPage
@@ -45,10 +47,18 @@ ALIGN JUMP_ALIGN
 	jc		SHORT .ExitOnError
 	loop	.FlashNextPage
 
-	; TODO: load DS:SI and ES:DI with source/dest.
-
-	; TODO: Verify results match.
+	; The write process has already confirmed the results one byte at a time.
+	; Here we do an additional verify check just in case there was some 
+	; kind of oddity with pages / addresses.
 	mov		BYTE [bp+FLASHVARS.flashResult], FLASH_RESULT.DataVerifyError
+	mov		ax, [bp+FLASHVARS.wPagesToFlash]
+	mov		cl, SST_PAGE_SHIFT
+	shl		ax, cl
+	mov		cx, ax
+	lds		si, [bp+FLASHVARS.fpNextSourcePage]
+	les		di, [bp+FLASHVARS.fpNextDestinationPage]
+	repe cmpsb
+	jnz		SHORT .ExitOnError
 
 %ifndef CHECK_FOR_UNUSED_ENTRYPOINTS
 %if FLASH_RESULT.success = 0	; Just in case this should ever change
@@ -68,22 +78,6 @@ ALIGN JUMP_ALIGN
 	ret
 
 ;--------------------------------------------------------------------
-; GetDestinationFarPtr
-;	Parameters:
-;		SS:BP:	Ptr to FLASHVARS
-;	Returns:
-;		ES:DI:	Ptr to destination location
-;	Corrupts registers:
-;		Nothing
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-GetDestinationFarPtr:
-	mov		di, [bp+FLASHVARS.fpNextDestinationPage+2]
-	mov		es, di
-	mov		di, [bp+FLASHVARS.fpNextDestinationPage]
-	ret
-
-;--------------------------------------------------------------------
 ; DetectSstDevice
 ;	Parameters:
 ;		SS:BP:	Ptr to FLASHVARS
@@ -95,7 +89,7 @@ GetDestinationFarPtr:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 DetectSstDevice:
-	call	GetDestinationFarPtr
+	les		di, [bp+FLASHVARS.fpNextDestinationPage]
 
 	cli
 	mov		BYTE [es:05555h], 0AAh	; Enter software ID sequence.
@@ -133,7 +127,7 @@ DetectSstDevice:
 ALIGN JUMP_ALIGN
 CalibrateSstTimeout:
 	LOAD_BDA_SEGMENT_TO	ds, ax
-	call	GetDestinationFarPtr
+	les		di, [bp+FLASHVARS.fpNextDestinationPage]
 	xor		cx, cx
 	mov		si, cx
 	mov		di, cx
