@@ -560,7 +560,7 @@ g_szMultichoiceEepromType:		db	"2816 (2 kiB)",LF
 								db	"2864 mod (8 kiB)",LF
 								db	"28256 (32 kiB)",LF
 								db	"28512 (64 kiB)",LF
-								db	"SST39SFxxx flash",NULL
+								db	"SST39SFx flash",NULL
 g_szValueFlash2816:				db	"2816",NULL
 g_szValueFlash2864:				db	"2864",NULL
 g_szValueFlash2864Mod:			db	"2864mod",NULL

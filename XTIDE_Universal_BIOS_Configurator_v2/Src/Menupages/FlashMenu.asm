@@ -280,8 +280,8 @@ StartFlashing:
 	ret
 
 .FlashWithoutProgressBar:
-	call	Flash_SstWithFlashvarsInDSSI	; SST devices complete flashing and/or
-	jmp		SHORT .FlashComplete			; timeout in well under 1 second. 
+	call	FlashSst_WithFlashvarsInDSBX	; SST devices with either complete flashing
+	jmp		SHORT .FlashComplete			; or timeout within 1 second. 
 
 ;--------------------------------------------------------------------
 ; .MakeSureThatImageFitsInEeprom
@@ -372,8 +372,13 @@ ALIGN JUMP_ALIGN
 	mov		al, [cs:g_cfgVars+CFGVARS.bSdpCommand]
 	mov		[si+FLASHVARS.bEepromSdpCommand], al
 
+	mov		ax, SST_PAGE_SIZE
+	cmp		WORD [g_cfgVars+CFGVARS.bEepromType], EEPROM_TYPE.SST_39SF
+	jz		SHORT .UseSstPageSize
+
 	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromPage]
 	mov		ax, [cs:bx+g_rgwEepromPageToSizeInBytes]
+.UseSstPageSize:
 	mov		[si+FLASHVARS.wEepromPageSize], ax
 
 	call	.GetNumberOfPagesToFlashToAX
