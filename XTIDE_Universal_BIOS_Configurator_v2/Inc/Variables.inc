@@ -28,10 +28,8 @@ EEPROM_POLLING_TIMEOUT_TICKS			EQU		3		; 1 tick = 54.9 ms
 XTIDE_SIGNATURE_LENGTH					EQU		6		; XTIDE Universal BIOS signature string length (must be even)
 NUMBER_OF_EEPROM_TYPES					EQU		5
 MAX_EEPROM_SIZE_IN_BYTES				EQU		65536
-SST_POLLING_TIMEOUT_TICKS				EQU		4		; 219.6 ms, about 9x datasheet max time for sector erase and 
-														; 1000's of times longer than byte write time.
-SST_PAGE_SHIFT							EQU		12		; Minimum we can erase is a 4K sector.
-SST_PAGE_SIZE							EQU		(1 << SST_PAGE_SHIFT)	
+SST_PAGE_SIZE_SHIFT						EQU		12		; Minimum we can erase is a 4K sector.
+SST_PAGE_SIZE							EQU		(1 << SST_PAGE_SIZE_SHIFT)	
 
 ; Program global variables
 struc CFGVARS

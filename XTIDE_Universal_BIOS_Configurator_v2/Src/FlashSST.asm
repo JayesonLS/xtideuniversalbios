@@ -41,8 +41,8 @@ FlashSst_WithFlashvarsInDSBX:
 
 ALIGN JUMP_ALIGN
 .FlashNextPage:
-;	call	EraseSstPage
-;	jc		SHORT .ExitOnError
+	call	EraseSstPage
+	jc		SHORT .ExitOnError
 	call	WriteSstPage
 	jc		SHORT .ExitOnError
 	loop	.FlashNextPage
@@ -52,7 +52,7 @@ ALIGN JUMP_ALIGN
 	; kind of oddity with pages / addresses.
 	mov		BYTE [bp+FLASHVARS.flashResult], FLASH_RESULT.DataVerifyError
 	mov		ax, [bp+FLASHVARS.wPagesToFlash]
-	mov		cl, SST_PAGE_SHIFT
+	mov		cl, SST_PAGE_SIZE_SHIFT
 	shl		ax, cl
 	mov		cx, ax
 	lds		si, [bp+FLASHVARS.fpNextSourcePage]
@@ -171,21 +171,42 @@ CalibrateSstTimeout:
 ;--------------------------------------------------------------------
 ; EraseSstPage
 ;	Parameters:
-;		TODO
+;		ES:DI:	Destination ptr.
 ;	Returns:
-;		TODO
+;		CF:		Set on error.
 ;	Corrupts registers:
-;		TODO
+;		AX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 EraseSstPage:
+	push	cx
+
+	mov		BYTE [es:05555h], 0AAh	; Sector erase sequence.
+	mov		BYTE [es:02AAAh], 055h
+	mov		BYTE [es:05555h], 080h
+	mov		BYTE [es:05555h], 0AAh
+	mov		BYTE [es:02AAAh], 055h
+	mov		BYTE [es:di], 030h
+
+	mov		ax, 1163				; 1163 x ~215us = 250ms = 10x datasheet max
+.TimeoutOuterLoop:
+	mov		cx, [bp+FLASHVARS.wTimeoutCounter]
+.TimeoutInnerLoop:
+	cmp		BYTE [es:di], 0FFh		; Will return 0FFh when erase complete.
+	jz		.Exit
+	loop	.TimeoutInnerLoop
+	dec		ax
+	jnz		.TimeoutOuterLoop
+	stc								; Timed out.
+.Exit:
+	pop		cx
 	ret
 
 ;--------------------------------------------------------------------
 ; WriteSstPage
 ;	Parameters:
 ;		DS:SI:	Source ptr.
-;		ES:DI:	Desintation ptr.
+;		ES:DI:	Destination ptr.
 ;	Returns:
 ;		SI, DI:	Each advanced forward 1 page.
 ;		CF:		Set on error.
