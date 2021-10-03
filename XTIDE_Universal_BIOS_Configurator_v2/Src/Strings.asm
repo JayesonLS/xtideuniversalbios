@@ -56,7 +56,7 @@ g_szFlashTitle:				db	"Flashing EEPROM, please wait.",NULL
 g_szErrEepromTooSmall:		db	"Image is too large for selected EEPROM type!",NULL
 g_szErrAddrNot32KAligned:	db	"The selected EEPROM type requires the address to be 32 "
 							db	"kiB aligned (C800, D000, D800, E000, etc.)",NULL
-g_szErrEepromDetection:		db	"EEPROM type not detected.",LF
+g_szErrEepromDetection:		db	"EEPROM of type not found.",LF
 							db	"EEPROM was not flashed properly!",NULL
 g_szErrEepromPolling:		db	"Timeout when polling EEPROM.",LF
 							db	"EEPROM was not flashed properly!",NULL
