@@ -279,9 +279,9 @@ StartFlashing:
 .InvalidFlashingParameters:
 	ret
 
-.FlashWithoutProgressBar:
-	call	FlashSst_WithFlashvarsInDSBX	; SST devices with either complete flashing
-	jmp		SHORT .FlashComplete			; or timeout within 1 second. 
+.FlashWithoutProgressBar:					; Worst case. SST devices will
+	call	FlashSst_WithFlashvarsInDSBX	; either complete flashing
+	jmp		SHORT .FlashComplete			; or timeout within 2 seconds. 
 
 ;--------------------------------------------------------------------
 ; .MakeSureThatImageFitsInEeprom
