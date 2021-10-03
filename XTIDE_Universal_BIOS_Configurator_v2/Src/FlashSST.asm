@@ -41,8 +41,8 @@ FlashSst_WithFlashvarsInDSBX:
 
 ALIGN JUMP_ALIGN
 .FlashNextPage:
-	call	EraseSstPage
-	jc		SHORT .ExitOnError
+;	call	EraseSstPage
+;	jc		SHORT .ExitOnError
 	call	WriteSstPage
 	jc		SHORT .ExitOnError
 	loop	.FlashNextPage
@@ -182,15 +182,46 @@ EraseSstPage:
 	ret
 
 ;--------------------------------------------------------------------
-; EraseSstPage
+; WriteSstPage
 ;	Parameters:
-;		TODO
+;		DS:SI:	Source ptr.
+;		ES:DI:	Desintation ptr.
 ;	Returns:
-;		TODO
+;		SI, DI:	Each advanced forward 1 page.
+;		CF:		Set on error.
 ;	Corrupts registers:
-;		TODO
+;		AL, BX, DX
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 WriteSstPage:
-	ret
+	push	cx
 
+	mov		bx, [bp+FLASHVARS.wTimeoutCounter]
+	mov		dx, SST_PAGE_SIZE
+	cli
+
+.NextByte:
+	lodsb
+	mov		BYTE [es:05555h], 0AAh	; Byte program sequence.
+	mov		BYTE [es:02AAAh], 055h
+	mov		BYTE [es:05555h], 0A0h
+	mov		[es:di], al
+
+	mov		cx, bx
+.WaitLoop:
+	cmp		[es:di], al				; Device won't return actual data until 
+	jz		SHORT .ByteFinished		; write complete. Timeout ~215us, or 
+	loop	.WaitLoop				; ~10x 20us max program time from datasheet.
+
+	stc								; Write timeout.
+	jmp		SHORT .Exit
+
+.ByteFinished:
+	inc		di
+	dec		dx
+	jnz		SHORT .NextByte
+	clc
+.Exit:
+	sti
+	pop		cx
+	ret
