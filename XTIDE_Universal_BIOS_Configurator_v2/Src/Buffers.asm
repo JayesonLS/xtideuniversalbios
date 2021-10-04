@@ -172,6 +172,27 @@ ALIGN JUMP_ALIGN
 .NothingToSave:
 	ret
 
+;--------------------------------------------------------------------
+; Buffers_GetSelectedEepromSizeInWordsToAX
+;	Parameters:
+;		Nothing
+;	Returns:
+;		AX:		Selected EEPROM size in WORDs
+;	Corrupts registers:
+;		BX
+;--------------------------------------------------------------------
+ALIGN JUMP_ALIGN
+Buffers_GetSelectedEepromSizeInWordsToAX:
+	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromType]
+	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
+
+	cmp		bl, EEPROM_TYPE.SST_39SF
+	jnz		SHORT .HaveEepromSize
+	cmp		ax, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]
+	jae		SHORT .HaveEepromSize		
+	shl		ax, 1	; Auto-double SST size when too small.
+.HaveEepromSize:
+	ret
 
 ;--------------------------------------------------------------------
 ; Buffers_AppendZeroesIfNeeded
@@ -180,14 +201,14 @@ ALIGN JUMP_ALIGN
 ;	Returns:
 ;		Nothing
 ;	Corrupts registers:
-;		AX, CX, DI
+;		AX, BX, CX, DI
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 Buffers_AppendZeroesIfNeeded:
 	push	es
 
-	eMOVZX	di, [cs:g_cfgVars+CFGVARS.bEepromType]
-	mov		cx, [cs:di+g_rgwEepromTypeToSizeInWords]
+	call	Buffers_GetSelectedEepromSizeInWordsToAX
+	mov		cx, ax
 	sub		cx, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]	; CX = WORDs to append
 	jbe		SHORT .NoNeedToAppendZeroes
 

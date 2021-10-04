@@ -38,6 +38,9 @@ FlashSst_WithFlashvarsInDSBX:
 	mov		cx, [bp+FLASHVARS.wPagesToFlash]
 	lds		si, [bp+FLASHVARS.fpNextSourcePage]
 	les		di, [bp+FLASHVARS.fpNextDestinationPage]
+%ifdef CLD_NEEDED
+	cld
+%endif
 
 ALIGN JUMP_ALIGN
 .NextPage:

@@ -294,7 +294,7 @@ StartFlashing:
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .MakeSureThatImageFitsInEeprom:
-	call	.GetSelectedEepromSizeInWordsToAX
+	call	Buffers_GetSelectedEepromSizeInWordsToAX
 	cmp		ax, [cs:g_cfgVars+CFGVARS.wImageSizeInWords]
 	jae		SHORT .ImageFitsInSelectedEeprom
 	mov		dx, g_szErrEepromTooSmall
@@ -396,7 +396,7 @@ ALIGN JUMP_ALIGN
 ;--------------------------------------------------------------------
 ALIGN JUMP_ALIGN
 .GetNumberOfPagesToFlashToAX:
-	call	.GetSelectedEepromSizeInWordsToAX
+	call	Buffers_GetSelectedEepromSizeInWordsToAX
 	xor		dx, dx
 	eSHL_IM	ax, 1		; Size in bytes to...
 	eRCL_IM	dx, 1		; ...DX:AX
@@ -406,22 +406,6 @@ ALIGN JUMP_ALIGN
 	div		WORD [si+FLASHVARS.wEepromPageSize]
 .PreventDivideException:
 	ret
-
-;--------------------------------------------------------------------
-; .GetSelectedEepromSizeInWordsToAX
-;	Parameters:
-;		Nothing
-;	Returns:
-;		AX:		Selected EEPROM size in WORDs
-;	Corrupts registers:
-;		BX
-;--------------------------------------------------------------------
-ALIGN JUMP_ALIGN
-.GetSelectedEepromSizeInWordsToAX:
-	eMOVZX	bx, [cs:g_cfgVars+CFGVARS.bEepromType]
-	mov		ax, [cs:bx+g_rgwEepromTypeToSizeInWords]
-	ret
-
 
 ;--------------------------------------------------------------------
 ; .DisplayFlashingResultsFromFlashvarsInDSBX
