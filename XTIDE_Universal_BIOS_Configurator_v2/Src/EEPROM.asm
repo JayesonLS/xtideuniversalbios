@@ -27,6 +27,9 @@ g_rgwEepromTypeToSizeInWords:
 	dw		(8<<10) / 2		; EEPROM_TYPE.2864_8kiB_MOD
 	dw		(32<<10) / 2
 	dw		(64<<10) / 2
+	dw		(32<<10) / 2	; EEPROM_TYPE.SST_39SF
+							; Actual size of flash will be larger than 32K,
+							; however most (all?) XUB devices map a 32K window.
 
 g_rgwEepromPageToSizeInBytes:
 	dw		1				; EEPROM_PAGE.1_byte

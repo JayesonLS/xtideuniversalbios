@@ -52,15 +52,19 @@ g_szErrorDialog:		db	"Error!",NULL
 g_szGenericDialogInfo:	db	"Press ENTER or ESC to close dialog.",NULL
 
 ; Flashing related strings
-g_szFlashTitle:			db	"Flashing EEPROM, please wait.",NULL
-g_szErrEepromTooSmall:	db	"Image is too large for selected EEPROM type!",NULL
-g_szErrEepromPolling:	db	"Timeout when polling EEPROM.",LF
-						db	"EEPROM was not flashed properly!",NULL
-g_szErrEepromVerify:	db	"EEPROM did not return the same byte that was written.",LF
-						db	"EEPROM was not flashed properly!",NULL
-g_szPCFlashSuccessful:	db	"EEPROM was written successfully.",LF
-						db	"Press any key to reboot.",NULL
-g_szForeignFlash:		db	"EEPROM was written successfully.",NULL
+g_szFlashTitle:				db	"Flashing EEPROM, please wait.",NULL
+g_szErrEepromTooSmall:		db	"Image is too large for selected EEPROM type!",NULL
+g_szErrAddrNot32KAligned:	db	"The selected EEPROM type requires the address to be 32 "
+							db	"kiB aligned (C800, D000, D800, E000, etc.)",NULL
+g_szErrEepromDetection:		db	"EEPROM of type not found.",LF
+							db	"EEPROM was not flashed properly!",NULL
+g_szErrEepromPolling:		db	"Timeout when polling EEPROM.",LF
+							db	"EEPROM was not flashed properly!",NULL
+g_szErrEepromVerify:		db	"EEPROM did not return the same byte that was written.",LF
+							db	"EEPROM was not flashed properly!",NULL
+g_szPCFlashSuccessful:		db	"EEPROM was written successfully.",LF
+							db	"Press any key to reboot.",NULL
+g_szForeignFlash:			db	"EEPROM was written successfully.",NULL
 
 
 ; Strings for main menu
@@ -555,12 +559,14 @@ g_szMultichoiceEepromType:		db	"2816 (2 kiB)",LF
 								db	"2864 (8 kiB)",LF
 								db	"2864 mod (8 kiB)",LF
 								db	"28256 (32 kiB)",LF
-								db	"28512 (64 kiB)",NULL
+								db	"28512 (64 kiB)",LF
+								db	"SST39SFx flash",NULL
 g_szValueFlash2816:				db	"2816",NULL
 g_szValueFlash2864:				db	"2864",NULL
 g_szValueFlash2864Mod:			db	"2864mod",NULL
 g_szValueFlash28256:			db	"28256",NULL
 g_szValueFlash28512:			db	"28512",NULL
+g_szValueFlashSST39SF:			db	"SST39SFx",NULL
 
 g_szMultichoiceSdpCommand:		db	"None",LF
 								db	"Enable",LF

@@ -122,18 +122,21 @@ ALIGN WORD_ALIGN
 	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.2864_8kiB_MOD
 	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.28256_32kiB
 	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.28512_64kiB
+	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.SST_39SF
 .rgfnEnableSdpAndFlash:		; SDP_COMMAND.enable
 	dw		WriteSdpEnableCommandFor2816			; EEPROM_TYPE.2816_2kiB
 	dw		WriteSdpEnableCommandFor2864			; EEPROM_TYPE.2864_8kiB
 	dw		WriteSdpEnableCommandFor2864mod			; EEPROM_TYPE.2864_8kiB_MOD
 	dw		WriteSdpEnableCommandFor28256or28512	; EEPROM_TYPE.28256_32kiB
 	dw		WriteSdpEnableCommandFor28256or28512	; EEPROM_TYPE.28512_64kiB
+	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.SST_39SF
 .rgfnDisableSdpAndFlash:	; SDP_COMMAND.disable
 	dw		WriteSdpDisableCommandFor2816			; EEPROM_TYPE.2816_2kiB
 	dw		WriteSdpDisableCommandFor2864			; EEPROM_TYPE.2864_8kiB
 	dw		WriteSdpDisableCommandFor2864mod		; EEPROM_TYPE.2864_8kiB_MOD
 	dw		WriteSdpDisableCommandFor28256or28512	; EEPROM_TYPE.28256_32kiB
 	dw		WriteSdpDisableCommandFor28256or28512	; EEPROM_TYPE.28512_64kiB
+	dw		DoNotWriteAnySdpCommand					; EEPROM_TYPE.SST_39SF
 
 
 ;--------------------------------------------------------------------
