@@ -51,10 +51,10 @@ ALIGN JUMP_ALIGN
 	pop		cx
 	pop		di
 	pop		si
-	jnz		.FlashThisPage
+	jnz		SHORT .FlashThisPage
 	add		si, bx
 	add		di, bx
-	jmp		.ContinueLoop
+	jmp		SHORT .ContinueLoop
 
 .FlashThisPage:
 	call	EraseSstPage
@@ -210,10 +210,10 @@ EraseSstPage:
 	mov		cx, [bp+FLASHVARS.wTimeoutCounter]
 .TimeoutInnerLoop:
 	cmp		BYTE [es:di], 0FFh		; Will return 0FFh when erase complete.
-	jz		.Exit
+	jz		SHORT .Exit
 	loop	.TimeoutInnerLoop
 	dec		ax
-	jnz		.TimeoutOuterLoop
+	jnz		SHORT .TimeoutOuterLoop
 	stc								; Timed out.
 .Exit:
 	pop		cx
